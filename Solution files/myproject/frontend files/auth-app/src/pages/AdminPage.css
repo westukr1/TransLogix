@@ -1,0 +1,217 @@
+.two-column-template {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.top-nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #2c2c2c;
+    padding: 0 20px;
+    height: 80px;
+    border-bottom: 3px solid #C0C0C0;
+    box-sizing: border-box;
+}
+
+.logo img {
+    height: 75px;
+    width: auto;
+}
+
+.nav-buttons {
+    width: auto !important;
+    display: flex;
+    gap: 10px;
+}
+
+.nav-button {
+    padding: 10px 15px;
+    background-color: #2c2c2c;
+    border: 3px solid #C0C0C0;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.nav-button:hover {
+    background-color: #3a3a3a;
+}
+
+.ap-auth-button {
+    width: 100% !important;
+    padding: 7px 15px;
+    background-color: #2c2c2c;
+    border: 3px solid #C0C0C0;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    text-align: center;
+}
+
+.template2s-content {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.template2s-left-column {
+    flex: 0 0 20%;
+    padding: 20px;
+    color: #fff;
+    background-color: #3a3a3a;
+    border-right: 3px solid #C0C0C0;
+    box-sizing: border-box;
+}
+
+.template2s-right-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #2c2c2c;
+    box-sizing: border-box;
+}
+
+.template2s-upper-right,
+.template2s-lower-right {
+    flex: 1;
+    padding: 20px;
+    color: #fff;
+    background-color: #3a3a3a;
+    border-bottom: 3px solid #C0C0C0;
+    box-sizing: border-box;
+}
+
+/* Стилі для таблиці */
+.user-list-container {
+    max-height: 400px; /* Встановіть максимальну висоту контейнера для таблиці */
+    
+    overflow-y: auto;  /* Додає вертикальну полосу прокрутки */
+    overflow-x: auto;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: top;
+    background-color: #3a3a3a;
+    overflow-y: auto;  /* Додає вертикальну полосу прокрутки */
+    /*overflow-x: auto;*/
+}
+
+.user-table th, .user-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+.user-table th:first-child, .user-table td:first-child {
+    position: sticky;
+    left: 0;
+    background-color: #3a3a3a; /* фон для зафіксованої колонки */
+    z-index: 1; /* важливо для коректного відображення поверх інших елементів */
+}
+
+.user-table th input {
+    width: 80%;
+    padding: 5px;
+    margin-top: 5px;
+}
+
+.user-table th {
+    cursor: default;
+    background-color: #f2f2f2;
+    text-align: left;
+    vertical-align: bottom; /* Вирівнюємо заголовки до нижнього краю */
+    padding-bottom: 10px; /* Додаємо відступ знизу для додаткового простору */
+}
+
+.user-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.user-table th {
+    background-color: #3a3a3a;
+    color: #fff;
+    text-align: center;
+}
+
+.user-table td {
+    background-color: #2c2c2c;
+    color: #fff;
+}
+
+.user-table td input[type="checkbox"] {
+    cursor: default;
+}
+
+.template2s-right-column {
+    overflow-y: auto;
+    max-height: 500px;
+}
+
+/* Додаємо значки фільтрації */
+.filter-icon {
+    cursor: pointer;
+    margin-left: 8px;
+}
+
+.filter-reset-button {
+    background-color: #2c2c2c;
+    color: #fff;
+    border: 2px solid #C0C0C0;
+    padding: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filter-reset-button:hover {
+    background-color: #444;
+}
+.ap-save-button {
+    background-color: #2c2c2c;
+    color: #fff;
+    border: 2px solid #C0C0C0;
+    padding: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.ap.save-button:hover {
+    background-color: #444;
+}
+.ap-button-container {
+    display: flex;
+    justify-content: flex-start; /* або space-between, якщо потрібно більше простору між кнопками */
+    gap: 10px; /* Відступ між кнопками */
+    margin-bottom: 10px; /* Відступ знизу, якщо потрібно */
+  }
+.ap-save-button, .filter-reset-button {
+    display: inline-block; /* Для надійності додамо це, щоб вони обов'язково були в рядок */
+}
+.fa-filter, .fa-check {
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+  
+  .fa-check {
+    color: darkgreen; /* Темно-зелений колір для застосованого фільтра */
+  }
+  
+  .fa-filter:hover {
+    color: #4CAF50; /* Зміна кольору при наведенні */
+  }
+  

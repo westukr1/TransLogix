@@ -1,0 +1,161 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import './MapOfRoutes.css';
+
+function MapOfRoutes() {
+  const [selectedRoute, setSelectedRoute] = useState(null);
+  const mapRef = useRef(null); // Використовується для відображення карти
+  const navigate = useNavigate();
+
+  // Завантажуємо Google Maps API
+  const loadGoogleMapsAPI = (callback) => {
+    const existingScript = document.getElementById('googleMaps');
+    if (!existingScript) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCEryINvh8xazxGl6X_FXix5aUP17-9gsI`;
+      script.id = 'googleMaps';
+      document.body.appendChild(script);
+      script.onload = () => {
+        if (callback) callback();
+      };
+    } else if (callback) callback();
+  };
+
+  useEffect(() => {
+    loadGoogleMapsAPI(() => {
+      // Ініціалізуємо карту після завантаження API
+      if (mapRef.current) {
+        const map = new window.google.maps.Map(mapRef.current, {
+          center: { lat: 49.8397, lng: 24.0297 }, // Центр карти (Львів)
+          zoom: 10,
+        });
+
+        // Ви можете додати маркери чи інші елементи на карту тут
+        new window.google.maps.Marker({
+          position: { lat: 50.4501, lng: 30.5234 },
+          map: map,
+          title: "Київ",
+        });
+      }
+    });
+  }, []);
+
+  const routes = [
+    {
+      id: 1,
+      name: 'Route 1',
+      status: 'in-progress',
+      passengers: [
+        { name: 'John Doe', city: 'Kyiv', phone: '+380 123 456 789' },
+        { name: 'Jane Smith', city: 'Lviv', phone: '+380 987 654 321' },
+      ],
+    },
+    {
+      id: 2,
+      name: 'Route 2',
+      status: 'scheduled',
+      passengers: [
+        { name: 'Alice Brown', city: 'Odessa', phone: '+380 555 555 555' },
+      ],
+    },
+  ];
+
+  const handleRouteClick = (route) => {
+    setSelectedRoute(selectedRoute === route ? null : route);
+  };
+
+  return (
+    <div className="map-of-routes-container">
+      <div className="header">
+        <div className="logo">
+          <img src="/logo.png" alt="NextPointLogix" />
+        </div>
+        <div className="nav-buttons">
+          <Link to="/" className="nav-button">Main Screen</Link>
+          <Link to="/calendar" className="nav-button">Calendar</Link>
+          <Link to="/drivers" className="nav-button">Driver Manager</Link>
+          <Link to="/rout-manager" className="nav-button">Rout Manager</Link>
+          <button onClick={() => navigate(-1)} className="nav-button">Back</button>
+        </div>
+        <div className="date-time">
+          {new Date().toLocaleString()}
+        </div>
+      </div>
+
+      <div className="content">
+        <div className="sidebar">
+          <div className="routes-list">
+            <h2>Active Routes</h2>
+            <ul>
+              {routes.map(route => (
+                <li key={route.id} className="route-item" onClick={() => handleRouteClick(route)}>
+                  <span className={`status-icon ${route.status}`}></span>
+                  <span>{route.name}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="passenger-list">
+            <h2>Passengers</h2>
+            {selectedRoute ? (
+              <ul>
+                {selectedRoute.passengers.map((passenger, index) => (
+                  <li key={index} className="passenger-item">
+                    <span>{passenger.name}, {passenger.city}</span>
+                    <span className="phone-number">{passenger.phone}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>Select a route to see passengers</p>
+            )}
+          </div>
+        </div>
+
+        <div className="map-section">
+          <div ref={mapRef} className="map-container" style={{ height: '500px', width: '100%' }}></div>
+        </div>
+
+        <div className="filters-section">
+          <h2>Filters</h2>
+          <div className="filter-group">
+            <label>Route:</label>
+            <input type="text" placeholder="Enter route" />
+          </div>
+          <div className="filter-group">
+            <label>Vehicle:</label>
+            <input type="text" placeholder="Enter vehicle" />
+          </div>
+          <div className="filter-group">
+            <label>Passenger:</label>
+            <input type="text" placeholder="Enter passenger" />
+          </div>
+          <div className="filter-group">
+            <label>Direction:</label>
+            <select>
+              <option value="to-work">To Work</option>
+              <option value="home">Home</option>
+            </select>
+          </div>
+          <div className="filter-group">
+            <label>Time Interval:</label>
+            <input type="datetime-local" placeholder="Start" />
+            <input type="datetime-local" placeholder="End" style={{ marginTop: '10px' }} />
+          </div>
+          <div className="filter-group">
+            <label>Status:</label>
+            <select>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="in-progress">In Progress</option>
+              <option value="scheduled">Scheduled</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default MapOfRoutes;

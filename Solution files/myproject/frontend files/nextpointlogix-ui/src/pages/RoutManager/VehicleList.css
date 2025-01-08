@@ -1,0 +1,23 @@
+.vehicle-list {
+    padding: 10px;
+    background-color: #3a3a3a;
+    border: 3px solid #C0C0C0;
+    border-radius: 5px;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  
+  .vehicle-list h3 {
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  
+  .vehicle-list ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .vehicle-list li {
+    margin-bottom: 5px;
+  }
+  

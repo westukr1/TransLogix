@@ -1,0 +1,72 @@
+.rm-route-management-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Використовуємо всю висоту екрана */
+  background-color: #2c2c2c;
+  color: #fff;
+}
+
+.rm-route-management {
+  display: flex;
+  flex-grow: 1; /* Дозволяє колонкам займати весь доступний простір */
+  padding: 20px;
+}
+
+.rm-left-column, .rm-middle-column, .rm-center-column, .rm-right-column {
+  flex: 1; /* Робить всі колонки рівними за шириною */
+  padding: 10px;
+  background-color: #3a3a3a;
+  border: 3px solid #C0C0C0;
+  border-radius: 5px;
+  overflow-y: auto;
+  min-width: 0; /* Забезпечує правильне масштабування колонок */
+}
+
+.rm-route-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #2c2c2c;
+  border: 3px solid #C0C0C0;
+  color: #fff;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.rm-route-button:hover {
+  background-color: #3a3a3a;
+}
+
+.rm-passenger-list, .rm-drivers-list, .rm-vehicles-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.rm-passenger-list li, .rm-drivers-list li, .rm-vehicles-list li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.rm-passenger-list input, .rm-drivers-list input, .rm-vehicles-list input {
+  margin-right: 10px;
+}
+
+.rm-photo-preview {
+  width: 100%;
+  height: calc(40% - 20px); /* Висота 40% від висоти колонки з урахуванням відступу */
+  background-color: #3a3a3a;
+  border: 3px solid #C0C0C0;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.rm-photo-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 5px;
+}

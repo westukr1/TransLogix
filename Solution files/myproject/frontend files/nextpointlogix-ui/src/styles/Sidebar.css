@@ -1,0 +1,113 @@
+/* src/styles/Sidebar.css */
+.oi.sidebar {
+  width: 250px;
+  background-color: #2c2c2c; /* Темно-сірий колір */
+  padding: 20px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 3px solid #C0C0C0; /* Срібна рамка */
+}
+
+.oi.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.oi.sidebar-nav a {
+  color: #fff;
+  text-decoration: none;
+  margin: 15px 0;
+  font-size: 16px;
+  padding: 10px;
+  border: 3px solid #C0C0C0; /* Срібна рамка для навігаційних посилань */
+  border-radius: 5px;
+}
+
+.oi.sidebar-nav a:hover {
+  background-color: #3a3a3a; /* Трохи світліший відтінок при наведенні */
+}
+
+.oi.btn-coordinates {
+  width: 100%;
+  padding: 15px;
+  background-color: #2c2c2c; /* Темно-сірий колір */
+  border: 3px solid #C0C0C0; /* Срібна рамка */
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 20px;
+  border-radius: 5px;
+}
+
+.oi.btn-coordinates:hover {
+  background-color: #3a3a3a; /* Трохи світліший відтінок при наведенні */
+}
+
+  .oi.btn-coordinates:hover {
+    background-color: #3a6cb7;
+  }
+  /* src/styles/Sidebar.css */
+
+.oi.sidebar {
+  width: 200px;
+  background-color: #2c2c2c; /* Темно-сірий фон */
+  padding: 20px;
+  border: 3px solid #C0C0C0; /* Срібна рамка */
+  border-radius: 5px;
+}
+
+.oi.nav-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Відстань між елементами */
+}
+
+.oi.sidebar-item {
+  padding: 15px;
+  background-color: #2c2c2c;
+  border: 3px solid #C0C0C0; /* Срібна рамка */
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.oi.sidebar-item:hover {
+  background-color: #3a3a3a; /* Трохи світліший фон при наведенні */
+}
+.sidebar {
+  width: 250px;
+  background-color: #2c2c2c; /* Темно-сірий фон */
+  padding: 20px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 3px solid #C0C0C0; /* Срібна рамка */
+  border-radius: 5px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Відстань між кнопками */
+}
+
+.sidebar-item {
+  color: #fff;
+  text-decoration: none;
+  font-size: 16px;
+  padding: 10px;
+  background-color: #2c2c2c;
+  border: 3px solid #C0C0C0; /* Срібна рамка для кнопок */
+  border-radius: 5px;
+  transition: background-color 0.3s ease; /* Плавний перехід при наведенні */
+}
+
+.sidebar-item:hover {
+  background-color: #3a3a3a; /* Трохи світліший фон при наведенні */
+}

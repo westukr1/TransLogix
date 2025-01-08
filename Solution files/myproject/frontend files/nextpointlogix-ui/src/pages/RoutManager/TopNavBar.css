@@ -1,0 +1,48 @@
+.top-nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #2c2c2c;
+    border-bottom: 3px solid #C0C0C0;
+    width:auto;
+  }
+  
+  .logo img {
+    height: 60px;
+  }
+  
+  .nav-buttons .nav-button {
+    margin-right: 8px;
+    padding: 8px 12px;
+    background-color: #2c2c2c;
+    border: 3px solid #C0C0C0;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .nav-buttons .nav-button:hover {
+    background-color: #3a3a3a;
+  }
+  
+  .date-time {
+    display: flex;
+    align-items: center;
+  }
+  
+  .date-time label {
+    margin-right: 10px;
+    color: #fff;
+  }
+  
+  .date-time input {
+    margin-right: 20px;
+    padding: 5px;
+    border: 2px solid #C0C0C0;
+    border-radius: 5px;
+    background-color: #3a3a3a;
+    color: #fff;
+  }
+  

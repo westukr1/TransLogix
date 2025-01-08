@@ -1,0 +1,64 @@
+.planning-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Висота екрану браузера */
+  background-color: #2c2c2c;
+  color: #fff;
+  width: 100%;
+}
+
+.top-nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #2c2c2c;
+  border-bottom: 3px solid #C0C0C0;
+  height: 80px; /* Висота верхньої панелі */
+  width: 100%; /* Вся ширина екрану */
+}
+
+.planning-content {
+  display: flex;
+  flex: 1; /* Заповнює всю висоту, яка залишилась після верхньої панелі */
+  width: 100%; /* Вся ширина екрану */
+}
+
+.left-column {
+  flex: 0 0 25%; /* 25% ширини екрану */
+  padding: 10px;
+  background-color: #3a3a3a;
+  border: 3px solid #C0C0C0;
+  border-radius: 5px;
+  overflow-y: auto; /* Полоса прокрутки для довгих списків */
+  box-sizing: border-box;
+}
+
+.middle-column {
+  flex: 0 0 35%; /* 35% ширини екрану */
+  padding: 10px;
+  background-color: #3a3a3a;
+  border: 3px solid #C0C0C0;
+  border-radius: 5px;
+  overflow-y: auto; /* Полоса прокрутки для довгих списків */
+  box-sizing: border-box;
+}
+
+.center-column {
+  flex: 0 0 20%; /* 20% ширини екрану */
+  padding: 10px;
+  background-color: #3a3a3a;
+  border: 3px solid #C0C0C0;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.right-column {
+  flex: 0 0 20%; /* 20% ширини екрану */
+  padding: 10px;
+  background-color: #3a3a3a;
+  border: 3px solid #C0C0C0;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+ 

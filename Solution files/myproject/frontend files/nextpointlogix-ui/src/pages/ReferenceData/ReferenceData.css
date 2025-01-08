@@ -1,0 +1,131 @@
+/* ReferenceData.css */
+
+.two-column-template {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .top-nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #2c2c2c;
+    padding: 0 20px;
+    height: 80px;
+    border-bottom: 3px solid #C0C0C0;
+    box-sizing: border-box;
+  }
+  
+  .logo img {
+    height: 80px;
+    width: auto;
+  }
+  
+  .nav-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .nav-button {
+    padding: 10px 15px;
+    background-color: #2c2c2c;
+    border: 3px solid #C0C0C0;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .nav-button:hover {
+    background-color: #3a3a3a;
+  }
+  
+  .template21-content {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+  }
+  
+  .template21-left-column {
+    flex: 0 0 30%;
+    padding: 20px;
+    background-color: #3a3a3a;
+    border-right: 3px solid #C0C0C0;
+    box-sizing: border-box;
+  }
+  
+  .template21-left-column h2 {
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  
+  .template21-left-column ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .template21-left-column li {
+    margin-bottom: 10px;
+  }
+  
+  .template21-left-column a {
+    color: #fff;
+    text-decoration: none;
+  }
+  
+  .template21-left-column a:hover {
+    text-decoration: underline;
+  }
+  
+  .template21-right-column {
+    flex: 0 0 70%;
+    padding: 20px;
+    background-color: #2c2c2c;
+    box-sizing: border-box;
+  }
+  
+  .template21-right-column h2 {
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  
+  .reference-data-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .reference-data-buttons button {
+    padding: 10px 15px;
+    background-color: #2c2c2c;
+    border: 3px solid #C0C0C0;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .reference-data-buttons button:hover {
+    background-color: #3a3a3a;
+  }
+  .fuel-type-actions {
+    
+    margin-top: 5px;
+    margin-bottom: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .fuel-type-actions input {
+    width: 100px !important;
+    padding: 10px;
+    border: 2px solid #C0C0C0;
+    border-radius: 5px;
+  }

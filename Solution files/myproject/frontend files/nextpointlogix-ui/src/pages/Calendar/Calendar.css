@@ -1,0 +1,182 @@
+/* src/pages/Calendar/Calendar.css */
+
+.calendar-container {
+    padding: 20px;
+    background-color: #2c2c2c;
+    color: #fff;
+    border: 3px solid #C0C0C0;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Висота контейнера займає весь екран */
+    box-sizing: border-box; /* Враховує padding у висоті контейнера */
+  }
+  
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .calendar-title {
+    margin: 0 auto;
+  }
+  
+  .back-button {
+    padding: 10px 15px;
+    background-color: #2c2c2c;
+    border: 3px solid #C0C0C0;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+  }
+  
+  .back-button:hover {
+    background-color: #3a3a3a;
+  }
+  
+  .calendar-view-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .calendar-view-buttons button {
+    padding: 10px 15px;
+    background-color: #2c2c2c;
+    border: 3px solid #C0C0C0;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .calendar-view-buttons button:hover {
+    background-color: #3a3a3a;
+  }
+  
+  .calendar-content {
+    display: flex;
+    flex-grow: 1;
+    justify-content: space-between;
+  }
+  
+  .calendar-main {
+    flex: 3;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Вирівнювання таблиць до верху */
+    overflow-y: auto; /* Додаємо вертикальний скрол, якщо таблиця вища за контейнер */
+  }
+  
+  .calendar-filter-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 20px;
+  }
+  
+  .calendar-filter-buttons button {
+    padding: 10px 15px;
+    background-color: #2c2c2c;
+    border: 3px solid #C0C0C0;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .calendar-filter-buttons button:hover {
+    background-color: #3a3a3a;
+  }
+  
+  .month-table, .week-table {
+    width: 100%; /* Таблиця займає всю ширину контейнера */
+    max-width: 1200px; /* Обмежуємо максимальну ширину таблиці */
+    height: auto; /* Висота автоматично підлаштовується */
+    border-collapse: collapse;
+    text-align: center;
+    margin-top: 0; /* Вирівнювання по верху */
+  }
+  
+  .month-table {
+    aspect-ratio: 3 / 1; /* Налаштовуємо співвідношення сторін для плоскої таблиці місяця */
+  }
+  
+  .month-table th, .week-table th {
+    padding: 5px; /* Зменшуємо padding для компактності */
+    background-color: #3a3a3a;
+    border: 1px solid #C0C0C0;
+  }
+  
+  .month-table td, .week-table td {
+    padding: 5px; /* Зменшуємо padding для компактності */
+    border: 1px solid #C0C0C0;
+  }
+  
+  .weekend {
+    background-color: #444444; /* Виділення вихідних днів іншим відтінком */
+  }
+  
+  .days-header th {
+    background-color: #4b4b4b;
+  }
+  
+  .day-header {
+    margin-bottom: 20px;
+  }
+  
+  .cal-route-item {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #C0C0C0;
+    border-radius: 5px;
+  }
+  
+  .cal-route-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+  }
+  
+  .cal-route-buttons button {
+    padding: 5px 10px;
+    background-color: #2c2c2c;
+    border: 3px solid #C0C0C0;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .route-buttons button:hover {
+    background-color: #3a3a3a;
+  }
+  
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .calendar-header h3 {
+    margin: 0 20px;
+  }
+  
+  .calendar-header button {
+    padding: 10px 20px;
+    background-color: #2c2c2c;
+    border: 3px solid #C0C0C0;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .calendar-header button:hover {
+    background-color: #3a3a3a;
+  }
+  

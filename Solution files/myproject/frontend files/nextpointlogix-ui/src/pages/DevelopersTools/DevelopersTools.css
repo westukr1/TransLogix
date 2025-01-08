@@ -1,0 +1,98 @@
+/* DevelopersTools.css */
+
+.two-column-template {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .top-nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #2c2c2c;
+    padding: 0 20px; /* Прибрано вертикальні відступи, щоб логотип займав всю висоту */
+    height: 80px; /* Встановіть висоту панелі навігації */
+    border-bottom: 3px solid #C0C0C0;
+    box-sizing: border-box;
+  }
+  
+  .logo img {
+    height: 80px; /* Логотип займає всю висоту панелі */
+    width: auto; /* Збереження пропорцій */
+  }
+  
+  .date-time {
+    font-size: 20px;
+    color: #fff;
+  }
+  
+  .nav-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .nav-button {
+    padding: 10px 15px;
+    background-color: #2c2c2c;
+    border: 3px solid #C0C0C0;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .nav-button:hover {
+    background-color: #3a3a3a;
+  }
+  
+  .dt-content {
+    display: flex;
+    flex: 1;
+    height: 100vh;
+    color: #fff;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+  }
+  
+  .left-column {
+    flex: 0 0 30%; 
+    padding: 20px;
+    background-color: #3a3a3a;
+    border-right: 3px solid #C0C0C0;
+    box-sizing: border-box;
+  }
+  
+  .left-column h2 {
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  
+  .left-column ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .left-column li {
+    margin-bottom: 10px;
+  }
+  
+  .left-column a {
+    color: #fff;
+    text-decoration: none;
+  }
+  
+  .left-column a:hover {
+    text-decoration: underline;
+  }
+  
+  .right-column {
+    flex: 0 0 70%; /* Зміна ширини на 70% */
+    padding: 20px;
+    background-color: #2c2c2c;
+    box-sizing: border-box;
+  }
+  
