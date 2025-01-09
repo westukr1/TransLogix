@@ -24,7 +24,7 @@ const DriverEdit = () => {
   const [allVehicles, setAllVehicles] = useState([]);
   const [availableVehicles, setAvailableVehicles] = useState([]);
 
-  // test - fuckin vehicle fuck you
+  // test - fuckin vehicle fuck you fuck you 2 times
       useEffect(() => {
         // Fetch driver data
         fetch(`http://localhost:8000/api/drivers/${id}/`, {
