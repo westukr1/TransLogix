@@ -416,3 +416,57 @@ class RoutePoint(models.Model):
     def __str__(self):
         return f"Route {self.route.route_id} Point {self.sequence_number}: ({self.latitude}, {self.longitude})"
 
+# model for passengers requests for trips
+
+class PassengerTripRequest(models.Model):
+    passenger = models.ForeignKey(
+        'Passenger',
+        on_delete=models.CASCADE,
+        related_name='trip_requests'
+    )  # Ід Пасажира
+    created_at = models.DateTimeField(auto_now_add=True)  # Дата створення
+    updated_at = models.DateTimeField(auto_now=True)  # Дата останнього оновлення
+    endpoint_type = models.CharField(
+        max_length=50,
+        choices=[
+            ('pickup', 'Посадка'),
+            ('dropoff', 'Висадка'),
+            ('work', 'Робота')
+        ]
+    )  # Тип кінцевої точки
+    planned_datetime = models.DateTimeField()  # Планована дата і час посадки
+    pickup_point = models.ForeignKey(
+        'CoordinatePoint',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='pickup_trip_requests'
+    )  # Ід точки посадки
+    pickup_latitude = models.DecimalField(max_digits=9, decimal_places=6)  # Координати точки посадки (широта)
+    pickup_longitude = models.DecimalField(max_digits=9, decimal_places=6)  # Координати точки посадки (довгота)
+    dropoff_point = models.ForeignKey(
+        'CoordinatePoint',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='dropoff_trip_requests'
+    )  # Ід точки висадки
+    dropoff_latitude = models.DecimalField(max_digits=9, decimal_places=6)  # Координати точки висадки (широта)
+    dropoff_longitude = models.DecimalField(max_digits=9, decimal_places=6)  # Координати точки висадки (довгота)
+    direction = models.CharField(
+        max_length=10,
+        choices=[
+            ('to_work', 'На роботу'),
+            ('to_home', 'Додому')
+        ]
+    )  # Напрямок
+    is_active = models.BooleanField(default=True)  # Дійсна (так/ні)
+    comment = models.TextField(blank=True, null=True)  # Коментар
+
+    class Meta:
+        ordering = ['-created_at']  # Сортування за датою створення (останнє зверху)
+        verbose_name = "Passenger Trip Request"
+        verbose_name_plural = "Passenger Trip Requests"
+
+    def __str__(self):
+        return f"Trip Request by {self.passenger} on {self.planned_datetime.strftime('%Y-%m-%d %H:%M')} ({self.direction})"

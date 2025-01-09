@@ -364,7 +364,7 @@ def toggle_select_passenger(request, passenger_id):
 
 class PassengerListView(ListAPIView):
     queryset = Passenger.objects.all() # Запит на отримання всіх пасажирів
-    print(f"Fetched passengers: {queryset}")
+    #print(f"Fetched passengers: {queryset}")
     serializer_class = PassengerListSerializer  # Додаємо клас серіалізатора для обробки даних
     print(f"Serialized passengers data: {serializer_class.data}")
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
