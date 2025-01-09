@@ -190,11 +190,14 @@ class FuelLog(models.Model):
 
 
 class Route(models.Model):
-    route_id = models.BigIntegerField(primary_key=True)
-    origin = models.ForeignKey('City', related_name='route_origin', on_delete=models.SET_NULL, null=True)
-    destination = models.ForeignKey('City', related_name='route_destination', on_delete=models.SET_NULL, null=True)
-    start_point = models.ForeignKey('CoordinatePoint', related_name='route_start', on_delete=models.SET_NULL, null=True)
-    end_point = models.ForeignKey('CoordinatePoint', related_name='route_end', on_delete=models.SET_NULL, null=True)
+    route_id = models.AutoField(primary_key=True)
+    origin = models.ForeignKey('City', related_name='route_origin', on_delete=models.SET_NULL, null=True, db_column='origin_id')
+    destination = models.ForeignKey('City', related_name='route_destination', on_delete=models.SET_NULL, null=True,
+        db_column='destination_id')
+    start_point = models.ForeignKey('CoordinatePoint', related_name='route_start', on_delete=models.SET_NULL, null=True,
+        db_column='start_point_id')
+    end_point = models.ForeignKey('CoordinatePoint', related_name='route_end', on_delete=models.SET_NULL, null=True,
+        db_column='end_point_id')
     date = models.DateTimeField(default=timezone.now)
     distance = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
     estimated_time = models.IntegerField(default=0)
@@ -378,3 +381,38 @@ class FuelType(models.Model):
     class Meta:
         verbose_name = "Fuel Type"
         verbose_name_plural = "Fuel Types"
+
+# Таблиця в якійй відображається звязок маршруту і точок, що до нього належать
+class RoutePoint(models.Model):
+    route = models.ForeignKey(
+        'Route',
+        on_delete=models.CASCADE,
+        related_name='route_points',
+        db_column='route_id'
+    )  # Зв’язок із маршрутом
+    coordinate_point = models.ForeignKey(
+        'CoordinatePoint',
+        on_delete=models.CASCADE,
+        related_name='route_points',
+        db_column='coordinate_point_id'
+    )  # Зв’язок із точкою координат
+    sequence_number = models.IntegerField()  # Порядковий номер точки в маршруті
+    passenger = models.ForeignKey(
+        'Passenger',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='route_points'
+    )  # Пасажир, якому належить точка (опціонально)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)  # Зафіксована широта
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)  # Зафіксована довгота
+    recorded_at = models.DateTimeField(default=timezone.now)  # Час і дата фіксації точки
+
+    class Meta:
+        ordering = ['route', 'sequence_number']
+        verbose_name = "Route Point"
+        verbose_name_plural = "Route Points"
+
+    def __str__(self):
+        return f"Route {self.route.route_id} Point {self.sequence_number}: ({self.latitude}, {self.longitude})"
+
