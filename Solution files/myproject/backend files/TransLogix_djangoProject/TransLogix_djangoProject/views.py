@@ -12,13 +12,13 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .models import User, Route, Passenger, CoordinatePoint, Country, Region, District, City, Street, PassengerRoute, \
-    House, Driver, Vehicle, DriverVehicleAssignment, FuelType
+    House, Driver, Vehicle, DriverVehicleAssignment, FuelType, PassengerTripRequest
 from .serializers import (
     UserSerializer, RouteSerializer, CoordinatePointSerializer, DistrictSerializer,
     RegionSerializer, CountrySerializer, PassengerSerializer, PassengerListSerializer,
     PassengerDetailSerializer, CoordinatePointDetailSerializer, CoordinatePointCoordinateSerializer,
-    DriverSerializer, VehicleSerializer, DriverVehicleAssignmentSerializer, FuelTypeSerializer
-
+    DriverSerializer, VehicleSerializer, DriverVehicleAssignmentSerializer, FuelTypeSerializer,
+    PassengerTripRequestSerializer
 
 )
 import random
@@ -1178,3 +1178,22 @@ class RemoveDriverVehicleAssignmentView(APIView):
             return Response({'message': 'Assignment removed successfully.'}, status=200)
         except Exception as e:
             return Response({'error': str(e)}, status=500)
+
+
+class PassengerTripRequestListView(ListAPIView):
+    queryset = PassengerTripRequest.objects.all()
+    serializer_class = PassengerTripRequestSerializer
+
+    def get_queryset(self):
+        """
+        Можна додати фільтрацію за параметрами (наприклад, тільки активні заявки).
+        """
+        queryset = super().get_queryset()
+        is_active = self.request.query_params.get('is_active')
+        if is_active is not None:
+            queryset = queryset.filter(is_active=is_active)
+        return queryset
+
+class PassengerTripRequestCreateView(CreateAPIView):
+    queryset = PassengerTripRequest.objects.all()
+    serializer_class = PassengerTripRequestSerializer

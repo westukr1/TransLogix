@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import User, Route, CoordinatePoint, House, Driver, Vehicle
 from .models import  Country, Region, City, District, Street
 from .models import DriverVehicleAssignment, FuelType
-from .models import Passenger
+from .models import Passenger, PassengerTripRequest
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -622,4 +622,24 @@ class DriverVehicleAssignmentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class PassengerTripRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PassengerTripRequest
+        fields = [
+            'id',
+            'passenger',
+            'created_at',
+            'updated_at',
+            'endpoint_type',
+            'planned_datetime',
+            'pickup_point',
+            'pickup_latitude',
+            'pickup_longitude',
+            'dropoff_point',
+            'dropoff_latitude',
+            'dropoff_longitude',
+            'direction',
+            'is_active',
+            'comment'
+        ]
 

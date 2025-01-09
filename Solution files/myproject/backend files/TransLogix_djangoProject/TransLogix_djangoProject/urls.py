@@ -38,7 +38,7 @@ from django.contrib.auth.models import User
 from django.urls import path
 from . import views
 from .views import get_allowed_apps
-from .views import RouteListView
+from .views import RouteListView, PassengerTripRequestListView, PassengerTripRequestCreateView
 from .views import PassengerListView  # Додайте цей імпорт
 from .views import CoordinatePointListView
 from .views import verify_address
@@ -137,6 +137,9 @@ urlpatterns = [
     path('vehicles/<int:vehicle_id>/assign-driver/', assign_driver, name='assign-driver'),
     path('vehicles/<int:vehicle_id>/remove-driver/', remove_driver, name='remove-driver'),
     path('vehicles/<int:vehicle_id>/assigned-drivers/', get_assigned_drivers, name='assigned-drivers'),
+
+    path('api/passenger-trip-requests/', PassengerTripRequestListView.as_view(), name='passenger-trip-requests'),
+    path('api/passenger-trip-requests/create/', PassengerTripRequestCreateView.as_view(), name='create-passenger-trip-request'),
 
     path('', include(router.urls)),
 ]
