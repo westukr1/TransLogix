@@ -64,6 +64,7 @@ router.register(r'users', UserViewSet, basename='user')
 router.register(r'driver-vehicle-assignments', DriverVehicleAssignmentViewSet, basename='driver-vehicle-assignment')
 router.register(r'fuel-types', FuelTypeViewSet, basename='fuel-type')
 
+# Для створення пасажира go fuck yourself
 
 urlpatterns = [
     path('admin/', admin.site.urls),  # Вже існуючий маршрут
