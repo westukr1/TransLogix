@@ -32,12 +32,12 @@
 }
 
 .routes-list {
-  height: 100% !important;
+  /* height: 100% !important; */
   padding: 5px;
   border: 3px solid #c0c0c0;
   border-radius: 5px;
   background-color: #3a3a3a;
-  max-height: 410px;
+  height: 670px !important;
   /* Максимальна висота для списку маршрутів */
   overflow-y: auto; /* Додаємо вертикальну прокрутку */
 }

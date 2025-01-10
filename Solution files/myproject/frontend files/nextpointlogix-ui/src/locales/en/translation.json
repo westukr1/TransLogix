@@ -444,5 +444,25 @@
   "yesterday_today_tomorrow": "Yesterday, Today, Tomorrow",
   "week": "Week",
   "month": "Month",
-  "custom_interval": "Custom Interval"
+  "custom_interval": "Custom Interval",
+  "passenger_trip_requests": "Passengers requests",
+  "custom": "Custom",
+
+  "passenger_id": "Passenger ID",
+  "passenger_first_name": "First Name",
+  "passenger_last_name": "Last Name",
+
+  "pickup_city": "Pickup City",
+  "pickup_street": "Pickup Street",
+  "pickup_house": "Pickup House",
+  "pickup_latitude": "Pickup Latitude",
+  "pickup_longitude": "Pickup Longitude",
+  "dropoff_city": "Dropoff City",
+  "dropoff_street": "Dropoff Street",
+  "dropoff_house": "Dropoff House",
+  "dropoff_latitude": "Dropoff Latitude",
+  "dropoff_longitude": "Dropoff Longitude",
+  "passenger_phone": "Phone",
+
+  "loading": "Loading..."
 }

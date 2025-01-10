@@ -429,5 +429,25 @@
   "yesterday_today_tomorrow": "Вчора, Сьогодні, Завтра",
   "week": "Тиждень",
   "month": "Місяць",
-  "custom_interval": "Довільний інтервал"
+  "custom_interval": "Довільний інтервал",
+  "passenger_trip_requests": "Запити пасажирів",
+  "custom": "Довільно",
+
+  "passenger_id": "ІД пасажира",
+  "passenger_first_name": "Ім'я пасажира",
+  "passenger_last_name": "Прізвище пасажира",
+
+  "pickup_city": "Місто посадки",
+  "pickup_street": "Вулиця посадки",
+  "pickup_house": "Будинок посадки",
+  "pickup_latitude": "Широта посадки",
+  "pickup_longitude": "Довгота посадки",
+  "dropoff_city": "Місто висадки",
+  "dropoff_street": "Вулиця висадки",
+  "dropoff_house": "Будинок висадки",
+  "dropoff_latitude": "Широта висадки",
+  "dropoff_longitude": "Довгота висадки",
+  "passenger_phone": "Телефон",
+
+  "loading": "Завантаження..."
 }
