@@ -7,97 +7,77 @@ import "./PassengerTripRequestView.css";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
 
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import dayjs from "dayjs";
+
 const PassengerTripRequestView = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [viewMode, setViewMode] = useState("yesterday_today_tomorrow");
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-
-    setStartDate(yesterday.toISOString().split("T")[0]);
-    setEndDate(tomorrow.toISOString().split("T")[0]);
     fetchRequests();
-  }, []);
+  }, [startDate, endDate]);
 
   const fetchRequests = () => {
-    setLoading(true);
+    const start = dayjs(startDate).format("YYYY-MM-DD HH:mm:ss");
+    const end = dayjs(endDate).format("YYYY-MM-DD HH:mm:ss");
+
+    console.log("Відправка запиту на бекенд:", {
+      start_date: start,
+      end_date: end,
+    });
     axios
       .get("http://localhost:8000/api/passenger-trip-requests/", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           "Content-Type": "application/json",
         },
+        params: {
+          start_date: start,
+          end_date: end,
+        },
       })
       .then((response) => {
         setRequests(response.data);
         console.log("Passenger Trip Requests Data:", response.data);
       })
-      .catch((error) => console.error("Error fetching requests data:", error))
-      .finally(() => setLoading(false));
+      .catch((error) => console.error("Error fetching requests data:", error));
   };
-  const handleViewModeChange = (mode) => {
-    setViewMode(mode);
-    const today = new Date();
-    let newStartDate, newEndDate;
+  // const handleViewModeChange = (mode) => {
+  //   setViewMode(mode);
+  //   if (mode === "yesterday_today_tomorrow") {
+  //     const today = new Date();
+  //     const yesterday = new Date(today);
+  //     yesterday.setDate(today.getDate() - 1);
+  //     const tomorrow = new Date(today);
+  //     tomorrow.setDate(today.getDate() + 1);
+  //     setStartDate(yesterday);
+  //     setEndDate(tomorrow);
+  //     fetchRequests();
+  //   }
+  // };
 
-    switch (mode) {
-      case "day":
-        newStartDate = today;
-        newEndDate = today;
-        break;
-      case "yesterday_today_tomorrow":
-        newStartDate = new Date(today);
-        newStartDate.setDate(today.getDate() - 1);
-        newEndDate = new Date(today);
-        newEndDate.setDate(today.getDate() + 1);
-        break;
-      case "week":
-        newStartDate = new Date(today);
-        newStartDate.setDate(today.getDate() - 3);
-        newEndDate = new Date(today);
-        newEndDate.setDate(today.getDate() + 3);
-        break;
-      case "month":
-        newStartDate = new Date(today);
-        newStartDate.setDate(today.getDate() - 15);
-        newEndDate = new Date(today);
-        newEndDate.setDate(today.getDate() + 15);
-        break;
-      case "custom":
-        return; // У довільному режимі дати не змінюються
-      default:
-        return;
-    }
+  // const handleStartDateChange = (date) => {
+  //   if (date > endDate) {
+  //     setEndDate(new Date(date.getTime() + 24 * 60 * 60 * 1000));
+  //   }
+  //   setStartDate(date);
+  //   fetchRequests();
+  // };
 
-    setStartDate(newStartDate.toISOString().split("T")[0]);
-    setEndDate(newEndDate.toISOString().split("T")[0]);
-  };
-
-  const handleStartDateChange = (e) => {
-    const value = e.target.value;
-    setStartDate(value);
-    if (viewMode !== "custom") {
-      setEndDate(value);
-    }
-  };
-
-  const handleEndDateChange = (e) => {
-    const value = e.target.value;
-    setEndDate(value);
-    if (viewMode !== "custom") {
-      setStartDate(value);
-    }
-  };
+  // const handleEndDateChange = (date) => {
+  //   if (date < startDate) {
+  //     setStartDate(new Date(date.getTime() - 24 * 60 * 60 * 1000));
+  //   }
+  //   setEndDate(date);
+  //   fetchRequests();
+  // };
 
   const columnDefs = [
     { headerName: t("passenger_id"), field: "passenger_id", width: 100 },
@@ -118,6 +98,8 @@ const PassengerTripRequestView = () => {
       headerName: t("planned_datetime"),
       field: "planned_datetime",
       width: 170,
+      valueFormatter: (params) =>
+        dayjs(params.value).format("DD-MM-YYYY HH:mm"),
     },
     { headerName: t("pickup_city"), field: "pickup_city", width: 100 },
     { headerName: t("pickup_street"), field: "pickup_street", width: 150 },
@@ -169,26 +151,43 @@ const PassengerTripRequestView = () => {
           <button className="nav-button">{t("add_request")}</button>
         </div>
         <div className="template21-right-column">
-          {["day", "yesterday_today_tomorrow", "week", "month", "custom"].map(
-            (mode) => (
-              <label key={mode}>
-                <input
-                  type="radio"
-                  checked={viewMode === mode}
-                  onChange={() => handleViewModeChange(mode)}
-                />{" "}
-                {t(mode)}
-              </label>
-            )
-          )}
-
-          <div style={{ marginBottom: "10px" }}>
-            <input
-              type="date"
-              value={startDate}
-              onChange={handleStartDateChange}
+          <div style={{ display: "flex", gap: "10px" }}>
+            <h3
+              style={{
+                color: "white",
+                fontsize: "50%",
+              }}
+            >
+              Data range from -
+            </h3>
+            <DatePicker
+              selected={startDate}
+              onChange={(date) => setStartDate(date)}
+              selectsStart
+              startDate={startDate}
+              endDate={endDate}
+              dateFormat="dd-MM-yyyy"
+              calendarClassName="custom-datepicker"
             />
-            <input type="date" value={endDate} onChange={handleEndDateChange} />
+            <h3
+              style={{
+                color: "white",
+                fontsize: "50%",
+              }}
+            >
+              {" "}
+              - to -{" "}
+            </h3>
+            <DatePicker
+              selected={endDate}
+              onChange={(date) => setEndDate(date)}
+              selectsEnd
+              startDate={startDate}
+              endDate={endDate}
+              minDate={startDate}
+              dateFormat="dd-MM-yyyy"
+              calendarClassName="custom-datepicker"
+            />
             <input
               type="text"
               placeholder={t("search")}
@@ -196,15 +195,20 @@ const PassengerTripRequestView = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+
           <div
             className="ag-theme-alpine"
-            style={{ height: "calc(100vh - 160px)", width: "100%" }}
+            style={{
+              height: "600px",
+              width: "100%",
+            }}
           >
             <AgGridReact
               rowData={requests}
               columnDefs={columnDefs}
               pagination={true}
               paginationPageSize={10}
+              domLayout="autoHeight"
             />
           </div>
         </div>

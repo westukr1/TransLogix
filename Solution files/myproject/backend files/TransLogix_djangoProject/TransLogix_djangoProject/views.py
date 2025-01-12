@@ -35,6 +35,8 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import date
 from rest_framework.permissions import IsAuthenticated
+from django.utils.dateparse import parse_datetime
+from django.db.models import Q
 
 class CustomLoginView(APIView):
     permission_classes = [AllowAny]
@@ -1180,19 +1182,55 @@ class RemoveDriverVehicleAssignmentView(APIView):
             return Response({'error': str(e)}, status=500)
 
 
+from django.db.models import Q
+
+from django.db.models import Q
+
+from django.db.models import Q
+from datetime import datetime
+
 class PassengerTripRequestListView(ListAPIView):
     queryset = PassengerTripRequest.objects.all()
     serializer_class = PassengerTripRequestSerializer
 
     def get_queryset(self):
-        """
-        Можна додати фільтрацію за параметрами (наприклад, тільки активні заявки).
-        """
         queryset = super().get_queryset()
+
         is_active = self.request.query_params.get('is_active')
-        if is_active is not None:
-            queryset = queryset.filter(is_active=is_active)
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
+        # Обробка дати: перевірка і форматування
+        try:
+            if start_date:
+                start_date = datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S").date()
+            if end_date:
+                end_date = datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S").date()
+        except ValueError:
+            return queryset.none()  # Якщо формат неправильний — повертаємо порожній queryset
+
+        # Фільтрація за датою
+        if start_date and end_date:
+            queryset = queryset.filter(
+                planned_datetime__date__range=(start_date, end_date)
+            )
+        elif start_date:
+            queryset = queryset.filter(planned_datetime__date__gte=start_date)
+        elif end_date:
+            queryset = queryset.filter(planned_datetime__date__lte=end_date)
+
+        search_query = self.request.query_params.get('search')
+        if search_query:
+            queryset = queryset.filter(
+                Q(passenger__first_name__icontains=search_query) |
+                Q(passenger__last_name__icontains=search_query) |
+                Q(comment__icontains=search_query)
+            )
+
         return queryset
+
+
+
 
 class PassengerTripRequestCreateView(CreateAPIView):
     queryset = PassengerTripRequest.objects.all()

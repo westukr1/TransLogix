@@ -623,23 +623,53 @@ class DriverVehicleAssignmentSerializer(serializers.ModelSerializer):
 
 
 class PassengerTripRequestSerializer(serializers.ModelSerializer):
+    passenger_first_name = serializers.CharField(source='passenger.first_name', read_only=True)
+    passenger_last_name = serializers.CharField(source='passenger.last_name', read_only=True)
+    passenger_phone = serializers.CharField(source='passenger.phone_number', read_only=True)
+
+    pickup_city = serializers.CharField(source='pickup_point.city.name', read_only=True)
+    pickup_street = serializers.CharField(source='pickup_point.street.name', read_only=True)
+    pickup_house = serializers.CharField(source='pickup_point.house.house_number', read_only=True)
+    pickup_latitude = serializers.DecimalField(source='pickup_point.latitude', max_digits=9, decimal_places=6,
+                                               read_only=True)
+    pickup_longitude = serializers.DecimalField(source='pickup_point.longitude', max_digits=9, decimal_places=6,
+                                                read_only=True)
+
+    dropoff_city = serializers.CharField(source='dropoff_point.city.name', read_only=True)
+    dropoff_street = serializers.CharField(source='dropoff_point.street.name', read_only=True)
+    dropoff_house = serializers.CharField(source='dropoff_point.house.house_number', read_only=True)
+    dropoff_latitude = serializers.DecimalField(source='dropoff_point.latitude', max_digits=9, decimal_places=6,
+                                                read_only=True)
+    dropoff_longitude = serializers.DecimalField(source='dropoff_point.longitude', max_digits=9, decimal_places=6,
+                                                 read_only=True)
+
     class Meta:
         model = PassengerTripRequest
         fields = [
-            'id',
+            'passenger_id',
             'passenger',
+            'passenger_first_name',
+            'passenger_last_name',
+            'passenger_phone',
             'created_at',
             'updated_at',
             'endpoint_type',
             'planned_datetime',
             'pickup_point',
+            'pickup_city',
+            'pickup_street',
+            'pickup_house',
             'pickup_latitude',
             'pickup_longitude',
             'dropoff_point',
+            'dropoff_city',
+            'dropoff_street',
+            'dropoff_house',
             'dropoff_latitude',
             'dropoff_longitude',
             'direction',
             'is_active',
-            'comment'
+            'comment',
         ]
+
 

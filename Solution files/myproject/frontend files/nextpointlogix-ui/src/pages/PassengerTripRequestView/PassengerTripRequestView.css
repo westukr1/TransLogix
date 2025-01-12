@@ -41,7 +41,7 @@
 }
 
 .nav-button:hover {
-  background-color: #45a049;
+  background-color: #424242;
 }
 
 .template21-content {
@@ -52,7 +52,7 @@
 }
 
 .template21-left-column {
-  flex: 0 0 25%;
+  flex: 0 0 15% !important;
   padding: 20px;
   background-color: #3a3a3a;
   border-right: 3px solid #c0c0c0;
@@ -70,7 +70,7 @@
 }
 
 .template21-right-column {
-  flex: 1;
+  flex: 0 0 85% !important;
 
   padding: 20px;
   background-color: #2c2c2c;
@@ -80,23 +80,35 @@
 /* Стилі для AG Grid */
 .ag-theme-alpine {
   width: 100%;
-  height: 100%;
+  height: 600px !important;
 }
 
-/* Стилі для чекбоксів і полів пошуку */
-input[type="date"],
-input[type="text"] {
-  padding: 8px;
-  margin-right: 10px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  color: #000; /* Чорний колір тексту в полі пошуку */
-  background-color: #fff; /* Білий фон поля пошуку */
-}
 label {
   color: #fff;
   margin-right: 10px;
 }
 input[type="radio"] {
   margin-right: 5px;
+}
+/* Зміна кольору назви місяця в DatePicker */
+.custom-datepicker .react-datepicker__current-month,
+.custom-datepicker .react-datepicker-time__header,
+.custom-datepicker .react-datepicker-year-header {
+  color: #000 !important; /* Чорний текст */
+  font-weight: bold;
+}
+
+/* Зміна кольору назв днів тижня */
+.custom-datepicker .react-datepicker__day-name,
+.custom-datepicker .react-datepicker__day,
+.custom-datepicker__time-name {
+  color: #000 !important; /* Чорний текст */
+}
+
+/* Тло календаря */
+.custom-datepicker {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
