@@ -111,6 +111,14 @@ const PassengerSelectView = () => {
           </button>
         </div>
         <div className="template21-right-column">
+          <h1
+            style={{
+              color: "white",
+              fontsize: "100%",
+            }}
+          >
+            {t("select_passenger")}
+          </h1>
           <input
             type="text"
             placeholder={t("search")}

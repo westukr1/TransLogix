@@ -464,5 +464,6 @@
   "dropoff_longitude": "Dropoff Longitude",
   "passenger_phone": "Phone",
 
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "select_passenger": "Select passenger"
 }

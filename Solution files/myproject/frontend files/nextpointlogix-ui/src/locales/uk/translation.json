@@ -449,5 +449,6 @@
   "dropoff_longitude": "Довгота висадки",
   "passenger_phone": "Телефон",
 
-  "loading": "Завантаження..."
+  "loading": "Завантаження...",
+  "select_passenger": "Оберіть пасажира"
 }
