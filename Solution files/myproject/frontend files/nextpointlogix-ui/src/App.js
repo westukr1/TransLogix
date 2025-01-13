@@ -11,7 +11,7 @@ import VehicleRegistration from "./pages/VehicleAndDriverRegistration/VehicleReg
 import DriverRegistration from "./pages/VehicleAndDriverRegistration/DriverRegistration";
 import TransportRequest from "./pages/TransportRequests/TransportRequest";
 import DevelopersTools from "./pages/DevelopersTools/DevelopersTools";
-import PassengerTripRequestView from "./pages/PassengerTripRequestView/PassengerTripRequestView";
+
 // Ваш новий компонент
 
 // Імпорт шаблонів
@@ -32,6 +32,10 @@ import DriverVehicleManagement from "./pages/DriverAndVehicleManagement/DriverVe
 import NewAssignmentOrder from "./pages/DriverAndVehicleManagement/NewAssignmentOrder";
 import VehicleEdit from "./pages/DriverAndVehicleManagement/VehicleEdit";
 import DriverEdit from "./pages/DriverAndVehicleManagement/DriverEdit";
+import NewPassengersTripRequest from "./pages/PassengerTripRequestView/NewPassengersTripRequest";
+
+import PassengerTripRequestView from "./pages/PassengerTripRequestView/PassengerTripRequestView";
+import PassengerSelectView from "./pages/PassengerTripRequestView/PassengerSelectView";
 
 function App() {
   return (
@@ -96,6 +100,11 @@ function App() {
             path="/passenger-trip-requests"
             element={<PassengerTripRequestView />}
           />
+          <Route
+            path="/new-passenger-trip-request"
+            element={<NewPassengersTripRequest />}
+          />{" "}
+          <Route path="/passenger-select" element={<PassengerSelectView />} />
         </Routes>
       </div>
     </Router>

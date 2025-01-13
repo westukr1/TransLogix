@@ -112,3 +112,28 @@ input[type="radio"] {
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
+.pass-request-registration-fields {
+  color: #fff;
+  margin-top: 20px;
+}
+
+.pass-request-registration-fields label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.pass-request-registration-fields input {
+  width: 60%;
+  padding: 5px;
+  margin-bottom: 10px;
+  border: 1px solid #c0c0c0;
+  border-radius: 3px;
+}
+
+.pass-request-registration-fields textarea {
+  width: 60%;
+  padding: 5px;
+  margin-bottom: 10px;
+  border: 1px solid #c0c0c0;
+  border-radius: 3px;
+}

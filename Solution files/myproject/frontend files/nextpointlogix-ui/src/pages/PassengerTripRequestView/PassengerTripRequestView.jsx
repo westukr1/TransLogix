@@ -148,7 +148,12 @@ const PassengerTripRequestView = () => {
           <button onClick={fetchRequests} className="nav-button">
             {t("update_table")}
           </button>
-          <button className="nav-button">{t("add_request")}</button>
+          <button
+            className="nav-button"
+            onClick={() => navigate("/passenger-select")}
+          >
+            {t("add_request")}
+          </button>
         </div>
         <div className="template21-right-column">
           <div style={{ display: "flex", gap: "10px" }}>
