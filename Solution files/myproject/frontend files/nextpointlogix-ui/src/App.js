@@ -36,6 +36,7 @@ import NewPassengersTripRequest from "./pages/PassengerTripRequestView/NewPassen
 
 import PassengerTripRequestView from "./pages/PassengerTripRequestView/PassengerTripRequestView";
 import PassengerSelectView from "./pages/PassengerTripRequestView/PassengerSelectView";
+import PointsSelectView from "./pages/PassengerTripRequestView/PointsSelectView";
 
 function App() {
   return (
@@ -105,6 +106,7 @@ function App() {
             element={<NewPassengersTripRequest />}
           />{" "}
           <Route path="/passenger-select" element={<PassengerSelectView />} />
+          <Route path="/points-select" element={<PointsSelectView />} />
         </Routes>
       </div>
     </Router>

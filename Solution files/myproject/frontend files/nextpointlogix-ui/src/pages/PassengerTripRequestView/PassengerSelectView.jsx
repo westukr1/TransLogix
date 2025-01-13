@@ -64,7 +64,7 @@ const PassengerSelectView = () => {
       cellRenderer: (params) => (
         <button
           className="nav-button"
-          onClick={() => handleSelectPassenger(params.data.id)}
+          onClick={() => navigate(`/points-select?id=${params.data.id}`)}
         >
           {t("select")}
         </button>

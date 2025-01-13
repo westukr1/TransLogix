@@ -465,5 +465,14 @@
   "passenger_phone": "Phone",
 
   "loading": "Loading...",
-  "select_passenger": "Select passenger"
+  "select_passenger": "Select passenger",
+  "trip_request_for_passenger": "New trip reques for the passenger",
+  "to_work": "To work",
+  "to_home": "To home",
+  "direction_of_travel": "direction of travel",
+  "Preferred_time_of_departure_home": "Preferred time of departure home",
+  "Preferred_time_of_arrival_at_work": "Preferred time of arrival at work",
+  "select_pickup_points": "Select pickup point",
+  "select_work_points": "Select work point",
+  "select_dropoff_points": "Select pickup point"
 }
