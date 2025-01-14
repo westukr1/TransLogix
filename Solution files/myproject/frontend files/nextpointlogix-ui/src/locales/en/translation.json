@@ -474,5 +474,6 @@
   "Preferred_time_of_arrival_at_work": "Preferred time of arrival at work",
   "select_pickup_points": "Select pickup point",
   "select_work_points": "Select work point",
-  "select_dropoff_points": "Select pickup point"
+  "select_dropoff_points": "Select pickup point",
+  "edit_passenger_data": "Edit passenger's data"
 }

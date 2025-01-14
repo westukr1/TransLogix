@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
-import { useTranslation } from 'react-i18next';
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
+import { useTranslation } from "react-i18next";
 
-const libraries = ['places'];
+const libraries = ["places"];
 
 const MapVerification = () => {
   const { t } = useTranslation();
@@ -16,22 +16,27 @@ const MapVerification = () => {
   const [latitude, setLatitude] = useState(initialLatitude);
   const [longitude, setLongitude] = useState(initialLongitude);
   const [markerPosition, setMarkerPosition] = useState(null);
-  const [apiKey, setApiKey] = useState(localStorage.getItem('google_maps_api_key') || '');
+  const [apiKey, setApiKey] = useState(
+    localStorage.getItem("google_maps_api_key") || ""
+  );
   const [mapRef, setMapRef] = useState(null);
 
   useEffect(() => {
     if (!apiKey) {
       const fetchGoogleMapsKey = async () => {
         try {
-          const token = localStorage.getItem('access_token');
-          const response = await fetch('http://localhost:8000/api/google-maps-key/', {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const token = localStorage.getItem("access_token");
+          const response = await fetch(
+            "http://localhost:8000/api/google-maps-key/",
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
           const data = await response.json();
           setApiKey(data.google_maps_api_key);
-          localStorage.setItem('google_maps_api_key', data.google_maps_api_key);
+          localStorage.setItem("google_maps_api_key", data.google_maps_api_key);
         } catch (error) {
-          console.error(t('error_fetching_key'), error);
+          console.error(t("error_fetching_key"), error);
         }
       };
       fetchGoogleMapsKey();
@@ -55,12 +60,12 @@ const MapVerification = () => {
 
   const handleSaveCoordinates = async () => {
     if (!coordinatePointId) {
-      console.error(t('no_coordinate_point_id'));
+      console.error(t("no_coordinate_point_id"));
       return;
     }
 
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem("access_token");
       const updatedCoordinates = {
         latitude: parseFloat(latitude.toFixed(6)),
         longitude: parseFloat(longitude.toFixed(6)),
@@ -69,20 +74,24 @@ const MapVerification = () => {
       await fetch(
         `http://localhost:8000/api/coordinate-points/${coordinatePointId}/update-coordinates/`,
         {
-          method: 'PUT',
+          method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(updatedCoordinates),
         }
       );
 
-      alert(`${t('saved_coordinates')} - ${t('latitude')}: ${latitude}, ${t('longitude')}: ${longitude}`);
+      alert(
+        `${t("saved_coordinates")} - ${t("latitude")}: ${latitude}, ${t(
+          "longitude"
+        )}: ${longitude}`
+      );
       navigate(-1);
     } catch (error) {
-      console.error(t('error_saving_coordinates'), error);
-      alert(t('failed_save_coordinates'));
+      console.error(t("error_saving_coordinates"), error);
+      alert(t("failed_save_coordinates"));
     }
   };
 
@@ -113,42 +122,79 @@ const MapVerification = () => {
       setLatitude(markerPosition.lat);
       setLongitude(markerPosition.lng);
     } else {
-      alert(t('place_marker_first'));
+      alert(t("place_marker_first"));
     }
   };
 
   const mapContainerStyle = {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   };
 
   if (!apiKey || !isLoaded) {
-    return <p>{t('loading_google_maps')}</p>;
+    return <p>{t("loading_google_maps")}</p>;
   }
 
   return (
-    <div className="map-verification" style={{ display: 'flex' }}>
-      <div className="sidebar" style={{ width: '15%', padding: '10px', borderRight: '1px solid #ccc' }}>
-        <h3>{t('verification_coordinates')}</h3>
-        <p>{t('latitude')}: {initialLatitude.toFixed(6)}</p>
-        <p>{t('longitude')}: {initialLongitude.toFixed(6)}</p>
-        <h4>{t('marker_coordinates')}</h4>
+    <div className="map-verification" style={{ display: "flex" }}>
+      <div
+        className="sidebar"
+        style={{
+          width: "15%",
+          padding: "10px",
+          borderRight: "1px solid #ccc",
+          height: "900px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start", // Вирівнює вміст по верхньому краю
+          justifyContent: "flex-start", // Додатково фіксує вирівнювання
+        }}
+      >
+        <h3>{t("verification_coordinates")}</h3>
+        <p>
+          {t("latitude")}: {initialLatitude.toFixed(6)}
+          <br />
+          {t("longitude")}: {initialLongitude.toFixed(6)}
+        </p>
+
+        <h4>{t("marker_coordinates")}</h4>
         {markerPosition ? (
           <>
-            <p>{t('latitude')}: {markerPosition.lat.toFixed(6)}</p>
-            <p>{t('longitude')}: {markerPosition.lng.toFixed(6)}</p>
+            <p>
+              {t("latitude")}: {markerPosition.lat.toFixed(6)} <br />
+              {t("longitude")}: {markerPosition.lng.toFixed(6)}
+            </p>
           </>
         ) : (
-          <p>{t('no_marker_placed')}</p>
+          <p>{t("no_marker_placed")}</p>
         )}
       </div>
-      <div className="map-container" style={{ width: '75%', position: 'relative' }}>
-        <div className="actions" style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 10, background: '#fff', padding: '10px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.3)' }}>
-          <button onClick={centerMap}>{t('center_map')}</button>
-          <button onClick={placeMarker}>{t('place_marker')}</button>
-          <button onClick={setNewCoordinates}>{t('set_new_coordinates')}</button>
-          <button onClick={handleSaveCoordinates}>{t('save_coordinates')}</button>
-          <button onClick={handleExit}>{t('exit')}</button>
+      <div
+        className="map-container"
+        style={{ width: "85%", position: "relative", height: "900px" }}
+      >
+        <div
+          className="actions"
+          style={{
+            position: "absolute",
+            top: "10px",
+            left: "10px",
+            zIndex: 10,
+            background: "#fff",
+            padding: "10px",
+            borderRadius: "5px",
+            boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
+          }}
+        >
+          <button onClick={centerMap}>{t("center_map")}</button>
+          <button onClick={placeMarker}>{t("place_marker")}</button>
+          <button onClick={setNewCoordinates}>
+            {t("set_new_coordinates")}
+          </button>
+          <button onClick={handleSaveCoordinates}>
+            {t("save_coordinates")}
+          </button>
+          <button onClick={handleExit}>{t("exit")}</button>
         </div>
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
@@ -171,7 +217,7 @@ const MapVerification = () => {
                 const newLng = event.latLng.lng();
                 setMarkerPosition({ lat: newLat, lng: newLng });
               }}
-              title={t('draggable_marker')}
+              title={t("draggable_marker")}
             />
           )}
         </GoogleMap>

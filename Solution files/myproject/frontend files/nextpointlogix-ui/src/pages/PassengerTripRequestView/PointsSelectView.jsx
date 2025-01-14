@@ -5,6 +5,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./PassengerTripRequestView.css";
 import { useTranslation } from "react-i18next";
+import axios from "axios";
 
 const PointsSelectView = () => {
   const { t } = useTranslation();
@@ -16,6 +17,28 @@ const PointsSelectView = () => {
   const [activeTab, setActiveTab] = useState("work");
   const [arrivalTime, setArrivalTime] = useState("");
   const [departureTime, setDepartureTime] = useState("");
+  const [apiKey, setApiKey] = useState("");
+  const [isApiKeyLoaded, setIsApiKeyLoaded] = useState(false);
+
+  useEffect(() => {
+    const fetchGoogleMapsKey = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const response = await axios.get(
+          "http://localhost:8000/api/google-maps-key/",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setApiKey(response.data.google_maps_api_key);
+        setIsApiKeyLoaded(true);
+      } catch (error) {
+        console.error("Помилка при отриманні ключа Google Maps:", error);
+      }
+    };
+
+    fetchGoogleMapsKey();
+  }, []);
 
   useEffect(() => {
     if (passengerId) {
@@ -47,7 +70,8 @@ const PointsSelectView = () => {
     const token = localStorage.getItem("access_token");
     try {
       const response = await fetch(
-        `http://localhost:8000/api/passengers/${passengerId}/coordinates/`,
+        `http://localhost:8000/api/passenger/${passengerId}/addresses/`,
+
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -56,7 +80,8 @@ const PointsSelectView = () => {
         throw new Error("Failed to fetch coordinate points");
       }
       const data = await response.json();
-      setCoordinatePoints(data);
+      console.log("Received addresses:", data);
+      setCoordinatePoints(data.filter((point) => point.is_active));
     } catch (error) {
       console.error("Error fetching coordinate points:", error);
     }
@@ -70,6 +95,18 @@ const PointsSelectView = () => {
     { headerName: t("House Number"), field: "house_number", width: 100 },
     { headerName: t("Latitude"), field: "latitude", width: 150 },
     { headerName: t("Longitude"), field: "longitude", width: 150 },
+    { headerName: t("Country"), field: "country", width: 150 },
+    { headerName: t("Region"), field: "region", width: 150 },
+    { headerName: t("District"), field: "district", width: 150 },
+    {
+      headerName: t("Owner First Name"),
+      field: "owner_first_name",
+      width: 150,
+    },
+    { headerName: t("Owner Last Name"), field: "owner_last_name", width: 150 },
+    { headerName: t("Owner ID"), field: "owner_id", width: 100 },
+    { headerName: t("Owner Type"), field: "owner_type", width: 100 },
+    { headerName: t("Is Active"), field: "is_active", width: 100 },
   ];
   const getTabStyle = (tab) => ({
     transform: activeTab === tab ? "scale(1.3)" : "scale(1)",
@@ -101,6 +138,31 @@ const PointsSelectView = () => {
       <div className="template21-content">
         <div className="template21-left-column">
           <h2>{t("menu")}</h2>
+          <button
+            onClick={() =>
+              navigate(`/edit-passenger/${passengerId}`, {
+                state: { passengerData },
+              })
+            }
+            className="nav-button"
+          >
+            {t("edit_passenger_data")}
+          </button>
+          <button
+            onClick={() =>
+              navigate(`/edit-passenger-addresses`, {
+                state: {
+                  passengerId: passengerData.id,
+                  pickupAddresses: passengerData.pickup_addresses,
+                  dropoffAddresses: passengerData.dropoff_addresses,
+                  workAddresses: passengerData.work_addresses,
+                },
+              })
+            }
+            className="nav-button"
+          >
+            {t("edit_passenger_addresses")}
+          </button>
         </div>
         <div className="template21-right-column">
           <h1
@@ -224,11 +286,11 @@ const PointsSelectView = () => {
                   paginationPageSize={5}
                 />
                 <h1 style={{ color: "white", fontSize: "100%" }}>
-                  {t("select_pickup_points")}
+                  {t("select_dropoff_points")}
                 </h1>
                 <AgGridReact
-                  rowData={coordinatePoints.filter(
-                    (point) => point.point_type === "pickup"
+                  rowData={coordinatePoints.filter((point) =>
+                    ["pickup", "dropoff"].includes(point.point_type)
                   )}
                   columnDefs={columnDefs}
                   pagination={true}

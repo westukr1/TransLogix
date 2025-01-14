@@ -459,5 +459,6 @@
   "Preferred_time_of_arrival_at_work": "Бажаний час прибуття на роботу",
   "select_pickup_points": "Оберіть точку посадки",
   "select_work_points": "Оберіть точку роботи",
-  "select_dropoff_points": "Оберіть точку висадки"
+  "select_dropoff_points": "Оберіть точку висадки",
+  "edit_passenger_data": "Редагувати дані пасажира"
 }
