@@ -475,5 +475,7 @@
   "select_pickup_points": "Select pickup point",
   "select_work_points": "Select work point",
   "select_dropoff_points": "Select pickup point",
-  "edit_passenger_data": "Edit passenger's data"
+  "edit_passenger_data": "Edit passenger's data",
+  "create_trip_requests": " Create trip requests",
+  "request_create_warning": "To create a request for passenger transportation, it is necessary to select : the direction, desired time of arrival at work and time of departure from work, pick-up point for work, work address, drop-off point after leaving work. You can also plan a one-way trip. "
 }

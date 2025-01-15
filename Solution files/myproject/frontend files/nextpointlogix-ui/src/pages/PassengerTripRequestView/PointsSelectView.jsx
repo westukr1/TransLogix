@@ -16,9 +16,16 @@ const PointsSelectView = () => {
   const [coordinatePoints, setCoordinatePoints] = useState([]);
   const [activeTab, setActiveTab] = useState("work");
   const [arrivalTime, setArrivalTime] = useState("");
+  const [selectedPointId, setSelectedPointId] = useState(null);
   const [departureTime, setDepartureTime] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [isApiKeyLoaded, setIsApiKeyLoaded] = useState(false);
+  const [selectedPoints, setSelectedPoints] = useState({
+    pickupHomeToWork: null,
+    dropoffAtWork: null,
+    pickupWorkToHome: null,
+    dropoffAtHome: null,
+  });
 
   useEffect(() => {
     const fetchGoogleMapsKey = async () => {
@@ -86,8 +93,38 @@ const PointsSelectView = () => {
       console.error("Error fetching coordinate points:", error);
     }
   };
+  const handleCheckboxChange = (category, pointId) => {
+    setSelectedPoints((prev) => ({
+      ...prev,
+      [category]: prev[category] === pointId ? null : pointId,
+    }));
+  };
 
-  const columnDefs = [
+  const createCheckboxColumn = (category) => ({
+    headerName: t("Select"),
+    field: category,
+    width: 60,
+    cellRenderer: (params) => (
+      <input
+        type="checkbox"
+        checked={selectedPoints[category] === params.data.id}
+        onChange={() => handleCheckboxChange(category, params.data.id)}
+      />
+    ),
+  });
+  const baseColumnDefs = [
+    // {
+    //   headerName: "",
+    //   field: "select",
+    //   width: 50,
+    //   cellRenderer: (params) => (
+    //     <input
+    //       type="checkbox"
+    //       checked={selectedPointId === params.data.id}
+    //       onChange={() => setSelectedPointId(params.data.id)}
+    //     />
+    //   ),
+    // },
     { headerName: t("ID"), field: "id", width: 60 },
     { headerName: t("Type"), field: "point_type", width: 100 },
     { headerName: t("City"), field: "city", width: 150 },
@@ -119,6 +156,39 @@ const PointsSelectView = () => {
     color: activeTab === tab ? "white" : "black",
     borderRadius: "5px",
   });
+  const createTripRequests = () => {
+    const homeToWorkTrip = {
+      pickup: selectedPoints["pickupHomeToWork"],
+      dropoff: selectedPoints["dropoffAtWork"],
+    };
+    const workToHomeTrip = {
+      pickup: selectedPoints["pickupWorkToHome"],
+      dropoff: selectedPoints["dropoffAtHome"],
+    };
+
+    if (homeToWorkTrip.pickup && homeToWorkTrip.dropoff) {
+      console.log("Home to Work Trip:", homeToWorkTrip);
+    } else {
+      console.warn("Incomplete Home to Work trip");
+    }
+
+    if (workToHomeTrip.pickup && workToHomeTrip.dropoff) {
+      console.log("Work to Home Trip:", workToHomeTrip);
+    } else {
+      console.warn("Incomplete Work to Home trip");
+    }
+  };
+  const isTripDataComplete = () => {
+    const homeToWorkComplete =
+      selectedPoints.pickupHomeToWork &&
+      selectedPoints.dropoffAtWork &&
+      arrivalTime;
+    const workToHomeComplete =
+      selectedPoints.pickupWorkToHome &&
+      selectedPoints.dropoffAtHome &&
+      departureTime;
+    return homeToWorkComplete || workToHomeComplete;
+  };
   return (
     <div className="two-column-template">
       <div className="top-nav-bar">
@@ -163,6 +233,20 @@ const PointsSelectView = () => {
           >
             {t("edit_passenger_addresses")}
           </button>
+          <button
+            className="nav-button"
+            onClick={createTripRequests}
+            disabled={!isTripDataComplete()}
+            style={{
+              padding: "10px 20px",
+              fontSize: "16px",
+              backgroundColor: isTripDataComplete() ? "#4CAF50" : "#D3D3D3",
+              color: isTripDataComplete() ? "white" : "#888",
+              cursor: isTripDataComplete() ? "pointer" : "not-allowed",
+            }}
+          >
+            {t("create_trip_requests")}
+          </button>
         </div>
         <div className="template21-right-column">
           <h1
@@ -190,6 +274,15 @@ const PointsSelectView = () => {
           >
             {t("email")}: {passengerData.email}
           </p>
+          <p
+            style={{
+              fontSize: "18px",
+
+              color: isTripDataComplete() ? "#4CAF50" : "#FF0000",
+            }}
+          >
+            {t("request_create_warning")}
+          </p>
           <h1
             style={{
               color: "white",
@@ -199,106 +292,124 @@ const PointsSelectView = () => {
             {" "}
             {t("direction_of_travel")}{" "}
           </h1>
-          <div className="tabs">
-            <button
-              style={getTabStyle("work")}
-              onClick={() => setActiveTab("work")}
-            >
-              {t("to_work")}
-            </button>
-            <button
-              style={getTabStyle("home")}
-              onClick={() => setActiveTab("home")}
-            >
-              {t("to_home")}
-            </button>
+          <div>
+            <div>
+              <div className="tabs">
+                <button
+                  style={getTabStyle("work")}
+                  onClick={() => setActiveTab("work")}
+                >
+                  {t("to_work")}
+                </button>
+                <button
+                  style={getTabStyle("home")}
+                  onClick={() => setActiveTab("home")}
+                >
+                  {t("to_home")}
+                </button>
+              </div>
+              {activeTab === "work" ? (
+                <>
+                  <h1 style={{ color: "white", fontSize: "100%" }}>
+                    {t("Preferred_time_of_arrival_at_work")}
+                  </h1>
+                  <input
+                    type="datetime-local"
+                    value={arrivalTime}
+                    onChange={(e) => setArrivalTime(e.target.value)}
+                    placeholder={t("arrival_time")}
+                    className="form-control"
+                  />
+                  <h1 style={{ color: "white", fontSize: "100%" }}>
+                    {t("select_pickup_points")}
+                  </h1>
+                  <div
+                    className="psv-ag-theme-alpine"
+                    style={{ height: "200px", width: "100%" }}
+                  >
+                    <AgGridReact
+                      rowData={coordinatePoints.filter(
+                        (point) => point.point_type === "pickup"
+                      )}
+                      columnDefs={[
+                        createCheckboxColumn("pickupHomeToWork"),
+                        ...baseColumnDefs,
+                      ]}
+                      pagination={true}
+                      paginationPageSize={5}
+                    />
+                  </div>
+                  <h1 style={{ color: "white", fontSize: "100%" }}>
+                    {t("select_work_points")}
+                  </h1>
+                  <div
+                    className="psv-ag-theme-alpine"
+                    style={{ height: "200px", width: "100%" }}
+                  >
+                    <AgGridReact
+                      rowData={coordinatePoints.filter(
+                        (point) => point.point_type === "work"
+                      )}
+                      columnDefs={[
+                        createCheckboxColumn("dropoffAtWork"),
+                        ...baseColumnDefs,
+                      ]}
+                      pagination={true}
+                      paginationPageSize={5}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h1 style={{ color: "white", fontSize: "100%" }}>
+                    {t("Preferred_time_of_departure_home")}
+                  </h1>
+                  <input
+                    type="datetime-local"
+                    value={departureTime}
+                    onChange={(e) => setDepartureTime(e.target.value)}
+                    placeholder={t("departure_time")}
+                    className="form-control"
+                  />
+                  <h1 style={{ color: "white", fontSize: "100%" }}>
+                    {t("select_work_points")}
+                  </h1>
+                  <div
+                    className="psv-ag-theme-alpine"
+                    style={{ height: "200px", width: "100%" }}
+                  >
+                    <AgGridReact
+                      rowData={coordinatePoints.filter(
+                        (point) => point.point_type === "work"
+                      )}
+                      columnDefs={[
+                        createCheckboxColumn("pickupWorkToHome"),
+                        ...baseColumnDefs,
+                      ]}
+                      pagination={true}
+                      paginationPageSize={5}
+                    />
+                    <h1 style={{ color: "white", fontSize: "100%" }}>
+                      {t("select_dropoff_points")}
+                    </h1>
+                    <AgGridReact
+                      rowData={coordinatePoints.filter((point) =>
+                        ["pickup", "dropoff"].includes(point.point_type)
+                      )}
+                      columnDefs={[
+                        createCheckboxColumn("dropoffAtHome"),
+                        ...baseColumnDefs,
+                      ]}
+                      pagination={true}
+                      paginationPageSize={5}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-          {activeTab === "work" ? (
-            <>
-              <h1 style={{ color: "white", fontSize: "100%" }}>
-                {t("Preferred_time_of_arrival_at_work")}
-              </h1>
-              <input
-                type="datetime-local"
-                value={arrivalTime}
-                onChange={(e) => setArrivalTime(e.target.value)}
-                placeholder={t("arrival_time")}
-                className="form-control"
-              />
-              <h1 style={{ color: "white", fontSize: "100%" }}>
-                {t("select_pickup_points")}
-              </h1>
-              <div
-                className="psv-ag-theme-alpine"
-                style={{ height: "200px", width: "100%" }}
-              >
-                <AgGridReact
-                  rowData={coordinatePoints.filter(
-                    (point) => point.point_type === "pickup"
-                  )}
-                  columnDefs={columnDefs}
-                  pagination={true}
-                  paginationPageSize={5}
-                />
-              </div>
-              <h1 style={{ color: "white", fontSize: "100%" }}>
-                {t("select_work_points")}
-              </h1>
-              <div
-                className="psv-ag-theme-alpine"
-                style={{ height: "200px", width: "100%" }}
-              >
-                <AgGridReact
-                  rowData={coordinatePoints.filter(
-                    (point) => point.point_type === "work"
-                  )}
-                  columnDefs={columnDefs}
-                  pagination={true}
-                  paginationPageSize={5}
-                />
-              </div>
-            </>
-          ) : (
-            <>
-              <h1 style={{ color: "white", fontSize: "100%" }}>
-                {t("Preferred_time_of_departure_home")}
-              </h1>
-              <input
-                type="datetime-local"
-                value={departureTime}
-                onChange={(e) => setDepartureTime(e.target.value)}
-                placeholder={t("departure_time")}
-                className="form-control"
-              />
-              <h1 style={{ color: "white", fontSize: "100%" }}>
-                {t("select_work_points")}
-              </h1>
-              <div
-                className="psv-ag-theme-alpine"
-                style={{ height: "200px", width: "100%" }}
-              >
-                <AgGridReact
-                  rowData={coordinatePoints.filter(
-                    (point) => point.point_type === "work"
-                  )}
-                  columnDefs={columnDefs}
-                  pagination={true}
-                  paginationPageSize={5}
-                />
-                <h1 style={{ color: "white", fontSize: "100%" }}>
-                  {t("select_dropoff_points")}
-                </h1>
-                <AgGridReact
-                  rowData={coordinatePoints.filter((point) =>
-                    ["pickup", "dropoff"].includes(point.point_type)
-                  )}
-                  columnDefs={columnDefs}
-                  pagination={true}
-                  paginationPageSize={5}
-                />
-              </div>
-            </>
-          )}
+
+          <div style={{ marginTop: "20px", textAlign: "center" }}></div>
         </div>
       </div>
     </div>
