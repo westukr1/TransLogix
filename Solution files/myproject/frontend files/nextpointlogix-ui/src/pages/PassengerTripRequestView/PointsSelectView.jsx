@@ -18,34 +18,13 @@ const PointsSelectView = () => {
   const [arrivalTime, setArrivalTime] = useState("");
   const [selectedPointId, setSelectedPointId] = useState(null);
   const [departureTime, setDepartureTime] = useState("");
-  const [apiKey, setApiKey] = useState("");
-  const [isApiKeyLoaded, setIsApiKeyLoaded] = useState(false);
+
   const [selectedPoints, setSelectedPoints] = useState({
     pickupHomeToWork: null,
     dropoffAtWork: null,
     pickupWorkToHome: null,
     dropoffAtHome: null,
   });
-
-  useEffect(() => {
-    const fetchGoogleMapsKey = async () => {
-      try {
-        const token = localStorage.getItem("access_token");
-        const response = await axios.get(
-          "http://localhost:8000/api/google-maps-key/",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setApiKey(response.data.google_maps_api_key);
-        setIsApiKeyLoaded(true);
-      } catch (error) {
-        console.error("Помилка при отриманні ключа Google Maps:", error);
-      }
-    };
-
-    fetchGoogleMapsKey();
-  }, []);
 
   useEffect(() => {
     if (passengerId) {
@@ -125,25 +104,25 @@ const PointsSelectView = () => {
     //     />
     //   ),
     // },
-    { headerName: t("ID"), field: "id", width: 60 },
-    { headerName: t("Type"), field: "point_type", width: 100 },
-    { headerName: t("City"), field: "city", width: 150 },
-    { headerName: t("Street"), field: "street", width: 150 },
-    { headerName: t("House Number"), field: "house_number", width: 100 },
-    { headerName: t("Latitude"), field: "latitude", width: 150 },
-    { headerName: t("Longitude"), field: "longitude", width: 150 },
-    { headerName: t("Country"), field: "country", width: 150 },
-    { headerName: t("Region"), field: "region", width: 150 },
-    { headerName: t("District"), field: "district", width: 150 },
+    { headerName: t("Id"), field: "id", width: 60 },
+    { headerName: t("point_type"), field: "point_type", width: 100 },
+    { headerName: t("city"), field: "city", width: 150 },
+    { headerName: t("street"), field: "street", width: 150 },
+    { headerName: t("house_number"), field: "house_number", width: 100 },
+    { headerName: t("latitude"), field: "latitude", width: 100 },
+    { headerName: t("longitude"), field: "longitude", width: 100 },
+    { headerName: t("country"), field: "country", width: 100 },
+    { headerName: t("region"), field: "region", width: 120 },
+    { headerName: t("district"), field: "district", width: 150 },
     {
-      headerName: t("Owner First Name"),
+      headerName: t("first_name"),
       field: "owner_first_name",
-      width: 150,
+      width: 100,
     },
-    { headerName: t("Owner Last Name"), field: "owner_last_name", width: 150 },
-    { headerName: t("Owner ID"), field: "owner_id", width: 100 },
-    { headerName: t("Owner Type"), field: "owner_type", width: 100 },
-    { headerName: t("Is Active"), field: "is_active", width: 100 },
+    { headerName: t("last_name"), field: "owner_last_name", width: 100 },
+    { headerName: t("owner_id"), field: "owner_id", width: 60 },
+    { headerName: t("owner_type"), field: "owner_type", width: 100 },
+    { headerName: t("is_active"), field: "is_active", width: 60 },
   ];
   const getTabStyle = (tab) => ({
     transform: activeTab === tab ? "scale(1.3)" : "scale(1)",
@@ -157,27 +136,57 @@ const PointsSelectView = () => {
     borderRadius: "5px",
   });
   const createTripRequests = () => {
+    console.log("📦 Вибрані точки:", selectedPoints);
+    console.log("📅 Час прибуття:", arrivalTime);
+    console.log("📅 Час відправлення:", departureTime);
+
     const homeToWorkTrip = {
-      pickup: selectedPoints["pickupHomeToWork"],
-      dropoff: selectedPoints["dropoffAtWork"],
-    };
-    const workToHomeTrip = {
-      pickup: selectedPoints["pickupWorkToHome"],
-      dropoff: selectedPoints["dropoffAtHome"],
+      start: selectedPoints.pickupHomeToWork,
+      finish: selectedPoints.dropoffAtWork,
+      arrival_time: arrivalTime || null,
+      departure_time: null,
     };
 
-    if (homeToWorkTrip.pickup && homeToWorkTrip.dropoff) {
-      console.log("Home to Work Trip:", homeToWorkTrip);
-    } else {
-      console.warn("Incomplete Home to Work trip");
+    const workToHomeTrip = {
+      start: selectedPoints.pickupWorkToHome,
+      finish: selectedPoints.dropoffAtHome,
+      departure_time: departureTime || null,
+      arrival_time: null,
+    };
+
+    const isHomeToWorkValid =
+      homeToWorkTrip.start &&
+      homeToWorkTrip.finish &&
+      (homeToWorkTrip.arrival_time || homeToWorkTrip.departure_time);
+    const isWorkToHomeValid =
+      workToHomeTrip.start &&
+      workToHomeTrip.finish &&
+      (workToHomeTrip.arrival_time || workToHomeTrip.departure_time);
+
+    if (!isHomeToWorkValid) {
+      console.warn(
+        "⚠️ Неповні дані для поїздки 'На роботу' (не вистачає часу)"
+      );
     }
 
-    if (workToHomeTrip.pickup && workToHomeTrip.dropoff) {
-      console.log("Work to Home Trip:", workToHomeTrip);
+    if (!isWorkToHomeValid) {
+      console.warn("⚠️ Неповні дані для поїздки 'Додому' (не вистачає часу)");
+    }
+
+    if (isHomeToWorkValid || isWorkToHomeValid) {
+      navigate("/repeat-trip-view", {
+        state: {
+          passengerId: passengerId,
+          homeToWorkTrip,
+          workToHomeTrip,
+          direction: activeTab,
+        },
+      });
     } else {
-      console.warn("Incomplete Work to Home trip");
+      console.warn("⚠️ Немає повних даних для жодної поїздки!");
     }
   };
+
   const isTripDataComplete = () => {
     const homeToWorkComplete =
       selectedPoints.pickupHomeToWork &&
@@ -248,7 +257,7 @@ const PointsSelectView = () => {
             {t("create_trip_requests")}
           </button>
         </div>
-        <div className="template21-right-column">
+        <div className="ptrv-template21-right-column">
           <h1
             style={{
               color: "white",
@@ -277,7 +286,7 @@ const PointsSelectView = () => {
           <p
             style={{
               fontSize: "18px",
-
+              width: "60%",
               color: isTripDataComplete() ? "#4CAF50" : "#FF0000",
             }}
           >

@@ -80,7 +80,7 @@ const PassengerTripRequestView = () => {
   // };
 
   const columnDefs = [
-    { headerName: t("passenger_id"), field: "passenger_id", width: 100 },
+    { headerName: t("passenger_id"), field: "passenger", width: 100 },
     {
       headerName: t("passenger_first_name"),
       field: "passenger_first_name",
@@ -92,37 +92,84 @@ const PassengerTripRequestView = () => {
       width: 130,
     },
     { headerName: t("passenger_phone"), field: "passenger_phone", width: 150 },
-    { headerName: t("direction"), field: "direction", width: 70 },
-    { headerName: t("endpoint_type"), field: "endpoint_type", width: 70 },
+    { headerName: t("direction"), field: "direction", width: 100 },
+
     {
-      headerName: t("planned_datetime"),
-      field: "planned_datetime",
-      width: 170,
-      valueFormatter: (params) =>
-        dayjs(params.value).format("DD-MM-YYYY HH:mm"),
+      headerName: t("departure_info"), // 🔵 Блок ВІДПРАВКА
+      children: [
+        {
+          headerName: t("departure_time"),
+          field: "departure_time",
+          width: 170,
+          valueFormatter: (params) =>
+            params.value ? dayjs(params.value).format("DD-MM-YYYY HH:mm") : "",
+        },
+        {
+          headerName: t("pickup_city"),
+          field: "pickup_city",
+          width: 100,
+        },
+        {
+          headerName: t("pickup_street"),
+          field: "pickup_street",
+          width: 150,
+        },
+        {
+          headerName: t("pickup_house"),
+          field: "pickup_house",
+          width: 60,
+        },
+        {
+          headerName: t("pickup_latitude"),
+          field: "pickup_latitude",
+          width: 100,
+        },
+        {
+          headerName: t("pickup_longitude"),
+          field: "pickup_longitude",
+          width: 100,
+        },
+      ],
     },
-    { headerName: t("pickup_city"), field: "pickup_city", width: 100 },
-    { headerName: t("pickup_street"), field: "pickup_street", width: 150 },
-    { headerName: t("pickup_house"), field: "pickup_house", width: 60 },
-    { headerName: t("pickup_latitude"), field: "pickup_latitude", width: 100 },
+
     {
-      headerName: t("pickup_longitude"),
-      field: "pickup_longitude",
-      width: 100,
+      headerName: t("arrival_info"), // 🔵 Блок ПРИБУТТЯ
+      children: [
+        {
+          headerName: t("arrival_time"),
+          field: "arrival_time",
+          width: 170,
+          valueFormatter: (params) =>
+            params.value ? dayjs(params.value).format("DD-MM-YYYY HH:mm") : "",
+        },
+        {
+          headerName: t("dropoff_city"),
+          field: "dropoff_city",
+          width: 100,
+        },
+        {
+          headerName: t("dropoff_street"),
+          field: "dropoff_street",
+          width: 150,
+        },
+        {
+          headerName: t("dropoff_house"),
+          field: "dropoff_house",
+          width: 60,
+        },
+        {
+          headerName: t("dropoff_latitude"),
+          field: "dropoff_latitude",
+          width: 100,
+        },
+        {
+          headerName: t("dropoff_longitude"),
+          field: "dropoff_longitude",
+          width: 100,
+        },
+      ],
     },
-    { headerName: t("dropoff_city"), field: "dropoff_city", width: 100 },
-    { headerName: t("dropoff_street"), field: "dropoff_street", width: 150 },
-    { headerName: t("dropoff_house"), field: "dropoff_house", width: 60 },
-    {
-      headerName: t("dropoff_latitude"),
-      field: "dropoff_latitude",
-      width: 100,
-    },
-    {
-      headerName: t("dropoff_longitude"),
-      field: "dropoff_longitude",
-      width: 100,
-    },
+
     { headerName: t("is_active"), field: "is_active", width: 60 },
     { headerName: t("comment"), field: "comment", width: 600 },
   ];
@@ -155,7 +202,10 @@ const PassengerTripRequestView = () => {
             {t("add_request")}
           </button>
         </div>
-        <div className="template21-right-column">
+        <div
+          className="ptrv-template21-right-column"
+          style={{ height: "100vh" }}
+        >
           <div style={{ display: "flex", gap: "10px" }}>
             <h3
               style={{
@@ -200,22 +250,14 @@ const PassengerTripRequestView = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-
-          <div
+          <AgGridReact
             className="ag-theme-alpine"
-            style={{
-              height: "600px",
-              width: "100%",
-            }}
-          >
-            <AgGridReact
-              rowData={requests}
-              columnDefs={columnDefs}
-              pagination={true}
-              paginationPageSize={10}
-              domLayout="autoHeight"
-            />
-          </div>
+            rowData={requests}
+            columnDefs={columnDefs}
+            pagination={true}
+            paginationPageSize={10}
+            style={{ height: "100%", width: "100%" }}
+          />
         </div>
       </div>
     </div>

@@ -419,6 +419,10 @@ class RoutePoint(models.Model):
 # model for passengers requests for trips
 
 class PassengerTripRequest(models.Model):
+    DIRECTION_CHOICES = [
+        ('HOME_TO_WORK', 'Home to Work'),  # Коректне відображення
+        ('WORK_TO_HOME', 'Work to Home'),
+    ]
     passenger = models.ForeignKey(
         'Passenger',
         on_delete=models.CASCADE,
@@ -426,15 +430,9 @@ class PassengerTripRequest(models.Model):
     )  # Ід Пасажира
     created_at = models.DateTimeField(auto_now_add=True)  # Дата створення
     updated_at = models.DateTimeField(auto_now=True)  # Дата останнього оновлення
-    endpoint_type = models.CharField(
-        max_length=50,
-        choices=[
-            ('pickup', 'Посадка'),
-            ('dropoff', 'Висадка'),
-            ('work', 'Робота')
-        ]
-    )  # Тип кінцевої точки
-    planned_datetime = models.DateTimeField()  # Планована дата і час посадки
+
+    departure_time = models.DateTimeField(null=True, blank=True)
+    arrival_time = models.DateTimeField(null=True, blank=True)
     pickup_point = models.ForeignKey(
         'CoordinatePoint',
         on_delete=models.SET_NULL,
@@ -453,13 +451,7 @@ class PassengerTripRequest(models.Model):
     )  # Ід точки висадки
     dropoff_latitude = models.DecimalField(max_digits=9, decimal_places=6)  # Координати точки висадки (широта)
     dropoff_longitude = models.DecimalField(max_digits=9, decimal_places=6)  # Координати точки висадки (довгота)
-    direction = models.CharField(
-        max_length=10,
-        choices=[
-            ('to_work', 'На роботу'),
-            ('to_home', 'Додому')
-        ]
-    )  # Напрямок
+    direction = models.CharField(max_length=20, choices=DIRECTION_CHOICES, default='HOME_TO_WORK')
     is_active = models.BooleanField(default=True)  # Дійсна (так/ні)
     comment = models.TextField(blank=True, null=True)  # Коментар
 

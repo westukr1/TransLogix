@@ -66,18 +66,24 @@
 
 .template21-left-column .nav-button {
   width: 100%;
-
   margin-bottom: 10px;
 }
 
-.ptrv-template21-right-column {
+.ptv-template21-right-column {
   flex: 0 0 85% !important;
   height: 100%;
   padding: 20px;
   background-color: #2c2c2c;
   box-sizing: border-box;
 }
+.ptv-template2s-right-column {
+  flex: 0 0 85% !important;
+  height: 100%;
 
+  padding: 5px;
+  background-color: #2c2c2c;
+  box-sizing: border-box;
+}
 /* Стилі для AG Grid */
 .ag-theme-alpine {
   width: 100%;
@@ -161,4 +167,8 @@ input[type="radio"] {
   flex: 0 0 20%;
   padding: 20px;
   box-sizing: border-box;
+}
+.ag-theme-balham {
+  height: 180px !important;
+  width: 100%;
 }

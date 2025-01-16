@@ -110,7 +110,7 @@ const PassengerSelectView = () => {
             {t("update_table")}
           </button>
         </div>
-        <div className="template21-right-column">
+        <div className="ptrv-template21-right-column">
           <h1
             style={{
               color: "white",
@@ -126,16 +126,14 @@ const PassengerSelectView = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="form-control"
           />
-          <div
-            className="ag-theme-alpine"
-            style={{ height: "800px", width: "100%" }}
-          >
+          <div style={{ height: "100vh" }}>
             <AgGridReact
+              className="ag-theme-alpine"
               rowData={filteredPassengers}
               columnDefs={columnDefs}
               pagination={true}
               paginationPageSize={10}
-              domLayout="autoHeight"
+              style={{ height: "100%", width: "100%" }}
             />
           </div>
         </div>

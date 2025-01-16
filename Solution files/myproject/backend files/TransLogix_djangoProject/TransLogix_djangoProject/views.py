@@ -18,7 +18,7 @@ from .serializers import (
     RegionSerializer, CountrySerializer, PassengerSerializer, PassengerListSerializer,
     PassengerDetailSerializer, CoordinatePointDetailSerializer, CoordinatePointCoordinateSerializer,
     DriverSerializer, VehicleSerializer, DriverVehicleAssignmentSerializer, FuelTypeSerializer,
-    PassengerTripRequestSerializer
+    PassengerTripRequestSerializer, PassengerTripRequestCreateSerializer
 
 )
 import random
@@ -853,6 +853,14 @@ class HasPickupAddressView(APIView):
 
 
 class CoordinatePointUpdateView(APIView):
+    def get(self, request, id):
+        try:
+            point = CoordinatePoint.objects.get(id=id)
+            serializer = CoordinatePointSerializer(point)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except CoordinatePoint.DoesNotExist:
+            return Response({'error': 'CoordinatePoint not found'}, status=status.HTTP_404_NOT_FOUND)
+
     def put(self, request, id):
         print("Отримані дані:", request.data)  # Лог для перевірки отриманих даних
 
@@ -1196,29 +1204,38 @@ class PassengerTripRequestListView(ListAPIView):
     def get_queryset(self):
         queryset = super().get_queryset()
 
+        # Фільтрація за статусом (is_active)
         is_active = self.request.query_params.get('is_active')
+        if is_active is not None:
+            queryset = queryset.filter(is_active=is_active.lower() == 'true')
+
+        # Фільтрація за інтервалом дат
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
 
-        # Обробка дати: перевірка і форматування
         try:
             if start_date:
-                start_date = datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S").date()
+                start_date = datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S")
             if end_date:
-                end_date = datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S").date()
+                end_date = datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S")
         except ValueError:
-            return queryset.none()  # Якщо формат неправильний — повертаємо порожній queryset
+            return queryset.none()  # Невірний формат дати
 
-        # Фільтрація за датою
         if start_date and end_date:
             queryset = queryset.filter(
-                planned_datetime__date__range=(start_date, end_date)
+                Q(departure_time__range=(start_date, end_date)) |
+                Q(arrival_time__range=(start_date, end_date))
             )
         elif start_date:
-            queryset = queryset.filter(planned_datetime__date__gte=start_date)
+            queryset = queryset.filter(
+                Q(departure_time__gte=start_date) | Q(arrival_time__gte=start_date)
+            )
         elif end_date:
-            queryset = queryset.filter(planned_datetime__date__lte=end_date)
+            queryset = queryset.filter(
+                Q(departure_time__lte=end_date) | Q(arrival_time__lte=end_date)
+            )
 
+        # Пошук за ім'ям, прізвищем або коментарем
         search_query = self.request.query_params.get('search')
         if search_query:
             queryset = queryset.filter(
@@ -1232,6 +1249,6 @@ class PassengerTripRequestListView(ListAPIView):
 
 
 
-class PassengerTripRequestCreateView(CreateAPIView):
+class PassengerTripRequestCreateView(generics.CreateAPIView):
     queryset = PassengerTripRequest.objects.all()
-    serializer_class = PassengerTripRequestSerializer
+    serializer_class = PassengerTripRequestCreateSerializer

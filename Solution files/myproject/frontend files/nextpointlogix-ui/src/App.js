@@ -37,6 +37,7 @@ import NewPassengersTripRequest from "./pages/PassengerTripRequestView/NewPassen
 import PassengerTripRequestView from "./pages/PassengerTripRequestView/PassengerTripRequestView";
 import PassengerSelectView from "./pages/PassengerTripRequestView/PassengerSelectView";
 import PointsSelectView from "./pages/PassengerTripRequestView/PointsSelectView";
+import RepeatTripView from "./pages/PassengerTripRequestView/RepeatTripView";
 
 function App() {
   return (
@@ -107,6 +108,7 @@ function App() {
           />{" "}
           <Route path="/passenger-select" element={<PassengerSelectView />} />
           <Route path="/points-select" element={<PointsSelectView />} />
+          <Route path="/repeat-trip-view" element={<RepeatTripView />} />
         </Routes>
       </div>
     </Router>
