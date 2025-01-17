@@ -13,12 +13,15 @@ const PassengerSelectView = () => {
   const [passengers, setPassengers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterBySelected, setFilterBySelected] = useState(false);
+  const [searchById, setSearchById] = useState(""); // ✅ Пошук за ID
+  const [loading, setLoading] = useState(false); // ✅ Стан завантаження
 
   useEffect(() => {
     fetchPassengers();
   }, []);
 
   const fetchPassengers = async (isActive = true) => {
+    setLoading(true); // ✅ Показуємо завантаження
     const token = localStorage.getItem("access_token");
     const url = `http://localhost:8000/api/passengers/?is_active=${isActive}`;
     try {
@@ -33,6 +36,8 @@ const PassengerSelectView = () => {
       setPassengers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching passengers:", error);
+    } finally {
+      setLoading(false); // ✅ Приховуємо завантаження
     }
   };
 
@@ -40,21 +45,19 @@ const PassengerSelectView = () => {
     navigate(`/new-passenger-trip-request?id=${id}`);
   };
 
-  const filteredPassengers = searchQuery
-    ? passengers.filter(
-        (passenger) =>
-          (passenger.first_name &&
-            passenger.first_name
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase())) ||
-          (passenger.last_name &&
-            passenger.last_name
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase())) ||
-          (passenger.phone_number &&
-            passenger.phone_number.includes(searchQuery))
-      )
-    : passengers;
+  // ✅ Фільтрація за ім'ям, прізвищем, телефоном або ID
+  const filteredPassengers = passengers.filter((passenger) => {
+    const matchesName =
+      passenger.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      passenger.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      passenger.phone_number?.includes(searchQuery);
+
+    const matchesId = searchById
+      ? passenger.id.toString().includes(searchById)
+      : true;
+
+    return matchesName && matchesId;
+  });
 
   const columnDefs = [
     {
@@ -119,22 +122,41 @@ const PassengerSelectView = () => {
           >
             {t("select_passenger")}
           </h1>
-          <input
-            type="text"
-            placeholder={t("search")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="form-control"
-          />
-          <div style={{ height: "100vh" }}>
-            <AgGridReact
-              className="ag-theme-alpine"
-              rowData={filteredPassengers}
-              columnDefs={columnDefs}
-              pagination={true}
-              paginationPageSize={10}
-              style={{ height: "100%", width: "100%" }}
+          <div className="top-nav-bar">
+            {/* 🔎 Пошук за ім'ям або телефоном */}
+            <input
+              type="text"
+              placeholder={t("search_by_name_phone")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ marginRight: "10px", padding: "8px", width: "250px" }}
             />
+
+            {/* 🔎 Пошук за ID */}
+            <input
+              type="number"
+              placeholder={t("search_by_id")}
+              value={searchById}
+              onChange={(e) => setSearchById(e.target.value)}
+              style={{ padding: "8px", width: "150px" }}
+            />
+          </div>
+          <div style={{ height: "100vh" }}>
+            {/* ⏳ Завантаження */}
+            {loading ? (
+              <div style={{ textAlign: "center", marginTop: "20px" }}>
+                <h3>{t("loading")}</h3>
+              </div>
+            ) : (
+              <AgGridReact
+                rowData={filteredPassengers}
+                columnDefs={columnDefs}
+                pagination={true}
+                paginationPageSize={5}
+                className="ag-theme-alpine"
+                style={{ height: "600px", width: "100%" }}
+              />
+            )}
           </div>
         </div>
       </div>

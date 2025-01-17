@@ -22,7 +22,7 @@ const PassengerTripRequestView = () => {
 
   useEffect(() => {
     fetchRequests();
-  }, [startDate, endDate]);
+  }, [startDate, endDate, searchQuery]);
 
   const fetchRequests = () => {
     const start = dayjs(startDate).format("YYYY-MM-DD HH:mm:ss");
@@ -41,6 +41,7 @@ const PassengerTripRequestView = () => {
         params: {
           start_date: start,
           end_date: end,
+          search: searchQuery,
         },
       })
       .then((response) => {
@@ -80,19 +81,19 @@ const PassengerTripRequestView = () => {
   // };
 
   const columnDefs = [
-    { headerName: t("passenger_id"), field: "passenger", width: 100 },
+    { headerName: t("passenger_id"), field: "passenger", width: 60 },
     {
       headerName: t("passenger_first_name"),
       field: "passenger_first_name",
-      width: 130,
+      width: 100,
     },
     {
       headerName: t("passenger_last_name"),
       field: "passenger_last_name",
-      width: 130,
+      width: 100,
     },
     { headerName: t("passenger_phone"), field: "passenger_phone", width: 150 },
-    { headerName: t("direction"), field: "direction", width: 100 },
+    { headerName: t("direction"), field: "direction", width: 120 },
 
     {
       headerName: t("departure_info"), // 🔵 Блок ВІДПРАВКА

@@ -499,5 +499,8 @@
     "arrival_time": "Arrival time"
   },
 
-  "trip_details": "Trip Details"
+  "trip_details": "Trip Details",
+  "search_by_name_phone": "search by name or phone",
+  "search_by_id": "search by ID",
+  "trip_requests.save_button": "Save requests"
 }

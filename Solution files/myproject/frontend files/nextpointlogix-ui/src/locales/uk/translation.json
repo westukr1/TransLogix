@@ -482,5 +482,8 @@
     "departure_time": "Час відправлення",
     "arrival_time": "Чвс прибуття"
   },
-  "trip_details": "Деталі поїздки"
+  "trip_details": "Деталі поїздки",
+  "search_by_name_phone": "Пошук за іменем і номером телефону",
+  "search_by_id": "Пошук за ID",
+  "trip_requests.save_button": "Зберегти заявки"
 }
