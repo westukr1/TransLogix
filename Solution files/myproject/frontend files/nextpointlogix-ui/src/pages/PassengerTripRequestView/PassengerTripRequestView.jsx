@@ -16,9 +16,13 @@ const PassengerTripRequestView = () => {
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+
   const [searchQuery, setSearchQuery] = useState("");
+  // 📅 Ініціалізація дат з фільтром по часу
+  const [startDate, setStartDate] = useState(dayjs().startOf("day").toDate()); // Сьогодні 00:00
+  const [endDate, setEndDate] = useState(
+    dayjs().add(1, "day").endOf("day").toDate()
+  ); // Завтра 23:59
 
   useEffect(() => {
     fetchRequests();
@@ -181,12 +185,10 @@ const PassengerTripRequestView = () => {
         <div className="two-column-template-logo">
           <img src="/logo.png" alt="NextPointLogix" />
         </div>
+
         <div className="nav-buttons">
           <button className="nav-button" onClick={() => navigate("/")}>
             {t("nav.main_screen")}
-          </button>
-          <button className="nav-button" onClick={() => navigate(-1)}>
-            {t("nav.back")}
           </button>
         </div>
       </div>
@@ -207,6 +209,15 @@ const PassengerTripRequestView = () => {
           className="ptrv-template21-right-column"
           style={{ height: "100vh" }}
         >
+          <h1
+            style={{
+              color: "white",
+              fontsize: "50%",
+            }}
+          >
+            {" "}
+            {t("trip_requests_from_passengers")}{" "}
+          </h1>
           <div style={{ display: "flex", gap: "10px" }}>
             <h3
               style={{

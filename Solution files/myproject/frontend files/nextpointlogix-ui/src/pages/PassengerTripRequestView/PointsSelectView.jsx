@@ -204,6 +204,7 @@ const PointsSelectView = () => {
         <div className="two-column-template-logo">
           <img src="/logo.png" alt="NextPointLogix" />
         </div>
+        <div className="date-time">{new Date().toLocaleString()}</div>
         <div className="nav-buttons">
           <button className="nav-button" onClick={() => navigate("/")}>
             {t("nav.main_screen")}

@@ -502,5 +502,29 @@
   "trip_details": "Trip Details",
   "search_by_name_phone": "search by name or phone",
   "search_by_id": "search by ID",
-  "trip_requests.save_button": "Save requests"
+  "trip_requests.save_button": "Save requests",
+  "trip_requests": {
+    "save_button": "Save Requests",
+    "saved_successfully": "Requests saved successfully!",
+    "save_error": "Error saving requests.",
+    "repeated_successfully": "Repeated trips created successfully!",
+    "repeat_error": "Error creating repeated trips.",
+    "select_dates_warning": "Please select the start and end dates and choose the days of the week.",
+    "exit_without_saving": "Exit Without Saving"
+  },
+  "plan_repeated_trips": "Plan Repeated Trips",
+  "enable_repeated_trips": "Enable repeated trips",
+  "start_date": "Start Date",
+  "end_date": "End Date",
+  "select_days_of_week": "Select Days of the Week",
+  "create_repeated_trips": "Create Repeated Trips",
+  "Monday": "Monday",
+  "Tuesday": "Tuesday",
+  "Wednesday": "Wednesday",
+  "Thursday": "Thursday",
+  "Friday": "Friday",
+  "Saturday": "Saturday",
+  "Sunday": "Sunday",
+  "created_trip_requests": "Created Trip Requests (preview)",
+  "trip_requests_from_passengers": "Requets from passengers"
 }

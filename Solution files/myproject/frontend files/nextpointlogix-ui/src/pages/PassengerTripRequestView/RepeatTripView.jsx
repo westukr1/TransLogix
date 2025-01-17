@@ -6,6 +6,9 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./RepeatTripView.css";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import dayjs from "dayjs";
 
 const RepeatTripView = () => {
   const { t } = useTranslation();
@@ -19,6 +22,11 @@ const RepeatTripView = () => {
   const workToHomeTrip = location.state?.workToHomeTrip;
 
   const [tripData, setTripData] = useState([]);
+  const [isRepeatEnabled, setIsRepeatEnabled] = useState(false); // ✅ Чекбокс
+  const [startDate, setStartDate] = useState(new Date()); // ✅ Дата початку
+  const [endDate, setEndDate] = useState(new Date()); // ✅ Дата завершення
+  const [selectedDays, setSelectedDays] = useState([]); // ✅ Дні тижня
+  const [finalTrips, setFinalTrips] = useState([]);
 
   useEffect(() => {
     const fetchPassengerData = async () => {
@@ -104,7 +112,7 @@ const RepeatTripView = () => {
         );
       }
       alert(t("trip_requests.saved_successfully"));
-      navigate("/");
+      navigate("/passenger-trip-requests");
     } catch (error) {
       console.error(
         "❌ Помилка збереження заявок:",
@@ -114,9 +122,16 @@ const RepeatTripView = () => {
     }
   };
 
+  // ✅ Оновлена функція видалення
   const handleDeleteRow = (id) => {
-    setTripData((prevData) => prevData.filter((trip) => trip.id !== id));
+    setFinalTrips((prevData) => prevData.filter((trip) => trip.id !== id));
   };
+
+  useEffect(() => {
+    if (isRepeatEnabled) {
+      handleCombineTrips(); // 🔄 Оновлення при зміні
+    }
+  }, [startDate, endDate, selectedDays.tripData]);
 
   useEffect(() => {
     const fetchTripData = async () => {
@@ -284,6 +299,188 @@ const RepeatTripView = () => {
     const minutes = String(date.getMinutes()).padStart(2, "0");
     return `${day}-${month}-${year} ${hours}:${minutes}`;
   };
+  const daysOfWeek = [
+    { label: t("Monday"), value: 1 },
+    { label: t("Tuesday"), value: 2 },
+    { label: t("Wednesday"), value: 3 },
+    { label: t("Thursday"), value: 4 },
+    { label: t("Friday"), value: 5 },
+    { label: t("Saturday"), value: 6 },
+    { label: t("Sunday"), value: 0 },
+  ];
+
+  const handleDaySelection = (day) => {
+    setSelectedDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+    );
+  };
+  const handleCreateRepeatedTrips = async () => {
+    if (!startDate || !endDate || selectedDays.length === 0) {
+      alert(t("trip_requests.select_dates_warning"));
+      return;
+    }
+
+    const token = localStorage.getItem("access_token");
+
+    try {
+      const payload = {
+        trips: tripData,
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
+        days_of_week: selectedDays,
+      };
+
+      console.log("📦 Дані для повторних заявок:", payload);
+
+      await axios.post(
+        "http://localhost:8000/api/passenger-trip-requests/repeat/",
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      alert(t("trip_requests.repeated_successfully"));
+    } catch (error) {
+      console.error("❌ Помилка створення повторних заявок:", error);
+      alert(t("trip_requests.repeat_error"));
+    }
+  };
+  // ✅ Функція для генерації повторних заявок з оновленням даних
+  /**
+   * Функція для отримання мінімальної дати з верхньої таблиці
+   */
+  const getMinTripDate = () => {
+    const today = dayjs();
+    const tripDates = tripData.map((trip) =>
+      dayjs(trip.arrival_time || trip.departure_time).valueOf()
+    );
+    const earliestTimestamp = tripDates.length
+      ? Math.min(...tripDates)
+      : today.valueOf();
+    return dayjs(earliestTimestamp).isBefore(today)
+      ? today
+      : dayjs(earliestTimestamp);
+  };
+
+  /**
+   * Оновлення мінімальної дати у DatePicker
+   */
+  useEffect(() => {
+    const minDate = getMinTripDate().toDate();
+    setStartDate(minDate);
+  }, [tripData]);
+
+  // ✅ Додаємо унікальний ID до кожної заявки
+  const generateUniqueId = () => {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  };
+  /**
+   * Генерація повторних заявок
+   */
+  const handleCombineTrips = () => {
+    if (!startDate || !endDate || selectedDays.length === 0) {
+      //  PassengerSelectView/
+      return;
+    }
+
+    let updatedTrips = [...tripData.filter((trip) => !trip.repeated)];
+
+    selectedDays.forEach((dayOfWeek) => {
+      let currentDate = dayjs(startDate);
+      while (currentDate.isBefore(dayjs(endDate).add(1, "day"))) {
+        if (currentDate.day() === dayOfWeek) {
+          tripData.forEach((trip) => {
+            const plannedTime = dayjs(currentDate)
+              .hour(dayjs(trip.arrival_time || trip.departure_time).hour())
+              .minute(dayjs(trip.arrival_time || trip.departure_time).minute());
+
+            const isDuplicate = updatedTrips.some(
+              (existingTrip) =>
+                existingTrip.direction === trip.direction &&
+                dayjs(
+                  existingTrip.arrival_time || existingTrip.departure_time
+                ).isSame(plannedTime, "minute") &&
+                existingTrip.pickup_point === trip.pickup_point &&
+                existingTrip.dropoff_point === trip.dropoff_point
+            );
+
+            if (!isDuplicate) {
+              updatedTrips.push({
+                ...trip,
+                id: `${trip.direction}-${plannedTime.toISOString()}`,
+                departure_time:
+                  trip.direction === "HOME_TO_WORK"
+                    ? null
+                    : plannedTime.toISOString(),
+                arrival_time:
+                  trip.direction === "HOME_TO_WORK"
+                    ? plannedTime.toISOString()
+                    : null,
+                repeated: true,
+              });
+            }
+          });
+        }
+        currentDate = currentDate.add(1, "day");
+      }
+    });
+
+    console.log("📊 Оновлені заявки (без дублікатів):", updatedTrips);
+    setFinalTrips(updatedTrips);
+  };
+
+  // ✅ Функція для збереження всіх заявок
+  const handleSaveAllTrips = async () => {
+    const token = localStorage.getItem("access_token");
+
+    try {
+      for (const trip of finalTrips) {
+        const payload = {
+          passenger: passengerId,
+          direction: trip.direction,
+          departure_time: trip.departure_time,
+          arrival_time: trip.arrival_time,
+          pickup_point: trip.pickup_point,
+          dropoff_point: trip.dropoff_point,
+          pickup_latitude: parseFloat(trip.start_latitude),
+          pickup_longitude: parseFloat(trip.start_longitude),
+          dropoff_latitude: parseFloat(trip.finish_latitude),
+          dropoff_longitude: parseFloat(trip.finish_longitude),
+          comment: trip.comment,
+          is_active: true,
+        };
+
+        await axios.post(
+          "http://localhost:8000/api/passenger-trip-requests/create/",
+          payload,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+      }
+
+      alert(t("trip_requests.saved_successfully"));
+      navigate("/passenger-trip-requests");
+    } catch (error) {
+      console.error("❌ Помилка збереження заявок:", error);
+      alert(t("trip_requests.save_error"));
+    }
+  };
+  // ✅ Функція для обробки чекбокса
+  const handleToggleRepeat = () => {
+    setIsRepeatEnabled(!isRepeatEnabled);
+
+    if (!isRepeatEnabled) {
+      const combinedTrips = tripData.map((trip) => ({
+        ...trip,
+        repeated: false, // ❗️ Позначаємо заявки як оригінальні
+      }));
+      setFinalTrips(combinedTrips); // 📥 Додаємо у нижню таблицю
+    } else {
+      setFinalTrips([]); // ❗️ Очищення при вимкненні
+    }
+  };
 
   return (
     <div className="two-column-template">
@@ -291,6 +488,7 @@ const RepeatTripView = () => {
         <div className="two-column-template-logo">
           <img src="/logo.png" alt="NextPointLogix" />
         </div>
+
         <div className="nav-buttons">
           <button className="nav-button" onClick={() => navigate("/")}>
             {t("nav.main_screen")}
@@ -356,16 +554,117 @@ const RepeatTripView = () => {
               className="ag-theme-balham"
               style={{ height: "140px", width: "100%" }}
             />
-            <button onClick={handleSaveTrips} className="nav-button">
-              {t("trip_requests.save_button")}
-            </button>
+            {/* ✅ Кнопка "Зберегти" зникає, якщо активний чекбокс */}
+            {!isRepeatEnabled && (
+              <button onClick={handleSaveTrips} className="nav-button">
+                {t("trip_requests.save_button")}
+              </button>
+            )}
           </div>
+          {/* ✅ Середня секція — відображається, якщо чекбокс активний */}
           <div className="ptv-middle-right">
-            <h1>{t("repeat_trip_title")}</h1>
+            <h2>{t("plan_repeated_trips")}</h2>
+
+            <label>
+              <input
+                type="checkbox"
+                checked={isRepeatEnabled}
+                onChange={handleToggleRepeat}
+              />
+              {t("enable_repeated_trips")}
+            </label>
+
+            {isRepeatEnabled && (
+              <>
+                {/* ✅ Дата початку з обмеженням мінімальної дати */}
+                <div style={{ marginTop: "10px" }}>
+                  <label>{t("start_date")}:</label>
+                  <DatePicker
+                    selected={startDate}
+                    onChange={(date) => setStartDate(date)}
+                    dateFormat="dd-MM-yyyy"
+                    minDate={getMinTripDate().toDate()} // ❗ Мінімальна дата
+                  />
+                </div>
+
+                {/* ✅ Дата завершення */}
+                <div style={{ marginTop: "10px" }}>
+                  <label>{t("end_date")}:</label>
+                  <DatePicker
+                    selected={endDate}
+                    onChange={(date) => setEndDate(date)}
+                    dateFormat="dd-MM-yyyy"
+                    minDate={startDate} // ❗ Дата завершення не може бути раніше початку
+                  />
+                </div>
+
+                {/* ✅ Дні тижня */}
+                <div style={{ marginTop: "10px" }}>
+                  <label>{t("select_days_of_week")}:</label>
+                  {daysOfWeek.map((day) => (
+                    <div key={day.value}>
+                      <input
+                        type="checkbox"
+                        checked={selectedDays.includes(day.value)}
+                        onChange={() => handleDaySelection(day.value)}
+                      />
+                      {day.label}
+                    </div>
+                  ))}
+                </div>
+
+                {/* ✅ Кнопка створення заявок */}
+                <button
+                  onClick={handleCombineTrips}
+                  style={{ marginTop: "15px", padding: "10px 20px" }}
+                >
+                  {t("create_repeated_trips")}
+                </button>
+              </>
+            )}
           </div>
-          <div className="ptv-lower-right">
-            <h2>Lower Right Content</h2>
-          </div>
+
+          {/* ✅ Нижня таблиця — з’являється після генерації заявок */}
+          {isRepeatEnabled && (
+            <div className="ptv-lower-right">
+              <h1>{t("created_trip_requests")}</h1>
+
+              <AgGridReact
+                rowData={finalTrips}
+                columnDefs={columnDefs}
+                pagination={true}
+                paginationPageSize={10}
+                className="ag-theme-alpine"
+                style={{ height: "300px", width: "100%" }}
+              />
+
+              {/* ✅ Кнопка "Зберегти заявки" */}
+              <button
+                onClick={handleSaveAllTrips}
+                style={{
+                  marginTop: "15px",
+                  padding: "10px 20px",
+                  backgroundColor: "#4CAF50",
+                  color: "white",
+                }}
+              >
+                {t("trip_requests.save_button")}
+              </button>
+
+              {/* ❌ Кнопка "Вийти без збереження" */}
+              <button
+                onClick={() => navigate("/passenger-trip-requests")}
+                style={{
+                  marginTop: "10px",
+                  padding: "10px 20px",
+                  backgroundColor: "#d9534f",
+                  color: "white",
+                }}
+              >
+                {t("trip_requests.exit_without_saving")}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

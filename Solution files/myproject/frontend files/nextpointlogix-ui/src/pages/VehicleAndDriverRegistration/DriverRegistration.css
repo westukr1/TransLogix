@@ -87,10 +87,11 @@
   box-sizing: border-box;
 }
 
-.template21-right-column {
-  flex: 0 0 50%;
+.dr-template21-right-column {
+  flex: 0 0 85%;
   padding: 10px;
   background-color: #2c2c2c;
+  width: 100%;
   box-sizing: border-box;
 }
 

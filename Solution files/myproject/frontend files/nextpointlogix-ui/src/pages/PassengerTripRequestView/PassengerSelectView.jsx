@@ -96,6 +96,7 @@ const PassengerSelectView = () => {
         <div className="two-column-template-logo">
           <img src="/logo.png" alt="NextPointLogix" />
         </div>
+
         <div className="nav-buttons">
           <button className="nav-button" onClick={() => navigate("/")}>
             {t("nav.main_screen")}
@@ -122,39 +123,45 @@ const PassengerSelectView = () => {
           >
             {t("select_passenger")}
           </h1>
-          <div className="top-nav-bar">
-            {/* 🔎 Пошук за ім'ям або телефоном */}
-            <input
-              type="text"
-              placeholder={t("search_by_name_phone")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ marginRight: "10px", padding: "8px", width: "250px" }}
-            />
 
-            {/* 🔎 Пошук за ID */}
-            <input
-              type="number"
-              placeholder={t("search_by_id")}
-              value={searchById}
-              onChange={(e) => setSearchById(e.target.value)}
-              style={{ padding: "8px", width: "150px" }}
-            />
-          </div>
+          {/* 🔎 Пошук за ім'ям або телефоном */}
+          <input
+            type="text"
+            placeholder={t("search_by_name_phone")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ marginRight: "10px", padding: "8px", width: "250px" }}
+          />
+
+          {/* 🔎 Пошук за ID */}
+          <input
+            type="number"
+            placeholder={t("search_by_id")}
+            value={searchById}
+            onChange={(e) => setSearchById(e.target.value)}
+            style={{ padding: "8px", width: "150px" }}
+          />
+
           <div style={{ height: "100vh" }}>
             {/* ⏳ Завантаження */}
             {loading ? (
-              <div style={{ textAlign: "center", marginTop: "20px" }}>
-                <h3>{t("loading")}</h3>
+              <div
+                style={{
+                  textAlign: "center",
+                  marginTop: "20px",
+                  color: "white",
+                }}
+              >
+                <h1>{t("loading")}</h1>
               </div>
             ) : (
               <AgGridReact
                 rowData={filteredPassengers}
                 columnDefs={columnDefs}
                 pagination={true}
-                paginationPageSize={5}
+                paginationPageSize={20}
                 className="ag-theme-alpine"
-                style={{ height: "600px", width: "100%" }}
+                style={{ height: "800px", width: "100%" }}
               />
             )}
           </div>

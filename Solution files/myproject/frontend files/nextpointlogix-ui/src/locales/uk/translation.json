@@ -485,5 +485,29 @@
   "trip_details": "Деталі поїздки",
   "search_by_name_phone": "Пошук за іменем і номером телефону",
   "search_by_id": "Пошук за ID",
-  "trip_requests.save_button": "Зберегти заявки"
+  "trip_requests.save_button": "Зберегти заявки",
+  "trip_requests": {
+    "save_button": "Зберегти заявки",
+    "saved_successfully": "Заявки успішно збережено!",
+    "save_error": "Помилка збереження заявок.",
+    "repeated_successfully": "Повторні поїздки успішно створено!",
+    "repeat_error": "Помилка створення повторних поїздок.",
+    "select_dates_warning": "Будь ласка, оберіть дату початку і завершення та виберіть дні тижня.",
+    "exit_without_saving": "Вийти без збереження"
+  },
+  "plan_repeated_trips": "Планування повторних поїздок",
+  "enable_repeated_trips": "Запланувати повторні поїздки",
+  "start_date": "Дата початку",
+  "end_date": "Дата завершення",
+  "select_days_of_week": "Оберіть дні тижня",
+  "create_repeated_trips": "Створити повторні заявки",
+  "Monday": "Понеділок",
+  "Tuesday": "Вівторок",
+  "Wednesday": "Середа",
+  "Thursday": "Четвер",
+  "Friday": "П'ятниця",
+  "Saturday": "Субота",
+  "Sunday": "Неділя",
+  "created_trip_requests": "Створені заявки на поїздку (попередній перегляд)",
+  "trip_requests_from_passengers": "Заявки від пасажирів"
 }
