@@ -526,5 +526,21 @@
   "Saturday": "Saturday",
   "Sunday": "Sunday",
   "created_trip_requests": "Created Trip Requests (preview)",
-  "trip_requests_from_passengers": "Requets from passengers"
+  "trip_requests_from_passengers": "Requets from passengers",
+  "grouping_list_to_route": "Formation of lists for routes",
+
+  "route_summary": "Route summary",
+
+  "work": "To work",
+
+  "start_time": "Start time",
+  "end_time": "Finish time",
+  "stop_count": "Number of stops",
+  "passenger_count": "Number of passengers",
+
+  "is_fixed": "Fixed",
+  "selected_passengers": "Selected passengers",
+  "name": "Name",
+  "location": "Location",
+  "planned_time_on_road": "Planned time on road"
 }

@@ -1,10 +1,28 @@
-import React, { useState } from 'react';
-import TopNavBar from './TopNavBar';
-import './RouteManagement.css';
+import React, { useState, useEffect } from "react";
+import TopNavBar from "./TopNavBar";
+import "./RouteManagement.css";
 
-const RouteManagement = ({ drivers = [], vehicles = [], passengers = [], routes = [], copiedRoutes = [] }) => {
+import { useNavigate, useLocation } from "react-router-dom";
+import { AgGridReact } from "ag-grid-react";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+import "./PassengersGroupingView/GroupingListToRoute";
+import { useTranslation } from "react-i18next";
+import axios from "axios";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import dayjs from "dayjs";
+
+const RouteManagement = ({
+  drivers = [],
+  vehicles = [],
+  passengers = [],
+  routes = [],
+  copiedRoutes = [],
+}) => {
   const [selectedRoutes, setSelectedRoutes] = useState([]);
-
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const handleSelectRoute = (route) => {
     setSelectedRoutes((prev) => {
       if (prev.includes(route)) {
@@ -16,11 +34,11 @@ const RouteManagement = ({ drivers = [], vehicles = [], passengers = [], routes 
   };
 
   const handleGenerateRoutes = () => {
-    console.log('Generating routes...');
+    console.log("Generating routes...");
   };
 
   const handleSubmitRoutes = () => {
-    console.log('Submitting routes...');
+    console.log("Submitting routes...");
   };
 
   return (
@@ -71,6 +89,14 @@ const RouteManagement = ({ drivers = [], vehicles = [], passengers = [], routes 
         </div>
         <div className="rm-middle-column">
           <div className="rm-passenger-list">
+            <button
+              onClick={() =>
+                navigate("/passengers-grouping-view/grouping-list-to-route")
+              }
+              className="nav-button"
+            >
+              {t("grouping_list_to_route")}
+            </button>
             <h3>Passengers/requests for tranpottation</h3>
             <ul>
               {passengers && passengers.length > 0 ? (
@@ -94,7 +120,10 @@ const RouteManagement = ({ drivers = [], vehicles = [], passengers = [], routes 
           </div>
         </div>
         <div className="rm-center-column">
-          <button className="rm-route-button" onClick={() => console.log('Open route copy')}>
+          <button
+            className="rm-route-button"
+            onClick={() => console.log("Open route copy")}
+          >
             Copy and Edit Route
           </button>
           <div className="rm-copied-routes">
@@ -108,7 +137,9 @@ const RouteManagement = ({ drivers = [], vehicles = [], passengers = [], routes 
                       id={`copied-route-${index}`}
                       name={`copied-route-${index}`}
                     />
-                    <label htmlFor={`copied-route-${index}`}>{route.name}</label>
+                    <label htmlFor={`copied-route-${index}`}>
+                      {route.name}
+                    </label>
                   </li>
                 ))
               ) : (
@@ -141,10 +172,7 @@ const RouteManagement = ({ drivers = [], vehicles = [], passengers = [], routes 
             <ul>
               {/* Placeholder for assigned passengers */}
               <li>
-                <input
-                  type="checkbox"
-                  defaultChecked
-                />
+                <input type="checkbox" defaultChecked />
                 <label>Passenger Name - Pickup Point</label>
               </li>
             </ul>
@@ -152,7 +180,9 @@ const RouteManagement = ({ drivers = [], vehicles = [], passengers = [], routes 
             <button className="rm-route-button">Fix Selected Routes</button>
             <button className="rm-route-button">Unfix Selected Routes</button>
             <button className="rm-route-button">Edit Selected Routes</button>
-            <button className="rm-route-button">Send Routes to Drivers and Passengers</button>
+            <button className="rm-route-button">
+              Send Routes to Drivers and Passengers
+            </button>
           </div>
         </div>
       </div>
