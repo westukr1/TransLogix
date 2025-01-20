@@ -10,6 +10,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import dayjs from "dayjs";
 
+// Перевірка синхронізації 20/01/2025
 const RepeatTripView = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
