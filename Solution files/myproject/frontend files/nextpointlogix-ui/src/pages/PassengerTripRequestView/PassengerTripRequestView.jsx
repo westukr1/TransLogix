@@ -97,13 +97,19 @@ const PassengerTripRequestView = () => {
       width: 100,
     },
     { headerName: t("passenger_phone"), field: "passenger_phone", width: 150 },
-    { headerName: t("direction"), field: "direction", width: 120 },
+    {
+      headerName: t("direction"),
+      field: "direction",
+      width: 120,
+      cellStyle: { fontWeight: "bold" },
+    },
 
     {
       headerName: t("departure_info"), // 🔵 Блок ВІДПРАВКА
       children: [
         {
           headerName: t("departure_time"),
+          cellStyle: { fontWeight: "bold" },
           field: "departure_time",
           width: 170,
           valueFormatter: (params) =>
@@ -111,6 +117,7 @@ const PassengerTripRequestView = () => {
         },
         {
           headerName: t("pickup_city"),
+          cellStyle: { fontWeight: "bold" },
           field: "pickup_city",
           width: 100,
         },
@@ -142,6 +149,7 @@ const PassengerTripRequestView = () => {
       children: [
         {
           headerName: t("arrival_time"),
+          cellStyle: { fontWeight: "bold" },
           field: "arrival_time",
           width: 170,
           valueFormatter: (params) =>
@@ -149,6 +157,7 @@ const PassengerTripRequestView = () => {
         },
         {
           headerName: t("dropoff_city"),
+          cellStyle: { fontWeight: "bold" },
           field: "dropoff_city",
           width: 100,
         },
