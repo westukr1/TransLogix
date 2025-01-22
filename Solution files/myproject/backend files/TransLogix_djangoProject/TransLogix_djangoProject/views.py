@@ -37,6 +37,11 @@ from datetime import date
 from rest_framework.permissions import IsAuthenticated
 from django.utils.dateparse import parse_datetime
 from django.db.models import Q
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from decouple import config
+from django.utils.timezone import make_aware
+import datetime
 
 class CustomLoginView(APIView):
     permission_classes = [AllowAny]
@@ -1252,3 +1257,54 @@ class PassengerTripRequestListView(ListAPIView):
 class PassengerTripRequestCreateView(generics.CreateAPIView):
     queryset = PassengerTripRequest.objects.all()
     serializer_class = PassengerTripRequestCreateSerializer
+
+
+# Завантажуємо ключ із .env
+GOOGLE_API_KEY = config("GOOGLE_MAPS_API_KEY")
+
+@csrf_exempt
+def calculate_route(request):
+    if request.method == "POST":
+        try:
+            # Розбір JSON-запиту
+            data = json.loads(request.body)
+            origin = data.get("origin")
+            destination = data.get("destination")
+            waypoints = data.get("waypoints", [])
+            language = data.get("language", "en")
+
+            # Формуємо запит до Google Directions API
+            url = "https://maps.googleapis.com/maps/api/directions/json"
+            params = {
+                "origin": origin,
+                "destination": destination,
+                "waypoints": "|".join(waypoints),
+                "key": GOOGLE_API_KEY,
+                "language": language,
+            }
+
+            response = requests.get(url, params=params)
+            google_data = response.json()
+
+            if google_data.get("status") != "OK":
+                return JsonResponse({"error": "Error from Google Directions API", "details": google_data}, status=400)
+
+            # Отримуємо результати маршруту
+            route = google_data["routes"][0]
+            legs = route["legs"]
+            distance = sum(leg["distance"]["value"] for leg in legs) / 1000  # км
+            duration = sum(leg["duration"]["value"] for leg in legs) / 60  # хвилини
+
+            result = {
+                "distance": distance,
+                "duration": duration,
+                "stops": len(waypoints),
+                "start_address": legs[0]["start_address"],
+                "end_address": legs[-1]["end_address"],
+            }
+            return JsonResponse(result)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=400)

@@ -56,7 +56,7 @@ from .views import (CoordinatePointUpdateView,
                     AssignVehicleToDriverView, RemoveDriverVehicleAssignmentView)
 from .views import (DriverVehicleAssignmentViewSet,
                     FuelTypeViewSet, AssignedVehiclesView,
-                    update_fuel_type)
+                    update_fuel_type, calculate_route)
 
 
 router = DefaultRouter()
@@ -140,6 +140,7 @@ urlpatterns = [
 
     path('api/passenger-trip-requests/', PassengerTripRequestListView.as_view(), name='passenger-trip-requests'),
     path('api/passenger-trip-requests/create/', PassengerTripRequestCreateView.as_view(), name='create-passenger-trip-request'),
+    path('api/calculate-route/', calculate_route, name='calculate_route'),
 
     path('', include(router.urls)),
 ]

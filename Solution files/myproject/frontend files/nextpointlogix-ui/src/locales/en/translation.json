@@ -542,5 +542,8 @@
   "selected_passengers": "Selected passengers",
   "name": "Name",
   "location": "Location",
-  "planned_time_on_road": "Planned time on road"
+  "planned_time_on_road": "Planned time on road",
+  "calculate_route": "Calculate route",
+  "save_list": "Save list",
+  "finish": "Finish"
 }

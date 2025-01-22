@@ -17,6 +17,7 @@ const GroupingListToRoute = () => {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(0, 0, 0, 0);
+  const userLanguage = localStorage.getItem("i18nextLng") || "en"; // Задайте за замовчуванням "en"
 
   const [startDate, setStartDate] = useState(tomorrow);
   const [endDate, setEndDate] = useState(
@@ -29,6 +30,14 @@ const GroupingListToRoute = () => {
   const [allRequests, setAllRequests] = useState([]);
   const [unselectedRequests, setUnselectedRequests] = useState([]);
   const [selectedRequests, setSelectedRequests] = useState([]);
+  const [routeDetails, setRouteDetails] = useState({
+    distance: null,
+    duration: null,
+    stops: null,
+    passengers: null,
+    startAddress: null,
+    endAddress: null,
+  });
 
   const fetchRequests = () => {
     const start = dayjs(startDate).format("YYYY-MM-DD HH:mm:ss");
@@ -141,6 +150,88 @@ const GroupingListToRoute = () => {
   //     }
   //   }
   // };
+  const getRowStyle = (params) => {
+    const { sequence_number } = params.data;
+    const maxSequence = Math.max(
+      ...selectedRequests.map((req) => req.sequence_number || 0)
+    );
+    if (sequence_number === 1 || sequence_number === maxSequence) {
+      return { border: "2px solid black", fontWeight: "bold" };
+    }
+    return null;
+  };
+
+  const calculateRoute = async () => {
+    if (selectedRequests.length < 2) {
+      alert(t("minimum_points_required"));
+      return;
+    }
+
+    const origin = `${selectedRequests[0].pickup_latitude},${selectedRequests[0].pickup_longitude}`;
+    const destination = `${
+      selectedRequests[selectedRequests.length - 1].dropoff_latitude
+    },${selectedRequests[selectedRequests.length - 1].dropoff_longitude}`;
+    const waypoints = selectedRequests
+      .slice(1, -1)
+      .map(
+        (request) => `${request.pickup_latitude},${request.pickup_longitude}`
+      );
+
+    try {
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/calculate-route/",
+        {
+          origin,
+          destination,
+          waypoints,
+          language: userLanguage,
+        }
+      );
+
+      const formatAddress = (address) => {
+        const parts = address.split(",");
+        if (parts.length >= 3) {
+          const Street = parts[0].trim(); // Номер будинку та вулиця
+          const house = parts[1].trim();
+          const city = parts[2].trim(); // Місто
+          return `${city}, ${Street}, ${house}`;
+        }
+        return address; // Якщо формат не відповідає очікуваному
+      };
+
+      const formatDuration = (minutes) => {
+        const hours = Math.floor(minutes / 60); // Цілі години
+        const remainingMinutes = Math.round(minutes % 60); // Округлення хвилин
+        return `${hours}h ${remainingMinutes}m`;
+      };
+
+      setRouteDetails({
+        distance: Math.round(response.data.distance),
+        duration: formatDuration(response.data.duration),
+        stops: response.data.stops,
+        passengers: selectedRequests.length,
+        startAddress: formatAddress(response.data.start_address),
+        endAddress: formatAddress(response.data.end_address),
+      });
+
+      alert(t("route_calculated"));
+    } catch (error) {
+      console.error("Error calculating route:", error);
+      alert(t("error_calculating_route"));
+    }
+  };
+
+  const saveList = () => {
+    const formattedList = selectedRequests.map((request) => ({
+      id: request.id,
+      pickup: `${request.pickup_city}, ${request.pickup_street}`,
+      dropoff: `${request.dropoff_city}, ${request.dropoff_street}`,
+      sequence_number: request.sequence_number,
+    }));
+
+    console.log("Saving list:", formattedList);
+    alert(t("list_saved"));
+  };
 
   const createColumnDefs = (isLeft) => {
     console.log("isLeft:", isLeft); // Діагностика
@@ -160,6 +251,20 @@ const GroupingListToRoute = () => {
             }
           />
         ),
+      },
+      {
+        headerName: t("status"),
+        field: "status",
+        width: 80,
+        cellRenderer: (params) => {
+          const { sequence_number } = params.data;
+          const maxSequence = Math.max(
+            ...selectedRequests.map((req) => req.sequence_number || 0)
+          );
+          if (sequence_number === 1) return t("start");
+          if (sequence_number === maxSequence) return t("finish");
+          return "";
+        },
       },
       {
         headerName: t("sequence_number"),
@@ -496,19 +601,6 @@ const GroupingListToRoute = () => {
         {/* Right Column */}
         <div className="gltr-template2s-right-column">
           <div className="gltr-template2s-upper-right">
-            <h1>{t("route_summary")}</h1>
-            <h3>
-              {t("direction")}: {t("work")} <strong>&#8226;</strong>{" "}
-              {t("direction")}: Lviv → Drohobych <strong>&#8226;</strong>{" "}
-              {t("distance")}: 100 km <strong>&#8226;</strong>{" "}
-              {t("estimated_time")}: 2h <strong>&#8226;</strong>{" "}
-              {t("start_time")}: 07:00 <strong>&#8226;</strong> {t("end_time")}:
-              09:00 <strong>&#8226;</strong> {t("stop_count")}: 5{" "}
-              <strong>&#8226;</strong> {t("passenger_count")}: 15{" "}
-              <strong>&#8226;</strong> {t("status")}: {t("not_fixed")}
-            </h3>
-          </div>
-          <div className="gltr-template2s-lower-right">
             <h2>{t("selected_passengers")}</h2>
             <div
               className="ag-theme-alpine"
@@ -518,9 +610,34 @@ const GroupingListToRoute = () => {
                 key={JSON.stringify(selectedRequests)}
                 rowData={selectedRequests}
                 columnDefs={createColumnDefs(false)}
+                getRowStyle={getRowStyle}
                 pagination
                 paginationPageSize={10}
               />
+            </div>
+          </div>
+          <div className="gltr-template2s-lower-right">
+            <h1>{t("route_summary")}</h1>
+            {routeDetails.distance !== null ? (
+              <h3>
+                {t("direction")}: {routeDetails.startAddress} →{" "}
+                {routeDetails.endAddress} <strong>&#8226;</strong>{" "}
+                {t("distance")}: {routeDetails.distance} km{" "}
+                <strong>&#8226;</strong> {t("estimated_time")}:{" "}
+                {routeDetails.duration} <strong>&#8226;</strong>{" "}
+                {t("stop_count")}: {routeDetails.stops} <strong>&#8226;</strong>{" "}
+                {t("passenger_count")}: {routeDetails.passengers}
+              </h3>
+            ) : (
+              <p>{t("no_route_data")}</p>
+            )}
+            <div className="route-buttons">
+              <button className="nav-button" onClick={calculateRoute}>
+                {t("calculate_route")}
+              </button>
+              <button className="nav-button" onClick={saveList}>
+                {t("save_list")}
+              </button>
             </div>
           </div>
         </div>

@@ -514,6 +514,7 @@
   "route_summary": "Відомості про маршрут",
   "start_time": "Час старту",
   "end_time": "Час фінішу",
+
   "stop_count": "Кількість зупинок",
   "passenger_count": "Кількість пасажирів",
 
@@ -521,5 +522,8 @@
   "selected_passengers": "Відібрані пасажири",
   "name": "Ім'я",
   "location": "Місцезнаходження",
-  "planned_time_on_road": "Плановий час в дорозі"
+  "planned_time_on_road": "Плановий час в дорозі",
+  "calculate_route": "Порахувати маршрут",
+  "save_list": "Зберегти список",
+  "finish": "Кінець"
 }
