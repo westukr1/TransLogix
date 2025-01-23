@@ -30,6 +30,10 @@ const GroupingListToRoute = () => {
   const [allRequests, setAllRequests] = useState([]);
   const [unselectedRequests, setUnselectedRequests] = useState([]);
   const [selectedRequests, setSelectedRequests] = useState([]);
+  const [directionFilter, setDirectionFilter] = useState("WORK_TO_HOME");
+  const [allowMixedDirections, setAllowMixedDirections] = useState(false);
+  const [allowExtendedInterval, setAllowExtendedInterval] = useState(false);
+
   const [routeDetails, setRouteDetails] = useState({
     distance: null,
     duration: null,
@@ -70,10 +74,43 @@ const GroupingListToRoute = () => {
       })
       .catch((error) => console.error("Error fetching requests data:", error));
   };
-
+  const applyFilters = (data) => {
+    const filteredData = data.filter((request) => {
+      if (!allowMixedDirections && request.direction !== directionFilter) {
+        return false;
+      }
+      const requestDate = new Date(
+        request.departure_time || request.arrival_time
+      );
+      return (
+        allowExtendedInterval ||
+        (requestDate >= startDate && requestDate <= endDate)
+      );
+    });
+    setUnselectedRequests(filteredData);
+  };
   useEffect(() => {
     fetchRequests();
-  }, [startDate, endDate, searchQuery]);
+  }, [
+    startDate,
+    endDate,
+    searchQuery,
+    directionFilter,
+    allowMixedDirections,
+    allowExtendedInterval,
+  ]);
+
+  const handleDateChange = (setter, date) => {
+    setter(date);
+    if (!allowExtendedInterval) {
+      if (setter === setStartDate) {
+        setEndDate(new Date(date.getTime() + 24 * 60 * 60 * 1000));
+      } else {
+        setStartDate(new Date(date.getTime() - 24 * 60 * 60 * 1000));
+      }
+    }
+  };
+
   const handleSelect = (id) => {
     const selectedRequest = unselectedRequests.find((r) => r.id === id);
     if (selectedRequest) {
@@ -419,7 +456,6 @@ const GroupingListToRoute = () => {
         {/* Left Column */}
         <div className="gltr-template2s-left-column">
           <div>
-            <button className="nav-button">{t("save")}</button>
             <button onClick={fetchRequests} className="nav-button">
               {t("update_table")}
             </button>
@@ -430,6 +466,7 @@ const GroupingListToRoute = () => {
               {t("add_request")}
             </button>
             <label>{t("search_by_name")}</label>
+
             <input
               type="text"
               value={searchQuery}
@@ -455,6 +492,42 @@ const GroupingListToRoute = () => {
                 onChange={(e) => setEndDate(new Date(e.target.value))}
                 className="form-control"
               />
+            </div>
+            <div className="filters">
+              <label>
+                <input
+                  type="radio"
+                  name="directionFilter"
+                  checked={directionFilter === "WORK_TO_HOME"}
+                  onChange={() => setDirectionFilter("WORK_TO_HOME")}
+                />
+                {t("to_home")}
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="directionFilter"
+                  checked={directionFilter === "HOME_TO_WORK"}
+                  onChange={() => setDirectionFilter("HOME_TO_WORK")}
+                />
+                {t("to_work")}
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={allowMixedDirections}
+                  onChange={(e) => setAllowMixedDirections(e.target.checked)}
+                />
+                {t("allow_mixed_directions")}
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={allowExtendedInterval}
+                  onChange={(e) => setAllowExtendedInterval(e.target.checked)}
+                />
+                {t("allow_extended_interval")}
+              </label>
             </div>
           </div>
           <div
