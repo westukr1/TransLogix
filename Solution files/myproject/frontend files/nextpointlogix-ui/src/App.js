@@ -40,6 +40,7 @@ import PointsSelectView from "./pages/PassengerTripRequestView/PointsSelectView"
 import RepeatTripView from "./pages/PassengerTripRequestView/RepeatTripView";
 
 import GroupingListToRoute from "./pages/RoutManager/PassengersGroupingView/GroupingListToRoute";
+import UserRoutesSettings from "./pages/RoutManager/UserSettingsView/UserRoutesSettings";
 
 function App() {
   return (
@@ -114,6 +115,10 @@ function App() {
           <Route
             path="/passengers-grouping-view/grouping-list-to-route"
             element={<GroupingListToRoute />}
+          />
+          <Route
+            path="/user-routes-settings"
+            element={<UserRoutesSettings />}
           />
         </Routes>
       </div>

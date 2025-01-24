@@ -545,5 +545,26 @@
   "planned_time_on_road": "Planned time on road",
   "calculate_route": "Calculate route",
   "save_list": "Save list",
-  "finish": "Finish"
+  "finish": "Finish",
+  "allow_extended_interval": "Allow time interval longer than 24 hours",
+  "allow_mixed_directions": "Allow directions to work and home in the same route ",
+  "show_all_requests": "All requests",
+
+  "user_routes_settings": "Routes restrictions settings",
+  "current_settings": "Current Settings",
+  "date_interval": "Date Interval, days ",
+  "days": "days",
+  "arrival_time_tolerance": "Allowed Arrival Time Tolerance, minutes",
+  "yes": "Yes",
+  "no": "No",
+  "max_route_duration": "Maximum Route Duration",
+  "driver_vehicle_management": "Transport management",
+  "save_settings": "Save settings",
+  "enter_name_or_last_name": "Enter name or lastname",
+  "max_route_distance": "Maximum route distance, km",
+  "max_stops": "Maximum number of stops",
+  "max_passengers": "Maximum number of passengers",
+  "min_passengers": "Minimum number of passengers",
+  "allow_multiple_work_addresses": "Allow more than one work address",
+  "no_route_data": " No route data"
 }

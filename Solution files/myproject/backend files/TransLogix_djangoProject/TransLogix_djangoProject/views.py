@@ -42,6 +42,9 @@ from django.views.decorators.csrf import csrf_exempt
 from decouple import config
 from django.utils.timezone import make_aware
 import datetime
+from django.contrib.auth.decorators import login_required
+from .models import UserSettings
+
 
 class CustomLoginView(APIView):
     permission_classes = [AllowAny]
@@ -262,6 +265,45 @@ def get_user_roles(request):
     }
     return JsonResponse(roles)
 
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def update_settings(request):
+    if request.method == "POST":
+        data = request.data
+        settings, created = UserSettings.objects.get_or_create(user=request.user)
+
+        settings.date_interval = data.get("date_interval", settings.date_interval)
+        settings.arrival_time_tolerance = data.get("arrival_time_tolerance", settings.arrival_time_tolerance)
+        settings.allow_mixed_directions = data.get("allow_mixed_directions", settings.allow_mixed_directions)
+        settings.max_route_duration = data.get("max_route_duration", settings.max_route_duration)
+        settings.max_route_distance = data.get("max_route_distance", settings.max_route_distance)
+        settings.max_stops = data.get("max_stops", settings.max_stops)
+        settings.max_passengers = data.get("max_passengers", settings.max_passengers)
+        settings.min_passengers = data.get("min_passengers", settings.min_passengers)
+        settings.allow_multiple_work_addresses = data.get("allow_multiple_work_addresses", settings.allow_multiple_work_addresses)
+
+        settings.save()
+
+        return Response({"message": "Settings updated successfully."})
+
+    return Response({"error": "Invalid request method."}, status=400)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_settings(request):
+    settings, created = UserSettings.objects.get_or_create(user=request.user)
+    return Response({
+        "date_interval": settings.date_interval,
+        "arrival_time_tolerance": settings.arrival_time_tolerance,
+        "allow_mixed_directions": settings.allow_mixed_directions,
+        "max_route_duration": settings.max_route_duration,
+        "max_route_distance": settings.max_route_distance,
+        "max_stops": settings.max_stops,
+        "max_passengers": settings.max_passengers,
+        "min_passengers": settings.min_passengers,
+        "allow_multiple_work_addresses": settings.allow_multiple_work_addresses,
+    })
 
 class RouteListView(APIView):
     permission_classes = [IsAuthenticated]

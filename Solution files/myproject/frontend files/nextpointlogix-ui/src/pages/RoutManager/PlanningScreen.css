@@ -12,7 +12,7 @@
   align-items: center;
   padding: 10px 20px;
   background-color: #2c2c2c;
-  border-bottom: 3px solid #C0C0C0;
+  border-bottom: 3px solid #c0c0c0;
   height: 80px; /* Висота верхньої панелі */
   width: 100%; /* Вся ширина екрану */
 }
@@ -27,7 +27,7 @@
   flex: 0 0 25%; /* 25% ширини екрану */
   padding: 10px;
   background-color: #3a3a3a;
-  border: 3px solid #C0C0C0;
+  border: 3px solid #c0c0c0;
   border-radius: 5px;
   overflow-y: auto; /* Полоса прокрутки для довгих списків */
   box-sizing: border-box;
@@ -37,7 +37,7 @@
   flex: 0 0 35%; /* 35% ширини екрану */
   padding: 10px;
   background-color: #3a3a3a;
-  border: 3px solid #C0C0C0;
+  border: 3px solid #c0c0c0;
   border-radius: 5px;
   overflow-y: auto; /* Полоса прокрутки для довгих списків */
   box-sizing: border-box;
@@ -47,18 +47,19 @@
   flex: 0 0 100%; /* 20% ширини екрану */
   padding: 10px;
   background-color: #3a3a3a;
-  border: 3px solid #C0C0C0;
+  border: 3px solid #c0c0c0;
   border-radius: 5px;
   box-sizing: border-box;
   height: 100vh; /* Займає 100% висоти екрану */
   overflow-y: auto; /* Додає прокрутку, якщо вміст перевищує висоту */
+  padding: 0%;
 }
 
 .ps-right-column {
   flex: 0 0 20%; /* 20% ширини екрану */
   padding: 10px;
   background-color: #3a3a3a;
-  border: 3px solid #C0C0C0;
+  border: 3px solid #c0c0c0;
   border-radius: 5px;
   box-sizing: border-box;
 }

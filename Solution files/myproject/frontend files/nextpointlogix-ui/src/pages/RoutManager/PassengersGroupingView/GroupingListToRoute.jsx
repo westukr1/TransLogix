@@ -33,6 +33,7 @@ const GroupingListToRoute = () => {
   const [directionFilter, setDirectionFilter] = useState("WORK_TO_HOME");
   const [allowMixedDirections, setAllowMixedDirections] = useState(false);
   const [allowExtendedInterval, setAllowExtendedInterval] = useState(false);
+  const [showAllRequests, setShowAllRequests] = useState(false);
 
   const [routeDetails, setRouteDetails] = useState({
     distance: null,
@@ -71,12 +72,16 @@ const GroupingListToRoute = () => {
         setAllRequests(data);
         setUnselectedRequests(data);
         setSelectedRequests([]); // Clear selected requests
+        applyFilters(data);
       })
       .catch((error) => console.error("Error fetching requests data:", error));
   };
   const applyFilters = (data) => {
     const filteredData = data.filter((request) => {
-      if (!allowMixedDirections && request.direction !== directionFilter) {
+      if (directionFilter === "ALL") {
+        return true; // Показуємо всі заявки
+      }
+      if (request.direction !== directionFilter) {
         return false;
       }
       const requestDate = new Date(
@@ -89,6 +94,7 @@ const GroupingListToRoute = () => {
     });
     setUnselectedRequests(filteredData);
   };
+
   useEffect(() => {
     fetchRequests();
   }, [
@@ -100,15 +106,15 @@ const GroupingListToRoute = () => {
     allowExtendedInterval,
   ]);
 
-  const handleDateChange = (setter, date) => {
-    setter(date);
+  const handleStartDateChange = (date) => {
+    setStartDate(date);
     if (!allowExtendedInterval) {
-      if (setter === setStartDate) {
-        setEndDate(new Date(date.getTime() + 24 * 60 * 60 * 1000));
-      } else {
-        setStartDate(new Date(date.getTime() - 24 * 60 * 60 * 1000));
-      }
+      setEndDate(new Date(date.getTime() + 24 * 60 * 60 * 1000));
     }
+  };
+
+  const handleEndDateChange = (date) => {
+    setEndDate(date);
   };
 
   const handleSelect = (id) => {
@@ -465,6 +471,7 @@ const GroupingListToRoute = () => {
             >
               {t("add_request")}
             </button>
+
             <label>{t("search_by_name")}</label>
 
             <input
@@ -480,7 +487,9 @@ const GroupingListToRoute = () => {
               <input
                 type="datetime-local"
                 value={startDate.toISOString().slice(0, 16)}
-                onChange={(e) => setStartDate(new Date(e.target.value))}
+                onChange={(e) =>
+                  handleStartDateChange(new Date(e.target.value))
+                }
                 className="form-control"
               />
             </div>
@@ -489,9 +498,39 @@ const GroupingListToRoute = () => {
               <input
                 type="datetime-local"
                 value={endDate.toISOString().slice(0, 16)}
-                onChange={(e) => setEndDate(new Date(e.target.value))}
+                onChange={(e) => handleEndDateChange(new Date(e.target.value))}
                 className="form-control"
+                disabled={!allowExtendedInterval}
               />
+            </div>
+            <div className="filters">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={allowExtendedInterval}
+                  onChange={(e) => {
+                    setAllowExtendedInterval(e.target.checked);
+                    if (!e.target.checked) {
+                      setEndDate(
+                        new Date(startDate.getTime() + 24 * 60 * 60 * 1000)
+                      );
+                    }
+                  }}
+                />
+                {t("allow_extended_interval")}
+              </label>
+              <input
+                type="checkbox"
+                checked={allowMixedDirections}
+                onChange={(e) => {
+                  setAllowMixedDirections(e.target.checked);
+                  if (!e.target.checked) {
+                    setShowAllRequests(false);
+                    setDirectionFilter("WORK_TO_HOME");
+                  }
+                }}
+              />
+              {t("allow_mixed_directions")}
             </div>
             <div className="filters">
               <label>
@@ -512,22 +551,18 @@ const GroupingListToRoute = () => {
                 />
                 {t("to_work")}
               </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={allowMixedDirections}
-                  onChange={(e) => setAllowMixedDirections(e.target.checked)}
-                />
-                {t("allow_mixed_directions")}
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={allowExtendedInterval}
-                  onChange={(e) => setAllowExtendedInterval(e.target.checked)}
-                />
-                {t("allow_extended_interval")}
-              </label>
+              <label></label>
+              {allowMixedDirections && (
+                <label>
+                  <input
+                    type="radio"
+                    name="directionFilter"
+                    checked={directionFilter === "ALL"}
+                    onChange={() => setDirectionFilter("ALL")}
+                  />
+                  {t("show_all_requests")}
+                </label>
+              )}
             </div>
           </div>
           <div
@@ -710,6 +745,12 @@ const GroupingListToRoute = () => {
               </button>
               <button className="nav-button" onClick={saveList}>
                 {t("save_list")}
+              </button>
+              <button
+                className="nav-button"
+                onClick={() => navigate("/user-routes-settings")}
+              >
+                {t("user_routes_settings")}
               </button>
             </div>
           </div>

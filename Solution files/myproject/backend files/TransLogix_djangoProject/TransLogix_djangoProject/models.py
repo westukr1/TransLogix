@@ -51,6 +51,23 @@ class User(AbstractUser):
 
 from django.db import models
 
+class UserSettings(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="settings")
+    date_interval = models.PositiveIntegerField(default=1)  # Кількість днів для інтервалу
+    arrival_time_tolerance = models.PositiveIntegerField(default=30)  # Хвилини
+    allow_mixed_directions = models.BooleanField(default=False)
+    max_route_duration = models.PositiveIntegerField(default=240)  # Максимальний час у хвилинах
+    max_route_distance = models.PositiveIntegerField(default=100)  # Максимальна дистанція у км
+    max_stops = models.PositiveIntegerField(default=10)  # Максимальна кількість зупинок
+    max_passengers = models.PositiveIntegerField(default=50)  # Максимальна кількість пасажирів
+    min_passengers = models.PositiveIntegerField(default=1)  # Мінімальна кількість пасажирів
+    allow_multiple_work_addresses = models.BooleanField(default=False)  # Дозволити кілька робочих адрес
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Settings for {self.user.username}"
+
 class Driver(models.Model):
 
     driver_id = models.AutoField(primary_key=True)

@@ -142,6 +142,9 @@ urlpatterns = [
     path('api/passenger-trip-requests/create/', PassengerTripRequestCreateView.as_view(), name='create-passenger-trip-request'),
     path('api/calculate-route/', calculate_route, name='calculate_route'),
 
+    path('api/get-settings/', views.get_settings, name='get_settings'),
+    path('api/update-settings/', views.update_settings, name='update_settings'),
+
     path('', include(router.urls)),
 ]
 

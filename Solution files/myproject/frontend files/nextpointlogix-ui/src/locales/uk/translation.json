@@ -525,5 +525,26 @@
   "planned_time_on_road": "Плановий час в дорозі",
   "calculate_route": "Порахувати маршрут",
   "save_list": "Зберегти список",
-  "finish": "Кінець"
+  "finish": "Кінець",
+  "allow_extended_interval": "Дозволити інтервал часу більше за добу",
+  "allow_mixed_directions": "Дозволити напрямки На роботу і Додому в одному маршруті",
+  "show_all_requests": "Всі заявки",
+  "user_routes_settings": "Налаштування обмежень маршрутів",
+  "current_settings": "Поточні налаштування",
+  "date_interval": "Інтервал дати, діб",
+  "days": "днів",
+  "arrival_time_tolerance": "Допустимий інтервал часу прибуття, хвилин",
+
+  "yes": "Так",
+  "no": "Ні",
+  "max_route_duration": "Максимальна тривалість маршруту, хвилин",
+  "driver_vehicle_management": "Управління транспортом",
+  "save_settings": "Зберегти налаштування",
+  "enter_name_or_last_name": "Введіть імя або призвище",
+  "max_route_distance": "Максимальна дистанція маршруту, км",
+  "max_stops": "Максимальна кількість зупинок",
+  "max_passengers": "Максимальна кількість пасажирів",
+  "min_passengers": "Мінімальна кількість пасажирів",
+  "allow_multiple_work_addresses": "Дозволити більше ніж одну робочу адресу",
+  "no_route_data": " Відсутні відомості про маршрут "
 }
