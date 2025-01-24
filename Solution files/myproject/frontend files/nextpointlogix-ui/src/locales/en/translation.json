@@ -547,7 +547,7 @@
   "save_list": "Save list",
   "finish": "Finish",
   "allow_extended_interval": "Allow time interval longer than 24 hours",
-  "allow_mixed_directions": "Allow directions to work and home in the same route ",
+  "allow_mixed_directions": "I want to select directions to work and home for the same route ",
   "show_all_requests": "All requests",
 
   "user_routes_settings": "Routes restrictions settings",
@@ -566,5 +566,9 @@
   "max_passengers": "Maximum number of passengers",
   "min_passengers": "Minimum number of passengers",
   "allow_multiple_work_addresses": "Allow more than one work address",
-  "no_route_data": " No route data"
+  "no_route_data": " No route data",
+  "settings_updated": "Settings updated!",
+  "configured_route_limits": "Route limits",
+  "km": "km",
+  "minimum_points_required": " minimum points required"
 }

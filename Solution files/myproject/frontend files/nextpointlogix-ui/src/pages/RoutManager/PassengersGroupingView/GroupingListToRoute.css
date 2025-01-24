@@ -85,3 +85,13 @@ input[disabled] {
   color: white; /* Зміна кольору тексту на білий */
   background-color: #474747; /* Фоновий колір для вимкненого поля */
 }
+.route-settings-summary p {
+  white-space: wrap;
+  white-space: normal; /* Дозволяє перенос тексту */
+  word-wrap: break-word; /* Переносить довгі слова, щоб уникнути виходу за межі контейнера */
+  margin: 0; /* Забирає зайві відступи */
+  width: auto;
+  flex: 1;
+  flex-direction: column;
+  background-color: #2c2c2c;
+}

@@ -34,6 +34,7 @@ const GroupingListToRoute = () => {
   const [allowMixedDirections, setAllowMixedDirections] = useState(false);
   const [allowExtendedInterval, setAllowExtendedInterval] = useState(false);
   const [showAllRequests, setShowAllRequests] = useState(false);
+  const [routeSettings, setRouteSettings] = useState(null);
 
   const [routeDetails, setRouteDetails] = useState({
     distance: null,
@@ -76,6 +77,27 @@ const GroupingListToRoute = () => {
       })
       .catch((error) => console.error("Error fetching requests data:", error));
   };
+  // Функція для отримання налаштувань
+  const fetchRouteSettings = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/api/get-settings/",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      );
+      setRouteSettings(response.data);
+    } catch (error) {
+      console.error("Error fetching route settings:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchRouteSettings();
+  }, []);
+
   const applyFilters = (data) => {
     const filteredData = data.filter((request) => {
       if (directionFilter === "ALL") {
@@ -746,12 +768,42 @@ const GroupingListToRoute = () => {
               <button className="nav-button" onClick={saveList}>
                 {t("save_list")}
               </button>
-              <button
-                className="nav-button"
-                onClick={() => navigate("/user-routes-settings")}
-              >
-                {t("user_routes_settings")}
-              </button>
+            </div>
+            <div>
+              {routeSettings && (
+                <div className="route-settings-summary">
+                  <h3>{t("configured_route_limits")}:</h3>
+                  <p>
+                    {t("date_interval")}: {routeSettings.date_interval}{" "}
+                    {t("days")} <strong>&#8226;</strong>{" "}
+                    {t("arrival_time_tolerance")}:{" "}
+                    {routeSettings.arrival_time_tolerance} {t("minutes")}{" "}
+                    <strong>&#8226;</strong> {t("allow_mixed_directions")}:{" "}
+                    {routeSettings.allow_mixed_directions ? t("yes") : t("no")}{" "}
+                    <strong>&#8226;</strong> {t("max_route_duration")}:{" "}
+                    {routeSettings.max_route_duration} {t("minutes")}{" "}
+                    <strong>&#8226;</strong> {t("max_route_distance")}:{" "}
+                    {routeSettings.max_route_distance} {t("km")}{" "}
+                    <strong>&#8226;</strong> {t("max_stops")}:{" "}
+                    {routeSettings.max_stops} <strong>&#8226;</strong>{" "}
+                    {t("max_passengers")}: {routeSettings.max_passengers}{" "}
+                    <strong>&#8226;</strong> {t("min_passengers")}:{" "}
+                    {routeSettings.min_passengers} <strong>&#8226;</strong>{" "}
+                    {t("allow_multiple_work_addresses")}:{" "}
+                    {routeSettings.allow_multiple_work_addresses
+                      ? t("yes")
+                      : t("no")}
+                  </p>
+                </div>
+              )}
+              <div>
+                <button
+                  className="nav-button"
+                  onClick={() => navigate("/user-routes-settings")}
+                >
+                  {t("user_routes_settings")}
+                </button>
+              </div>
             </div>
           </div>
         </div>

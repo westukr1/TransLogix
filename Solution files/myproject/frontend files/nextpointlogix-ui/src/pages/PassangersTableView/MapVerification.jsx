@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 import { useTranslation } from "react-i18next";
+import "./MapVerification.css";
 
 const libraries = ["places"];
 
@@ -136,91 +137,107 @@ const MapVerification = () => {
   }
 
   return (
-    <div className="map-verification" style={{ display: "flex" }}>
-      <div
-        className="sidebar"
-        style={{
-          width: "15%",
-          padding: "10px",
-          borderRight: "1px solid #ccc",
-          height: "900px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start", // Вирівнює вміст по верхньому краю
-          justifyContent: "flex-start", // Додатково фіксує вирівнювання
-        }}
-      >
-        <h3>{t("verification_coordinates")}</h3>
-        <p>
-          {t("latitude")}: {initialLatitude.toFixed(6)}
-          <br />
-          {t("longitude")}: {initialLongitude.toFixed(6)}
-        </p>
-
-        <h4>{t("marker_coordinates")}</h4>
-        {markerPosition ? (
-          <>
-            <p>
-              {t("latitude")}: {markerPosition.lat.toFixed(6)} <br />
-              {t("longitude")}: {markerPosition.lng.toFixed(6)}
-            </p>
-          </>
-        ) : (
-          <p>{t("no_marker_placed")}</p>
-        )}
-      </div>
-      <div
-        className="map-container"
-        style={{ width: "85%", position: "relative", height: "900px" }}
-      >
-        <div
-          className="actions"
-          style={{
-            position: "absolute",
-            top: "10px",
-            left: "10px",
-            zIndex: 10,
-            background: "#fff",
-            padding: "10px",
-            borderRadius: "5px",
-            boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
-          }}
-        >
-          <button onClick={centerMap}>{t("center_map")}</button>
-          <button onClick={placeMarker}>{t("place_marker")}</button>
-          <button onClick={setNewCoordinates}>
-            {t("set_new_coordinates")}
-          </button>
-          <button onClick={handleSaveCoordinates}>
-            {t("save_coordinates")}
-          </button>
-          <button onClick={handleExit}>{t("exit")}</button>
+    <div className="mv-two-column-template">
+      <div className="mv-top-nav-bar">
+        <div className="logo">
+          <img src="/logo.png" alt={t("logo.alt")} />
         </div>
-        <GoogleMap
-          mapContainerStyle={mapContainerStyle}
-          center={{ lat: latitude, lng: longitude }}
-          zoom={15}
-          options={{ fullscreenControl: false }}
-          onLoad={(map) => setMapRef(map)}
-        >
-          <Marker
-            position={{ lat: latitude, lng: longitude }}
-            draggable={true}
-            onDragEnd={onMarkerDragEnd}
-          />
-          {markerPosition && (
-            <Marker
-              position={markerPosition}
-              draggable={true}
-              onDragEnd={(event) => {
-                const newLat = event.latLng.lat();
-                const newLng = event.latLng.lng();
-                setMarkerPosition({ lat: newLat, lng: newLng });
+        <div className="nav-buttons">
+          <button className="nav-button" onClick={handleExit}>
+            {t("exit")}
+          </button>
+        </div>
+      </div>
+      <div className="mv-template2s-content">
+        <div className="map-verification" style={{ display: "flex" }}>
+          <div
+            className="sidebar"
+            style={{
+              width: "10%",
+              padding: "10px",
+              borderRight: "1px solid #ccc",
+              height: "900px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start", // Вирівнює вміст по верхньому краю
+              justifyContent: "flex-start", // Додатково фіксує вирівнювання
+            }}
+          >
+            <h3>{t("verification_coordinates")}</h3>
+            <p>
+              {t("latitude")}: {initialLatitude.toFixed(6)}
+              <br />
+              {t("longitude")}: {initialLongitude.toFixed(6)}
+            </p>
+
+            <h4>{t("marker_coordinates")}</h4>
+            {markerPosition ? (
+              <>
+                <p>
+                  {t("latitude")}: {markerPosition.lat.toFixed(6)} <br />
+                  {t("longitude")}: {markerPosition.lng.toFixed(6)}
+                </p>
+              </>
+            ) : (
+              <p>{t("no_marker_placed")}</p>
+            )}
+            <button className="mv-nav-button" onClick={centerMap}>
+              {t("center_map")}
+            </button>
+            <button className="mv-nav-button" onClick={placeMarker}>
+              {t("place_marker")}
+            </button>
+            <button className="mv-nav-button" onClick={setNewCoordinates}>
+              {t("set_new_coordinates")}
+            </button>
+            <button className="mv-nav-button" onClick={handleSaveCoordinates}>
+              {t("save_coordinates")}
+            </button>
+          </div>
+          <div
+            className="map-container"
+            style={{ width: "90%", position: "relative", height: "900px" }}
+          >
+            <div
+              className="actions"
+              style={{
+                position: "absolute",
+                top: "10px",
+                left: "10px",
+                zIndex: 10,
+                background: "#fff",
+                padding: "10px",
+                borderRadius: "5px",
+                boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
               }}
-              title={t("draggable_marker")}
-            />
-          )}
-        </GoogleMap>
+            ></div>
+            <GoogleMap
+              mapContainerStyle={mapContainerStyle}
+              center={{ lat: latitude, lng: longitude }}
+              zoom={15}
+              options={{ fullscreenControl: false }}
+              onLoad={(map) => setMapRef(map)}
+            >
+              <Marker
+                position={{ lat: latitude, lng: longitude }}
+                draggable={true}
+                onDragEnd={onMarkerDragEnd}
+              />
+              {markerPosition && (
+                <Marker
+                  position={markerPosition}
+                  draggable={true}
+                  onDragEnd={(event) => {
+                    const newLat = event.latLng.lat();
+                    const newLng = event.latLng.lng();
+                    setMarkerPosition({ lat: newLat, lng: newLng });
+                  }}
+                  title={t("draggable_marker")}
+                />
+              )}
+            </GoogleMap>
+          </div>
+        </div>
       </div>
     </div>
   );

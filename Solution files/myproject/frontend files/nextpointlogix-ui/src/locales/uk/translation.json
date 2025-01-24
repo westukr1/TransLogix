@@ -527,7 +527,7 @@
   "save_list": "Зберегти список",
   "finish": "Кінець",
   "allow_extended_interval": "Дозволити інтервал часу більше за добу",
-  "allow_mixed_directions": "Дозволити напрямки На роботу і Додому в одному маршруті",
+  "allow_mixed_directions": "Я хочу обрати напрямки На роботу і Додому для одного маршруту",
   "show_all_requests": "Всі заявки",
   "user_routes_settings": "Налаштування обмежень маршрутів",
   "current_settings": "Поточні налаштування",
@@ -546,5 +546,10 @@
   "max_passengers": "Максимальна кількість пасажирів",
   "min_passengers": "Мінімальна кількість пасажирів",
   "allow_multiple_work_addresses": "Дозволити більше ніж одну робочу адресу",
-  "no_route_data": " Відсутні відомості про маршрут "
+  "no_route_data": " Відсутні відомості про маршрут ",
+  "settings_updated": "Налаштування оновлені!",
+  "configured_route_limits": "обмеження маршрутів",
+  "km": "км",
+
+  "minimum_points_required": "необхідна мінімальна кількість точок"
 }
