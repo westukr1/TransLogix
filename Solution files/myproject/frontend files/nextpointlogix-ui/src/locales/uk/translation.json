@@ -551,5 +551,6 @@
   "configured_route_limits": "обмеження маршрутів",
   "km": "км",
 
-  "minimum_points_required": "необхідна мінімальна кількість точок"
+  "minimum_points_required": "необхідна мінімальна кількість точок",
+  "is_active_only": "тільки активні заявки"
 }

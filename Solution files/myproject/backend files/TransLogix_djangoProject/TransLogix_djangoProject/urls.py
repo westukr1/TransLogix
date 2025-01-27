@@ -56,15 +56,21 @@ from .views import (CoordinatePointUpdateView,
                     AssignVehicleToDriverView, RemoveDriverVehicleAssignmentView)
 from .views import (DriverVehicleAssignmentViewSet,
                     FuelTypeViewSet, AssignedVehiclesView,
-                    update_fuel_type, calculate_route)
+                    update_fuel_type, calculate_route, PassengerTripRequestViewSet)
 
+from .views import PassengerTripRequestCreateView
+from .views import FilteredPassengerTripRequestView
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
 router.register(r'driver-vehicle-assignments', DriverVehicleAssignmentViewSet, basename='driver-vehicle-assignment')
 router.register(r'fuel-types', FuelTypeViewSet, basename='fuel-type')
+#router.register(r"passenger-trip-requests", PassengerTripRequestViewSet)
 
 # Для створення пасажира go fuck yourself
+import logging
+logger = logging.getLogger(__name__)
+logger.info("Loaded URLs")
 
 urlpatterns = [
     path('admin/', admin.site.urls),  # Вже існуючий маршрут
@@ -139,8 +145,10 @@ urlpatterns = [
     path('vehicles/<int:vehicle_id>/assigned-drivers/', get_assigned_drivers, name='assigned-drivers'),
 
     path('api/passenger-trip-requests/', PassengerTripRequestListView.as_view(), name='passenger-trip-requests'),
+
     path('api/passenger-trip-requests/create/', PassengerTripRequestCreateView.as_view(), name='create-passenger-trip-request'),
     path('api/calculate-route/', calculate_route, name='calculate_route'),
+    path('api/filtered-passenger-trip-requests/', FilteredPassengerTripRequestView.as_view(), name='filtered_passenger_trip_requests'),
 
     path('api/get-settings/', views.get_settings, name='get_settings'),
     path('api/update-settings/', views.update_settings, name='update_settings'),

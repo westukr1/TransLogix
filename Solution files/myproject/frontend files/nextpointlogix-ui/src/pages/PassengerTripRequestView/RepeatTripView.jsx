@@ -451,6 +451,7 @@ const RepeatTripView = () => {
           comment: trip.comment,
           is_active: true,
         };
+        console.log(typeof passengerId); // має вивести "number"
 
         await axios.post(
           "http://localhost:8000/api/passenger-trip-requests/create/",

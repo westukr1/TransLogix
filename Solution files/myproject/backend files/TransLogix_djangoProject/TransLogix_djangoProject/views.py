@@ -24,6 +24,8 @@ from .serializers import (
 import random
 import string
 import requests
+import logging
+
 from django.conf import settings
 from django.db.models import Q
 from rest_framework import filters
@@ -44,6 +46,18 @@ from django.utils.timezone import make_aware
 import datetime
 from django.contrib.auth.decorators import login_required
 from .models import UserSettings
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
+from django.utils.timezone import make_aware
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
+
+
+
+# Включення логування SQL-запитів
+logger = logging.getLogger('django.db.backends')
+logger.setLevel(logging.DEBUG)
+logger.addHandler(logging.StreamHandler())
 
 
 class CustomLoginView(APIView):
@@ -970,10 +984,12 @@ class DriverUpdateView(UpdateAPIView):
 class DriverListView(ListAPIView):
     queryset = Driver.objects.all()
     serializer_class = DriverSerializer
+
 class DriverDetailView(RetrieveAPIView):
     queryset = Driver.objects.all()
     serializer_class = DriverSerializer
     permission_classes = [IsAuthenticated]
+
 class VehicleListCreateView(generics.ListCreateAPIView):
     """
     Представлення для отримання списку транспортних засобів і створення нового.
@@ -1237,68 +1253,105 @@ class RemoveDriverVehicleAssignmentView(APIView):
             return Response({'error': str(e)}, status=500)
 
 
-from django.db.models import Q
-
-from django.db.models import Q
-
-from django.db.models import Q
-from datetime import datetime
 
 class PassengerTripRequestListView(ListAPIView):
-    queryset = PassengerTripRequest.objects.all()
+    queryset = PassengerTripRequest.objects.select_related(
+        'city', 'street', 'house', 'coordinatepoint'
+    )
     serializer_class = PassengerTripRequestSerializer
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
+    def list(self, request, *args, **kwargs):
+        print("Method 'list' was called")
+        logging.info("Method 'list' was called")
+        queryset = self.get_queryset()
+        logging.info(f"Final Queryset Count: {queryset.count()}")
+        return super().list(request, *args, **kwargs)
 
-        # Фільтрація за статусом (is_active)
+    def get_queryset(self):
+        print("Method 'get_queryset' was called")
+        queryset = super().get_queryset()
+        logging.info(f"Initial Queryset Count: {queryset.count()}")
+
+        # Фільтр за `is_active`
         is_active = self.request.query_params.get('is_active')
         if is_active is not None:
-            queryset = queryset.filter(is_active=is_active.lower() == 'true')
+            logging.info(f"Is Active Parameter: {is_active}")
+            if is_active.lower() == 'true':
+                queryset = queryset.filter(is_active=True)
+            elif is_active.lower() == 'false':
+                queryset = queryset.filter(is_active=False)
 
-        # Фільтрація за інтервалом дат
+        # Фільтрація за датами
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
 
-        try:
-            if start_date:
-                start_date = datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S")
-            if end_date:
-                end_date = datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S")
-        except ValueError:
-            return queryset.none()  # Невірний формат дати
+        if start_date or end_date:
+            try:
+                if start_date:
+                    start_date = make_aware(datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S"))
+                    logging.info(f"Start Date: {start_date}")
+                if end_date:
+                    end_date = make_aware(datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S"))
+                    logging.info(f"End Date: {end_date}")
+            except ValueError as e:
+                logging.error(f"Invalid Date Format: {e}")
+                return queryset.none()
 
-        if start_date and end_date:
-            queryset = queryset.filter(
-                Q(departure_time__range=(start_date, end_date)) |
-                Q(arrival_time__range=(start_date, end_date))
-            )
-        elif start_date:
-            queryset = queryset.filter(
-                Q(departure_time__gte=start_date) | Q(arrival_time__gte=start_date)
-            )
-        elif end_date:
-            queryset = queryset.filter(
-                Q(departure_time__lte=end_date) | Q(arrival_time__lte=end_date)
-            )
+            if start_date and end_date:
+                queryset = queryset.filter(
+                    Q(departure_time__range=(start_date, end_date)) |
+                    Q(arrival_time__range=(start_date, end_date))
+                )
+            elif start_date:
+                queryset = queryset.filter(
+                    Q(departure_time__gte=start_date) | Q(arrival_time__gte=start_date)
+                )
+            elif end_date:
+                queryset = queryset.filter(
+                    Q(departure_time__lte=end_date) | Q(arrival_time__lte=end_date)
+                )
+            logging.info(f"Filtered by Date Count: {queryset.count()}")
 
-        # Пошук за ім'ям, прізвищем або коментарем
+        # Фільтрація за напрямками
+        direction = self.request.query_params.get('direction')
+        if direction:
+            directions = direction.split(',')
+            logging.info(f"Filtering by Directions: {directions}")
+            queryset = queryset.filter(direction__in=directions)
+
+        # Пошук
         search_query = self.request.query_params.get('search')
         if search_query:
+            logging.info(f"Search Query: {search_query}")
             queryset = queryset.filter(
                 Q(passenger__first_name__icontains=search_query) |
                 Q(passenger__last_name__icontains=search_query) |
                 Q(comment__icontains=search_query)
             )
 
+        logging.info(f"Final Queryset Count: {queryset.count()}")
         return queryset
 
 
 
 
-class PassengerTripRequestCreateView(generics.CreateAPIView):
+class PassengerTripRequestViewSet(ModelViewSet):
     queryset = PassengerTripRequest.objects.all()
-    serializer_class = PassengerTripRequestCreateSerializer
+    serializer_class = PassengerTripRequestSerializer
+
+    @action(detail=True, methods=["patch"])
+    def update_status(self, request, pk=None):
+        try:
+            instance = self.get_object()
+            is_active = request.data.get("is_active", None)
+            if is_active is not None:
+                instance.is_active = is_active
+                instance.save()
+                return Response({"message": "Status updated successfully."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "is_active field is required."}, status=status.HTTP_400_BAD_REQUEST)
+        except PassengerTripRequest.DoesNotExist:
+            return Response({"error": "Request not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
 # Завантажуємо ключ із .env
@@ -1350,3 +1403,98 @@ def calculate_route(request):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
+
+from rest_framework.generics import ListAPIView
+from .models import PassengerTripRequest
+from .serializers import PassengerTripRequestSerializer
+from django.db.models import Q
+from django.utils.timezone import make_aware
+from datetime import datetime
+
+
+class FilteredPassengerTripRequestView(ListAPIView):
+    queryset = PassengerTripRequest.objects.all()
+    serializer_class = PassengerTripRequestSerializer
+
+    def get_queryset(self):
+        logger.info("Method 'get_queryset' was called")
+        queryset = super().get_queryset()
+
+        # Фільтрація за активністю
+        is_active = self.request.query_params.get('is_active')
+        if is_active is not None:
+            if is_active.lower() == 'true':
+                logger.info("Filtering by active requests only.")
+                queryset = queryset.filter(is_active=True)
+            else:
+                logger.info("Showing all requests, including inactive.")
+
+        # Фільтрація за датами
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        logger.info(f"Received start_date: {start_date}, end_date: {end_date}")
+
+        if start_date or end_date:
+            try:
+                if start_date:
+                    start_date = make_aware(datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S"))
+                    logger.info(f"Parsed start_date: {start_date}")
+                if end_date:
+                    end_date = make_aware(datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S"))
+                    logger.info(f"Parsed end_date: {end_date}")
+            except ValueError as e:
+                logger.error(f"Invalid date format: {e}")
+                return queryset.none()  # Повертаємо порожній набір, якщо формат дати неправильний
+
+            if start_date and end_date:
+                queryset = queryset.filter(
+                    Q(departure_time__range=(start_date, end_date)) |
+                    Q(arrival_time__range=(start_date, end_date))
+                )
+                logger.info(f"Filtered by date range: {start_date} to {end_date}")
+            elif start_date:
+                queryset = queryset.filter(departure_time__gte=start_date)
+                logger.info(f"Filtered by start_date >= {start_date}")
+            elif end_date:
+                queryset = queryset.filter(arrival_time__lte=end_date)
+                logger.info(f"Filtered by end_date <= {end_date}")
+
+        # Фільтрація за напрямком
+        direction = self.request.query_params.get('direction')
+        if direction:
+            directions = direction.split(',')
+            if len(directions) == 2 and 'HOME_TO_WORK' in directions and 'WORK_TO_HOME' in directions:
+                logger.info("Both directions selected. Removing direction filter.")
+            else:
+                logger.info(f"Filtering by directions: {directions}")
+                queryset = queryset.filter(direction__in=directions)
+
+        # Пошук
+        search_query = self.request.query_params.get('search')
+        if search_query:
+            logging.info(f"Search Query: {search_query}")
+            queryset = queryset.filter(
+                Q(passenger__first_name__icontains=search_query) |
+                Q(passenger__last_name__icontains=search_query) |
+                Q(comment__icontains=search_query)
+            )
+
+
+        logging.info(f"Final Queryset Count: {queryset.count()}")
+        return queryset
+
+
+class PassengerTripRequestCreateView(CreateAPIView):
+    queryset = PassengerTripRequest.objects.all()
+    serializer_class = PassengerTripRequestCreateSerializer
+
+    def create(self, request, *args, **kwargs):
+        logger.info(f"Received data for creating a trip request: {request.data}")
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        logger.info(f"Successfully created trip request: {serializer.data}")
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        serializer.save()

@@ -23,21 +23,32 @@ const PassengerTripRequestView = () => {
   const [endDate, setEndDate] = useState(
     dayjs().add(1, "day").endOf("day").toDate()
   ); // Завтра 23:59
+  const [directionFilter, setDirectionFilter] = useState({
+    toWork: true,
+    toHome: true,
+  });
+  const [onlyActive, setOnlyActive] = useState(false);
 
   useEffect(() => {
     fetchRequests();
-  }, [startDate, endDate, searchQuery]);
+  }, [startDate, endDate, searchQuery, directionFilter, onlyActive]);
 
   const fetchRequests = () => {
     const start = dayjs(startDate).format("YYYY-MM-DD HH:mm:ss");
     const end = dayjs(endDate).format("YYYY-MM-DD HH:mm:ss");
+    const directions = [];
+    if (directionFilter.toWork) directions.push("HOME_TO_WORK");
+    if (directionFilter.toHome) directions.push("WORK_TO_HOME");
 
     console.log("Відправка запиту на бекенд:", {
       start_date: start,
       end_date: end,
+      search: searchQuery,
+      direction: directions.join(","),
+      is_active: onlyActive,
     });
     axios
-      .get("http://localhost:8000/api/passenger-trip-requests/", {
+      .get("http://localhost:8000/api/filtered-passenger-trip-requests/", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           "Content-Type": "application/json",
@@ -46,14 +57,29 @@ const PassengerTripRequestView = () => {
           start_date: start,
           end_date: end,
           search: searchQuery,
+          direction: directions.join(","),
+          is_active: onlyActive,
         },
       })
       .then((response) => {
-        setRequests(response.data);
-        console.log("Passenger Trip Requests Data:", response.data);
+        const data = response.data.map((request) => {
+          const sameDayRequests = response.data.filter(
+            (r) =>
+              r.passenger === request.passenger &&
+              r.direction === request.direction &&
+              dayjs(r.departure_time).isSame(request.departure_time, "day")
+          );
+          return {
+            ...request,
+            isConflict: sameDayRequests.length > 1,
+          };
+        });
+        setRequests(data);
+        console.log("Processed Passenger Trip Requests Data:", data);
       })
       .catch((error) => console.error("Error fetching requests data:", error));
   };
+
   // const handleViewModeChange = (mode) => {
   //   setViewMode(mode);
   //   if (mode === "yesterday_today_tomorrow") {
@@ -83,25 +109,78 @@ const PassengerTripRequestView = () => {
   //   setEndDate(date);
   //   fetchRequests();
   // };
+  const handleFilterChange = (filterName) => {
+    setDirectionFilter((prev) => ({
+      ...prev,
+      [filterName]: !prev[filterName],
+    }));
+  };
+  const handleIsActiveChange = (id, value) => {
+    axios
+      .patch(
+        `http://localhost:8000/api/passenger-trip-requests/${id}/`,
+        { is_active: value },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then((response) => {
+        console.log("Updated is_active status:", response.data);
+        fetchRequests(); // Оновлюємо список після зміни
+      })
+      .catch((error) =>
+        console.error("Error updating is_active status:", error)
+      );
+  };
+  useEffect(() => {
+    // Виклик функції для завантаження даних із фільтром
+    fetchRequests();
+  }, [directionFilter]);
 
   const columnDefs = [
-    { headerName: t("passenger_id"), field: "passenger", width: 60 },
+    {
+      headerName: t("passenger_id"),
+      field: "passenger",
+      width: 60,
+      cellStyle: (params) => {
+        return params.data.isConflict ? { color: "red" } : {};
+      },
+    },
     {
       headerName: t("passenger_first_name"),
       field: "passenger_first_name",
       width: 100,
+      cellStyle: (params) => {
+        return params.data.isConflict ? { color: "red" } : {};
+      },
     },
     {
       headerName: t("passenger_last_name"),
       field: "passenger_last_name",
       width: 100,
+      cellStyle: (params) => {
+        return params.data.isConflict ? { color: "red" } : {};
+      },
     },
-    { headerName: t("passenger_phone"), field: "passenger_phone", width: 150 },
+    {
+      headerName: t("passenger_phone"),
+      field: "passenger_phone",
+      width: 150,
+      cellStyle: (params) => {
+        return params.data.isConflict ? { color: "red" } : {};
+      },
+    },
     {
       headerName: t("direction"),
       field: "direction",
       width: 120,
       cellStyle: { fontWeight: "bold" },
+      cellStyle: (params) => {
+        return params.data.isConflict ? { color: "red" } : {};
+      },
     },
 
     {
@@ -114,32 +193,50 @@ const PassengerTripRequestView = () => {
           width: 170,
           valueFormatter: (params) =>
             params.value ? dayjs(params.value).format("DD-MM-YYYY HH:mm") : "",
+          cellStyle: (params) => {
+            return params.data.isConflict ? { color: "red" } : {};
+          },
         },
         {
           headerName: t("pickup_city"),
           cellStyle: { fontWeight: "bold" },
           field: "pickup_city",
           width: 100,
+          cellStyle: (params) => {
+            return params.data.isConflict ? { color: "red" } : {};
+          },
         },
         {
           headerName: t("pickup_street"),
           field: "pickup_street",
           width: 150,
+          cellStyle: (params) => {
+            return params.data.isConflict ? { color: "red" } : {};
+          },
         },
         {
           headerName: t("pickup_house"),
           field: "pickup_house",
           width: 60,
+          cellStyle: (params) => {
+            return params.data.isConflict ? { color: "red" } : {};
+          },
         },
         {
           headerName: t("pickup_latitude"),
           field: "pickup_latitude",
           width: 100,
+          cellStyle: (params) => {
+            return params.data.isConflict ? { color: "red" } : {};
+          },
         },
         {
           headerName: t("pickup_longitude"),
           field: "pickup_longitude",
           width: 100,
+          cellStyle: (params) => {
+            return params.data.isConflict ? { color: "red" } : {};
+          },
         },
       ],
     },
@@ -154,37 +251,68 @@ const PassengerTripRequestView = () => {
           width: 170,
           valueFormatter: (params) =>
             params.value ? dayjs(params.value).format("DD-MM-YYYY HH:mm") : "",
+          cellStyle: (params) => {
+            return params.data.isConflict ? { color: "red" } : {};
+          },
         },
         {
           headerName: t("dropoff_city"),
           cellStyle: { fontWeight: "bold" },
           field: "dropoff_city",
           width: 100,
+          cellStyle: (params) => {
+            return params.data.isConflict ? { color: "red" } : {};
+          },
         },
         {
           headerName: t("dropoff_street"),
           field: "dropoff_street",
           width: 150,
+          cellStyle: (params) => {
+            return params.data.isConflict ? { color: "red" } : {};
+          },
         },
         {
           headerName: t("dropoff_house"),
           field: "dropoff_house",
           width: 60,
+          cellStyle: (params) => {
+            return params.data.isConflict ? { color: "red" } : {};
+          },
         },
         {
           headerName: t("dropoff_latitude"),
           field: "dropoff_latitude",
           width: 100,
+          cellStyle: (params) => {
+            return params.data.isConflict ? { color: "red" } : {};
+          },
         },
         {
           headerName: t("dropoff_longitude"),
           field: "dropoff_longitude",
           width: 100,
+          cellStyle: (params) => {
+            return params.data.isConflict ? { color: "red" } : {};
+          },
         },
       ],
     },
 
-    { headerName: t("is_active"), field: "is_active", width: 60 },
+    {
+      headerName: t("is_active"),
+      field: "is_active",
+      width: 60,
+      cellRenderer: (params) => (
+        <input
+          type="checkbox"
+          checked={params.value}
+          onChange={(e) =>
+            handleIsActiveChange(params.data.id, e.target.checked)
+          }
+        />
+      ),
+    },
     { headerName: t("comment"), field: "comment", width: 600 },
   ];
 
@@ -270,6 +398,30 @@ const PassengerTripRequestView = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            <label>
+              <input
+                type="checkbox"
+                checked={directionFilter.toWork}
+                onChange={() => handleFilterChange("toWork")}
+              />
+              {t("to_work")}
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={directionFilter.toHome}
+                onChange={() => handleFilterChange("toHome")}
+              />
+              {t("to_home")}
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={onlyActive}
+                onChange={(e) => setOnlyActive(e.target.checked)}
+              />
+              {t("is_active_only")}
+            </label>
           </div>
           <AgGridReact
             className="ag-theme-alpine"

@@ -570,5 +570,6 @@
   "settings_updated": "Settings updated!",
   "configured_route_limits": "Route limits",
   "km": "km",
-  "minimum_points_required": " minimum points required"
+  "minimum_points_required": " minimum points required",
+  "is_active_only": "active requests only"
 }

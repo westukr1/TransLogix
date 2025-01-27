@@ -54,7 +54,7 @@ const GroupingListToRoute = () => {
       end_date: end,
     });
     axios
-      .get("http://localhost:8000/api/passenger-trip-requests/", {
+      .get("http://localhost:8000/api/filtered-passenger-trip-requests/", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           "Content-Type": "application/json",
@@ -465,7 +465,10 @@ const GroupingListToRoute = () => {
   };
   return (
     <div className="gltr-two-column-template">
-      <div className="top-nav-bar">
+      <div
+        className="
+      top-nav-bar"
+      >
         <div className="logo">
           <img src="/logo.png" alt={t("logo.alt")} />
         </div>

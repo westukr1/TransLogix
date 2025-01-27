@@ -667,22 +667,15 @@ class PassengerTripRequestSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
 
+
+
 class PassengerTripRequestCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PassengerTripRequest
         fields = [
-            'passenger',
-            'direction',
-            'departure_time',
-            'arrival_time',
-            'pickup_point',
-            'dropoff_point',
-            'pickup_latitude',
-            'pickup_longitude',
-            'dropoff_latitude',
-            'dropoff_longitude',
-            'comment',
-            'is_active',
+            'pickup_latitude', 'pickup_longitude',
+            'dropoff_latitude', 'dropoff_longitude',
+            'direction', 'is_active', 'comment',
+            'dropoff_point', 'passenger', 'pickup_point',
+            'arrival_time', 'departure_time'
         ]
-
-
