@@ -571,5 +571,13 @@
   "configured_route_limits": "Route limits",
   "km": "km",
   "minimum_points_required": " minimum points required",
-  "is_active_only": "active requests only"
+  "is_active_only": "active requests only",
+  "Time :": "Time : ",
+  "activate": "activate",
+  "deactivate": "deactivate",
+  "activated": "activated",
+  "deactivated": "deactivated",
+  "Are you sure you want to {{action}} the request?": "Are you sure you want to {{action}} the request?",
+  "Request {{status}} successfully.": "Request {{status}} successfully.",
+  "Error during {{status}} of the request.": "Error during {{status}} of the request."
 }

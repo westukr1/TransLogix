@@ -6,6 +6,7 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./PassengerTripRequestView.css";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
+import { toast } from "react-toastify";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -116,9 +117,11 @@ const PassengerTripRequestView = () => {
     }));
   };
   const handleIsActiveChange = (id, value) => {
+    const status = value ? t("activated") : t("deactivated");
+
     axios
       .patch(
-        `http://localhost:8000/api/passenger-trip-requests/${id}/`,
+        `http://localhost:8000/api/passenger-trip-requests/${id}/update-status/`,
         { is_active: value },
         {
           headers: {
@@ -130,21 +133,50 @@ const PassengerTripRequestView = () => {
       .then((response) => {
         console.log("Updated is_active status:", response.data);
         fetchRequests(); // Оновлюємо список після зміни
+        toast.success(t("Request {{status}} successfully.", { status }));
       })
-      .catch((error) =>
-        console.error("Error updating is_active status:", error)
-      );
+      .catch((error) => {
+        console.error("Error updating is_active status:", error);
+        toast.error(t("Error during {{status}} of the request.", { status }));
+      });
   };
+
   useEffect(() => {
     // Виклик функції для завантаження даних із фільтром
     fetchRequests();
   }, [directionFilter]);
 
   const columnDefs = [
+    { headerName: t("request_id"), field: "id", width: 60 },
+    {
+      headerName: t("is_active"),
+      field: "is_active",
+      width: 60,
+      cellRenderer: (params) => (
+        <input
+          type="checkbox"
+          checked={params.value}
+          onChange={(e) => {
+            const isChecked = e.target.checked;
+            const action = isChecked ? t("activate") : t("deactivate");
+
+            if (
+              window.confirm(
+                t("Are you sure you want to {{action}} the request?", {
+                  action,
+                })
+              )
+            ) {
+              handleIsActiveChange(params.data.id, isChecked);
+            }
+          }}
+        />
+      ),
+    },
     {
       headerName: t("passenger_id"),
       field: "passenger",
-      width: 60,
+      width: 50,
       cellStyle: (params) => {
         return params.data.isConflict ? { color: "red" } : {};
       },
@@ -152,7 +184,7 @@ const PassengerTripRequestView = () => {
     {
       headerName: t("passenger_first_name"),
       field: "passenger_first_name",
-      width: 100,
+      width: 70,
       cellStyle: (params) => {
         return params.data.isConflict ? { color: "red" } : {};
       },
@@ -168,7 +200,7 @@ const PassengerTripRequestView = () => {
     {
       headerName: t("passenger_phone"),
       field: "passenger_phone",
-      width: 150,
+      width: 130,
       cellStyle: (params) => {
         return params.data.isConflict ? { color: "red" } : {};
       },
@@ -190,7 +222,7 @@ const PassengerTripRequestView = () => {
           headerName: t("departure_time"),
           cellStyle: { fontWeight: "bold" },
           field: "departure_time",
-          width: 170,
+          width: 150,
           valueFormatter: (params) =>
             params.value ? dayjs(params.value).format("DD-MM-YYYY HH:mm") : "",
           cellStyle: (params) => {
@@ -225,7 +257,7 @@ const PassengerTripRequestView = () => {
         {
           headerName: t("pickup_latitude"),
           field: "pickup_latitude",
-          width: 100,
+          width: 80,
           cellStyle: (params) => {
             return params.data.isConflict ? { color: "red" } : {};
           },
@@ -233,7 +265,7 @@ const PassengerTripRequestView = () => {
         {
           headerName: t("pickup_longitude"),
           field: "pickup_longitude",
-          width: 100,
+          width: 80,
           cellStyle: (params) => {
             return params.data.isConflict ? { color: "red" } : {};
           },
@@ -248,7 +280,7 @@ const PassengerTripRequestView = () => {
           headerName: t("arrival_time"),
           cellStyle: { fontWeight: "bold" },
           field: "arrival_time",
-          width: 170,
+          width: 150,
           valueFormatter: (params) =>
             params.value ? dayjs(params.value).format("DD-MM-YYYY HH:mm") : "",
           cellStyle: (params) => {
@@ -275,7 +307,7 @@ const PassengerTripRequestView = () => {
         {
           headerName: t("dropoff_house"),
           field: "dropoff_house",
-          width: 60,
+          width: 50,
           cellStyle: (params) => {
             return params.data.isConflict ? { color: "red" } : {};
           },
@@ -283,7 +315,7 @@ const PassengerTripRequestView = () => {
         {
           headerName: t("dropoff_latitude"),
           field: "dropoff_latitude",
-          width: 100,
+          width: 80,
           cellStyle: (params) => {
             return params.data.isConflict ? { color: "red" } : {};
           },
@@ -291,7 +323,7 @@ const PassengerTripRequestView = () => {
         {
           headerName: t("dropoff_longitude"),
           field: "dropoff_longitude",
-          width: 100,
+          width: 80,
           cellStyle: (params) => {
             return params.data.isConflict ? { color: "red" } : {};
           },
@@ -299,20 +331,6 @@ const PassengerTripRequestView = () => {
       ],
     },
 
-    {
-      headerName: t("is_active"),
-      field: "is_active",
-      width: 60,
-      cellRenderer: (params) => (
-        <input
-          type="checkbox"
-          checked={params.value}
-          onChange={(e) =>
-            handleIsActiveChange(params.data.id, e.target.checked)
-          }
-        />
-      ),
-    },
     { headerName: t("comment"), field: "comment", width: 600 },
   ];
 

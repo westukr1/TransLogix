@@ -479,3 +479,68 @@ class PassengerTripRequest(models.Model):
 
     def __str__(self):
         return f"Trip Request by {self.passenger} on {self.planned_datetime.strftime('%Y-%m-%d %H:%M')} ({self.direction})"
+
+
+
+class OrderedPassengerList(models.Model):
+    # Початкова адреса
+    start_city = models.CharField(max_length=255)
+    start_street = models.CharField(max_length=255)
+    start_building = models.CharField(max_length=50)
+    start_latitude = models.FloatField()
+    start_longitude = models.FloatField()
+    start_passenger_name = models.CharField(max_length=255)
+    start_passenger_id = models.IntegerField(null=True, blank=True, help_text="ID першого пасажира")
+    start_address_type = models.CharField(
+        max_length=20,
+        choices=[('work', 'Робоча'), ('pickup', 'Посадка'), ('dropoff', 'Висадка')]
+    )
+    start_coordinate_id = models.IntegerField(null=True, blank=True, help_text="ID першої точки координат")
+    start_request_id = models.IntegerField(null=True, blank=True, help_text="ID першої заявки")
+
+    # Кінцева адреса
+    end_city = models.CharField(max_length=255)
+    end_street = models.CharField(max_length=255)
+    end_building = models.CharField(max_length=50)
+    end_latitude = models.FloatField()
+    end_longitude = models.FloatField()
+    end_passenger_name = models.CharField(max_length=255)
+    end_passenger_id = models.IntegerField(null=True, blank=True, help_text="ID останнього пасажира")
+    end_address_type = models.CharField(
+        max_length=20,
+        choices=[('work', 'Робоча'), ('pickup', 'Посадка'), ('dropoff', 'Висадка')]
+    )
+    end_coordinate_id = models.IntegerField(null=True, blank=True, help_text="ID останньої точки координат")
+    end_request_id = models.IntegerField(null=True, blank=True, help_text="ID останньої заявки")
+
+    # Додаткові параметри маршруту
+    direction = models.CharField(
+        max_length=20,
+        choices=[('HOME_TO_WORK', 'З дому на роботу'), ('WORK_TO_HOME', 'З роботи додому')]
+    )
+    estimated_start_time = models.DateTimeField()
+    estimated_end_time = models.DateTimeField()
+    estimated_travel_time = models.PositiveIntegerField(help_text="Час у дорозі (хвилини)")
+    estimated_wait_time = models.PositiveIntegerField(help_text="Час очікування (хвилини)")
+    has_both_directions = models.BooleanField(default=False)
+    route_distance_km = models.FloatField(help_text="Дистанція маршруту (км)")
+    stop_count = models.PositiveIntegerField()
+    passenger_count = models.PositiveIntegerField()
+    multiple_work_addresses_allowed = models.BooleanField(default=False)
+
+    # Додані поля
+    is_active = models.BooleanField(default=True, help_text="Активний (так/ні)")
+    assigned_route_id = models.ForeignKey(
+        'Route', null=True, blank=True, on_delete=models.SET_NULL, help_text="Призначений для маршрута (ID маршруту або null)"
+    )
+    allow_copy = models.BooleanField(default=True, help_text="Дозволено копіювати (так/ні)")
+    allow_edit = models.BooleanField(default=True, help_text="Дозволено редагувати (так/ні)")
+
+    # Додаткові часові поля
+    created_at = models.DateTimeField(auto_now_add=True, help_text="Час створення")
+    updated_at = models.DateTimeField(auto_now=True, help_text="Час редагування")
+    deactivated_at = models.DateTimeField(null=True, blank=True, help_text="Час деактивації")
+
+    def __str__(self):
+        return f"Маршрут {self.id}: {self.start_passenger_name} - {self.end_passenger_name}"
+

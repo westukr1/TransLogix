@@ -56,16 +56,20 @@ from .views import (CoordinatePointUpdateView,
                     AssignVehicleToDriverView, RemoveDriverVehicleAssignmentView)
 from .views import (DriverVehicleAssignmentViewSet,
                     FuelTypeViewSet, AssignedVehiclesView,
-                    update_fuel_type, calculate_route, PassengerTripRequestViewSet)
+                    update_fuel_type, calculate_route, PassengerTripRequestViewSet,
+                    update_trip_request_status)
 
 from .views import PassengerTripRequestCreateView
-from .views import FilteredPassengerTripRequestView
+from .views import FilteredPassengerTripRequestView, OrderedPassengerListViewSet, FilteredOrderedPassengerListView
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
 router.register(r'driver-vehicle-assignments', DriverVehicleAssignmentViewSet, basename='driver-vehicle-assignment')
 router.register(r'fuel-types', FuelTypeViewSet, basename='fuel-type')
 #router.register(r"passenger-trip-requests", PassengerTripRequestViewSet)
+router.register(r'ordered-passenger-list', OrderedPassengerListViewSet)
 
 # Для створення пасажира go fuck yourself
 import logging
@@ -149,10 +153,17 @@ urlpatterns = [
     path('api/passenger-trip-requests/create/', PassengerTripRequestCreateView.as_view(), name='create-passenger-trip-request'),
     path('api/calculate-route/', calculate_route, name='calculate_route'),
     path('api/filtered-passenger-trip-requests/', FilteredPassengerTripRequestView.as_view(), name='filtered_passenger_trip_requests'),
+    path(
+        'api/passenger-trip-requests/<int:pk>/update-status/',
+        update_trip_request_status,
+        name='update-trip-request-status',
+    ),
 
     path('api/get-settings/', views.get_settings, name='get_settings'),
     path('api/update-settings/', views.update_settings, name='update_settings'),
 
     path('', include(router.urls)),
+    path('api/', include(router.urls)),  # CRUD
+    path('api/ordered-passenger-list/filter/', FilteredOrderedPassengerListView.as_view(), name='filtered_ordered_passenger_list'),  # Фільтрація
 ]
 

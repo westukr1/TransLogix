@@ -52,6 +52,8 @@ from django.utils.timezone import make_aware
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 
+from .models import OrderedPassengerList
+from .serializers import OrderedPassengerListSerializer
 
 
 # Включення логування SQL-запитів
@@ -1498,3 +1500,47 @@ class PassengerTripRequestCreateView(CreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save()
+
+
+@api_view(['PATCH'])
+def update_trip_request_status(request, pk):
+    try:
+        trip_request = PassengerTripRequest.objects.get(pk=pk)
+        is_active = request.data.get('is_active', None)
+        if is_active is not None:
+            trip_request.is_active = is_active
+            trip_request.save()
+            status_text = "activated" if is_active else "deactivated"
+            return Response({"detail": f"Trip request successfully {status_text}."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "Invalid 'is_active' value."}, status=status.HTTP_400_BAD_REQUEST)
+    except PassengerTripRequest.DoesNotExist:
+        return Response({"detail": "Trip request not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class OrderedPassengerListViewSet(viewsets.ModelViewSet):
+    queryset = OrderedPassengerList.objects.all()
+    serializer_class = OrderedPassengerListSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+
+    # Фільтрація за стандартними параметрами
+    filterset_fields = ['direction', 'is_active', 'assigned_route_id']
+    search_fields = ['start_passenger_name', 'end_passenger_name', 'start_city', 'end_city']
+    ordering_fields = ['created_at', 'estimated_start_time']
+
+
+class FilteredOrderedPassengerListView(ListAPIView):
+    queryset = OrderedPassengerList.objects.all()
+    serializer_class = OrderedPassengerListSerializer
+    filter_backends = [DjangoFilterBackend]
+
+    # Фільтрація з додатковими параметрами
+    filterset_fields = {
+        'direction': ['exact'],
+        'is_active': ['exact'],
+        'assigned_route_id': ['exact'],
+        'created_at': ['gte', 'lte'],
+        'estimated_start_time': ['gte', 'lte'],
+        'estimated_end_time': ['gte', 'lte'],
+        'passenger_count': ['gte', 'lte'],
+    }

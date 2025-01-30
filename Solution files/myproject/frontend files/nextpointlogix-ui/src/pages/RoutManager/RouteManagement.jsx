@@ -12,6 +12,10 @@ import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import dayjs from "dayjs";
+import DriverList from "./DriverList";
+
+import VehicleList from "./VehicleList";
+import PassengerList from "./PassengerList";
 
 const RouteManagement = ({
   drivers = [],
@@ -47,44 +51,10 @@ const RouteManagement = ({
       <div className="rm-route-management">
         <div className="rm-left-column">
           <div className="rm-drivers-list">
-            <h3>Available Drivers</h3>
-            <ul>
-              {drivers && drivers.length > 0 ? (
-                drivers.map((driver, index) => (
-                  <li key={index}>
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      id={`driver-${index}`}
-                      name={`driver-${index}`}
-                    />
-                    <label htmlFor={`driver-${index}`}>{driver.name}</label>
-                  </li>
-                ))
-              ) : (
-                <p>No drivers available</p>
-              )}
-            </ul>
+            <DriverList drivers={drivers} />
           </div>
           <div className="rm-vehicles-list">
-            <h3>Available Vehicles</h3>
-            <ul>
-              {vehicles && vehicles.length > 0 ? (
-                vehicles.map((vehicle, index) => (
-                  <li key={index}>
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      id={`vehicle-${index}`}
-                      name={`vehicle-${index}`}
-                    />
-                    <label htmlFor={`vehicle-${index}`}>{vehicle.model}</label>
-                  </li>
-                ))
-              ) : (
-                <p>No vehicles available</p>
-              )}
-            </ul>
+            <VehicleList />
           </div>
         </div>
         <div className="rm-middle-column">
@@ -97,26 +67,7 @@ const RouteManagement = ({
             >
               {t("grouping_list_to_route")}
             </button>
-            <h3>Passengers/requests for tranpottation</h3>
-            <ul>
-              {passengers && passengers.length > 0 ? (
-                passengers.map((passenger, index) => (
-                  <li key={index}>
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      id={`passenger-${index}`}
-                      name={`passenger-${index}`}
-                    />
-                    <label htmlFor={`passenger-${index}`}>
-                      {passenger.name} - {passenger.pickup}
-                    </label>
-                  </li>
-                ))
-              ) : (
-                <p>No passengers available</p>
-              )}
-            </ul>
+            <PassengerList passengers={passengers} />
           </div>
         </div>
         <div className="rm-center-column">

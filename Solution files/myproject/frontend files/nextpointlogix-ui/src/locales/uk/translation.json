@@ -552,5 +552,13 @@
   "km": "км",
 
   "minimum_points_required": "необхідна мінімальна кількість точок",
-  "is_active_only": "тільки активні заявки"
+  "is_active_only": "тільки активні заявки",
+  "Time :": "Час : ",
+  "activate": "активувати",
+  "deactivate": "деактивувати",
+  "activated": "активована",
+  "deactivated": "деактивована",
+  "Are you sure you want to {{action}} the request?": "Ви впевнені, що хочете {{action}} заявку?",
+  "Request {{status}} successfully.": "Заявка {{status}} успішно.",
+  "Error during {{status}} of the request.": "Помилка під час {{status}} заявки."
 }

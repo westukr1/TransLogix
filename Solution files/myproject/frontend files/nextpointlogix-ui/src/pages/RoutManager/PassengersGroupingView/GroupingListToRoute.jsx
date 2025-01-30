@@ -10,6 +10,8 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import axios from "axios";
 import dayjs from "dayjs";
 
+// Приклад для Жені
+
 const GroupingListToRoute = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();

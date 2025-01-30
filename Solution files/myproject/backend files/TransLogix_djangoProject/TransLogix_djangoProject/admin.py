@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User
+from .models import OrderedPassengerList
 
 class CustomUserAdmin(UserAdmin):  # Кастомний UserAdmin для стандартної моделі User
     model = User
@@ -21,3 +22,9 @@ class CustomUserAdmin(UserAdmin):  # Кастомний UserAdmin для ста�
 
 # Реєструємо кастомний UserAdmin для стандартної моделі User
 admin.site.register(User, CustomUserAdmin)
+
+@admin.register(OrderedPassengerList)
+class OrderedPassengerListAdmin(admin.ModelAdmin):
+    list_display = ('id', 'start_passenger_name', 'end_passenger_name', 'direction', 'is_active')
+    search_fields = ('start_passenger_name', 'end_passenger_name')
+    list_filter = ('direction', 'is_active')

@@ -3,7 +3,8 @@ from rest_framework import serializers
 from .models import User, Route, CoordinatePoint, House, Driver, Vehicle
 from .models import  Country, Region, City, District, Street
 from .models import DriverVehicleAssignment, FuelType
-from .models import Passenger, PassengerTripRequest
+from .models import Passenger, PassengerTripRequest,OrderedPassengerList
+
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -679,3 +680,11 @@ class PassengerTripRequestCreateSerializer(serializers.ModelSerializer):
             'dropoff_point', 'passenger', 'pickup_point',
             'arrival_time', 'departure_time'
         ]
+
+
+
+
+class OrderedPassengerListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderedPassengerList
+        fields = '__all__'
