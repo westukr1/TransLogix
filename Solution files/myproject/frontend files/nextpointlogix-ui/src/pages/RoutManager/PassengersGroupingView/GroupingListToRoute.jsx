@@ -10,7 +10,7 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import axios from "axios";
 import dayjs from "dayjs";
 
-// Приклад для Жені
+// Приклад для Жені/ Ще один приклад.
 
 const GroupingListToRoute = () => {
   const { t } = useTranslation();
@@ -140,7 +140,6 @@ const GroupingListToRoute = () => {
   const handleEndDateChange = (date) => {
     setEndDate(date);
   };
-
   const handleSelect = (id) => {
     const selectedRequest = unselectedRequests.find((r) => r.id === id);
     if (selectedRequest) {

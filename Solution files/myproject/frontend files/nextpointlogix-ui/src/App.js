@@ -41,9 +41,11 @@ import RepeatTripView from "./pages/PassengerTripRequestView/RepeatTripView";
 
 import GroupingListToRoute from "./pages/RoutManager/PassengersGroupingView/GroupingListToRoute";
 import UserRoutesSettings from "./pages/RoutManager/UserSettingsView/UserRoutesSettings";
+
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import OrderedPassengerList from "./pages/RoutManager/OrderedPassengerListView/OrderedPassengerList";
 
 function App() {
   return (
@@ -123,7 +125,12 @@ function App() {
             path="/user-routes-settings"
             element={<UserRoutesSettings />}
           />
+          <Route
+            path="/ordered-passenger-list/ordered-passenger-list"
+            element={<OrderedPassengerList />}
+          />
         </Routes>
+
         <ToastContainer />
       </div>
     </Router>

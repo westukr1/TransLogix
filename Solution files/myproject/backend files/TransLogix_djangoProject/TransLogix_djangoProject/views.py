@@ -1524,8 +1524,20 @@ class OrderedPassengerListViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
     # Фільтрація за стандартними параметрами
-    filterset_fields = ['direction', 'is_active', 'assigned_route_id']
-    search_fields = ['start_passenger_name', 'end_passenger_name', 'start_city', 'end_city']
+    filterset_fields = {
+        'direction': ['exact'],
+        'is_active': ['exact'],
+        'assigned_route_id': ['exact'],
+        'estimated_start_time': ['gte', 'lte'],
+        'estimated_end_time': ['gte', 'lte'],
+        'passenger_count': ['gte', 'lte'],
+        'start_city': ['icontains'],
+        'end_city': ['icontains'],
+        'start_passenger_last_name': ['icontains'],
+        'end_passenger_last_name': ['icontains'],
+    }
+    search_fields = ['start_passenger_first_name', 'start_passenger_last_name',
+                     'end_passenger_first_name','end_passenger_last_name',  'start_city', 'end_city']
     ordering_fields = ['created_at', 'estimated_start_time']
 
 

@@ -25,6 +25,14 @@ admin.site.register(User, CustomUserAdmin)
 
 @admin.register(OrderedPassengerList)
 class OrderedPassengerListAdmin(admin.ModelAdmin):
-    list_display = ('id', 'start_passenger_name', 'end_passenger_name', 'direction', 'is_active')
-    search_fields = ('start_passenger_name', 'end_passenger_name')
+    list_display = ('id', 'get_start_passenger', 'get_end_passenger', 'direction', 'is_active')
+    search_fields = ('start_passenger_first_name', 'start_passenger_last_name', 'end_passenger_first_name', 'end_passenger_last_name')
     list_filter = ('direction', 'is_active')
+
+    def get_start_passenger(self, obj):
+        return f"{obj.start_passenger_first_name} {obj.start_passenger_last_name}"
+    get_start_passenger.short_description = "Перший пасажир"
+
+    def get_end_passenger(self, obj):
+        return f"{obj.end_passenger_first_name} {obj.end_passenger_last_name}"
+    get_end_passenger.short_description = "Останній пасажир"

@@ -489,7 +489,10 @@ class OrderedPassengerList(models.Model):
     start_building = models.CharField(max_length=50)
     start_latitude = models.FloatField()
     start_longitude = models.FloatField()
-    start_passenger_name = models.CharField(max_length=255)
+
+    start_passenger_first_name = models.CharField(max_length=255)
+    start_passenger_last_name = models.CharField(max_length=255)
+
     start_passenger_id = models.IntegerField(null=True, blank=True, help_text="ID першого пасажира")
     start_address_type = models.CharField(
         max_length=20,
@@ -504,7 +507,10 @@ class OrderedPassengerList(models.Model):
     end_building = models.CharField(max_length=50)
     end_latitude = models.FloatField()
     end_longitude = models.FloatField()
-    end_passenger_name = models.CharField(max_length=255)
+
+    end_passenger_first_name = models.CharField(max_length=255)
+    end_passenger_last_name = models.CharField(max_length=255)
+
     end_passenger_id = models.IntegerField(null=True, blank=True, help_text="ID останнього пасажира")
     end_address_type = models.CharField(
         max_length=20,
@@ -542,5 +548,9 @@ class OrderedPassengerList(models.Model):
     deactivated_at = models.DateTimeField(null=True, blank=True, help_text="Час деактивації")
 
     def __str__(self):
-        return f"Маршрут {self.id}: {self.start_passenger_name} - {self.end_passenger_name}"
+        return (
+            f"Маршрут {self.id}: "
+            f"{self.start_passenger_first_name} {self.start_passenger_last_name} → "
+            f"{self.end_passenger_first_name} {self.end_passenger_last_name}"
+        )
 
