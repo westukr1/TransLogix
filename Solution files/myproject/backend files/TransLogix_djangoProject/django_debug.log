@@ -14033,3 +14033,128 @@ WARNING 2025-01-31 22:32:15,625 log Unauthorized: /api/passengers/
 WARNING 2025-01-31 22:32:19,035 log Unauthorized: /api/allowed-apps/
 WARNING 2025-01-31 22:32:19,072 log Unauthorized: /api/allowed-apps/
 WARNING 2025-01-31 22:32:26,028 log Unauthorized: /api/routes/
+WARNING 2025-01-31 23:39:47,732 log Unauthorized: /api/drivers/
+WARNING 2025-01-31 23:39:47,734 log Unauthorized: /api/vehicles/
+WARNING 2025-01-31 23:39:47,743 log Unauthorized: /api/get-settings/
+WARNING 2025-01-31 23:39:47,740 log Unauthorized: /api/fuel-types/
+WARNING 2025-01-31 23:39:47,751 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-01-31 23:39:47,788 log Unauthorized: /api/drivers/
+WARNING 2025-01-31 23:39:47,791 log Unauthorized: /api/vehicles/
+WARNING 2025-01-31 23:39:47,794 log Unauthorized: /api/get-settings/
+WARNING 2025-01-31 23:39:47,797 log Unauthorized: /api/fuel-types/
+WARNING 2025-01-31 23:39:47,800 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-01-31 23:39:48,429 log Unauthorized: /api/me/
+WARNING 2025-01-31 23:39:48,432 log Unauthorized: /api/routes/
+WARNING 2025-01-31 23:39:48,440 log Unauthorized: /api/passengers/
+WARNING 2025-01-31 23:39:48,481 log Unauthorized: /api/me/
+WARNING 2025-01-31 23:39:48,486 log Unauthorized: /api/routes/
+WARNING 2025-01-31 23:39:48,494 log Unauthorized: /api/passengers/
+WARNING 2025-01-31 23:39:52,631 log Unauthorized: /api/allowed-apps/
+WARNING 2025-01-31 23:39:52,640 log Unauthorized: /api/allowed-apps/
+WARNING 2025-01-31 23:40:00,394 log Unauthorized: /api/routes/
+WARNING 2025-02-01 14:57:46,444 log Unauthorized: /api/me/
+WARNING 2025-02-01 14:57:46,445 log Unauthorized: /api/routes/
+WARNING 2025-02-01 14:57:46,446 log Unauthorized: /api/passengers/
+WARNING 2025-02-01 14:57:46,455 log Unauthorized: /api/me/
+WARNING 2025-02-01 14:57:46,457 log Unauthorized: /api/routes/
+WARNING 2025-02-01 14:57:46,460 log Unauthorized: /api/passengers/
+WARNING 2025-02-01 15:34:55,529 log Unauthorized: /api/routes/
+ERROR 2025-02-01 15:52:12,109 log Internal Server Error: /api/ordered-passenger-list/create_ordered_list/
+ERROR 2025-02-01 15:52:59,206 log Internal Server Error: /api/ordered-passenger-list/create_ordered_list/
+WARNING 2025-02-02 11:06:01,297 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 11:06:01,299 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 11:14:35,196 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 11:14:35,197 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 11:15:22,790 log Unauthorized: /api/ordered-passenger-list/create_ordered_list/
+WARNING 2025-02-02 11:15:37,630 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 11:15:37,935 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 11:15:37,938 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 11:15:37,941 log Unauthorized: /api/vehicles/
+WARNING 2025-02-02 11:15:37,945 log Unauthorized: /api/drivers/
+WARNING 2025-02-02 11:15:37,947 log Unauthorized: /api/fuel-types/
+WARNING 2025-02-02 11:15:37,964 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 11:15:37,967 log Unauthorized: /api/vehicles/
+WARNING 2025-02-02 11:15:37,970 log Unauthorized: /api/drivers/
+WARNING 2025-02-02 11:15:37,976 log Unauthorized: /api/fuel-types/
+WARNING 2025-02-02 11:15:38,069 log Unauthorized: /api/passengers/
+WARNING 2025-02-02 11:15:38,075 log Unauthorized: /api/me/
+WARNING 2025-02-02 11:15:38,085 log Unauthorized: /api/routes/
+WARNING 2025-02-02 11:15:38,098 log Unauthorized: /api/passengers/
+WARNING 2025-02-02 11:15:38,101 log Unauthorized: /api/me/
+WARNING 2025-02-02 11:15:38,104 log Unauthorized: /api/routes/
+WARNING 2025-02-02 11:15:42,130 log Unauthorized: /api/allowed-apps/
+WARNING 2025-02-02 11:15:42,134 log Unauthorized: /api/allowed-apps/
+WARNING 2025-02-02 11:15:42,145 log Unauthorized: /api/allowed-apps/
+WARNING 2025-02-02 11:15:42,153 log Unauthorized: /api/allowed-apps/
+WARNING 2025-02-02 11:15:48,302 log Unauthorized: /api/routes/
+ERROR 2025-02-02 11:16:11,969 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-02 11:16:12,035 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-02 11:16:42,892 log Internal Server Error: /api/ordered-passenger-list/create_ordered_list/
+ERROR 2025-02-02 11:19:11,373 log Internal Server Error: /api/ordered-passenger-list/create_ordered_list/
+ERROR 2025-02-02 11:19:41,943 log Internal Server Error: /api/ordered-passenger-list/create_ordered_list/
+ERROR 2025-02-02 11:44:38,132 log Internal Server Error: /api/ordered-passenger-list/create_ordered_list/
+ERROR 2025-02-02 11:50:41,867 log Internal Server Error: /api/ordered-passenger-list/create_ordered_list/

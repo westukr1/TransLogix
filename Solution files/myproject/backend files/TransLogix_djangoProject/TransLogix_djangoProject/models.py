@@ -472,8 +472,26 @@ class PassengerTripRequest(models.Model):
     is_active = models.BooleanField(default=True)  # Дійсна (так/ні)
     comment = models.TextField(blank=True, null=True)  # Коментар
 
+    # ✅ Додані нові поля
+    ordered_list = models.ForeignKey(
+        'OrderedPassengerList',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='trip_requests'
+    )  # Ідентифікатор впорядкованого списку
+
+    included_in_list = models.BooleanField(default=False)  # Включено у список (так/ні)
+    included_in_route = models.BooleanField(default=False)  # Включено у маршрут (так/ні)
+    included_in_trip = models.BooleanField(default=False)  # Включено у поїздку (так/ні)
+
+    sequence_number = models.PositiveIntegerField(null=True, blank=True)  # Порядковий номер у маршруті
+    pickup_time_in_route = models.DateTimeField(null=True, blank=True)  # Час посадки у маршруті
+    dropoff_time_in_route = models.DateTimeField(null=True, blank=True)  # Час висадки у маршруті
+    wait_time_at_work = models.IntegerField(null=True, blank=True)  # Час очікування в точці "Робота" (хвилин)
+    travel_time_in_route = models.IntegerField(null=True, blank=True)  # Час в дорозі у маршруті (хвилин)
     class Meta:
-        ordering = ['-created_at']  # Сортування за датою створення (останнє зверху)
+        ordering = ['ordered_list', 'sequence_number']  # Сортування у списку
         verbose_name = "Passenger Trip Request"
         verbose_name_plural = "Passenger Trip Requests"
 

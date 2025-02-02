@@ -1518,12 +1518,26 @@ def update_trip_request_status(request, pk):
         return Response({"detail": "Trip request not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
+import logging
+from django.db import transaction
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+
+from .models import OrderedPassengerList, PassengerTripRequest
+from .serializers import OrderedPassengerListSerializer
+
+# Ініціалізація логування
+logger = logging.getLogger(__name__)
+
+
 class OrderedPassengerListViewSet(viewsets.ModelViewSet):
     queryset = OrderedPassengerList.objects.all()
     serializer_class = OrderedPassengerListSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
-    # Фільтрація за стандартними параметрами
     filterset_fields = {
         'direction': ['exact'],
         'is_active': ['exact'],
@@ -1535,16 +1549,133 @@ class OrderedPassengerListViewSet(viewsets.ModelViewSet):
         'end_city': ['icontains'],
         'start_passenger_last_name': ['icontains'],
         'end_passenger_last_name': ['icontains'],
+        'ordered_list_id': ['exact'],
+        'sequence_number': ['gte', 'lte'],
+        'included_in_list': ['exact'],
+        'included_in_route': ['exact'],
+        'included_in_trip': ['exact'],
+        'pickup_time_in_route': ['gte', 'lte'],
+        'dropoff_time_in_route': ['gte', 'lte'],
     }
     search_fields = ['start_passenger_first_name', 'start_passenger_last_name',
-                     'end_passenger_first_name','end_passenger_last_name',  'start_city', 'end_city']
+                     'end_passenger_first_name', 'end_passenger_last_name', 'start_city', 'end_city']
     ordering_fields = ['created_at', 'estimated_start_time']
 
+    @action(detail=False, methods=['post'])
+    def create_ordered_list(self, request):
+        """
+        Створює новий запис у OrderedPassengerList та оновлює заявки у PassengerTripRequest.
+        Всі операції виконуються у межах транзакції.
+        """
+        logger.info("Отриманий запит: %s", request.data)
+
+        data = request.data
+        selected_requests = data.get("selected_requests", [])
+
+        if not selected_requests:
+            logger.warning("Список заявок порожній.")
+            return Response({"error": "No requests selected"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                estimated_start_time = make_aware(
+                    datetime.strptime(data.get("estimated_start_time"), "%Y-%m-%d %H:%M:%S"))
+                estimated_end_time = make_aware(
+                    datetime.strptime(data.get("estimated_end_time"), "%Y-%m-%d %H:%M:%S"))
+
+                logger.info("📌 Створення списку з параметрами: direction=%s, start_time=%s, end_time=%s",
+                            data.get("direction"), estimated_start_time, estimated_end_time)
+
+                # 🔍 Додатковий лог перед створенням списку
+                logger.info("📌 Координати початкової точки: lat=%s, lon=%s",
+                            data.get("start_latitude"), data.get("start_longitude"))
+
+                # 🔴 Переконаємося, що всі обов’язкові поля є
+                required_fields = ["start_latitude", "start_longitude", "end_latitude", "end_longitude"]
+                # ✅ Створення нового списку у OrderedPassengerList
+                ordered_list = OrderedPassengerList.objects.create(
+                    direction=data.get("direction"),
+                    estimated_start_time=estimated_start_time,
+                    estimated_end_time=estimated_end_time,
+                    estimated_travel_time=data.get("estimated_travel_time", 0),
+                    estimated_wait_time=data.get("estimated_wait_time", 10),
+                    has_both_directions=bool(data.get("has_both_directions")),
+                    route_distance_km=data.get("route_distance_km", 0),
+                    stop_count=data.get("stop_count", 0),
+                    passenger_count=data.get("passenger_count", 0),
+                    multiple_work_addresses_allowed=bool(data.get("multiple_work_addresses_allowed")),
+                    is_active=bool(data.get("is_active")),
+                    allow_copy=bool(data.get("allow_copy")),
+                    allow_edit=bool(data.get("allow_edit")),
+
+                    start_city=data.get("start_city"),
+                    start_street=data.get("start_street"),
+                    start_building=data.get("start_building", ""),
+                    start_latitude=float(data.get("start_latitude")),
+                    start_longitude=float(data.get("start_longitude")),
+                    start_passenger_first_name=data.get("start_passenger_first_name"),
+                    start_passenger_last_name=data.get("start_passenger_last_name"),
+                    start_passenger_id=data.get("start_passenger_id"),
+                    start_address_type=data.get("start_address_type"),
+                    start_coordinate_id=data.get("start_coordinate_id"),
+                    start_request_id=data.get("start_request_id"),
+
+                    end_city=data.get("end_city"),
+                    end_street=data.get("end_street"),
+                    end_building=data.get("end_building", ""),
+                    end_latitude=float(data.get("end_latitude")),
+                    end_longitude=float(data.get("end_longitude")),
+                    end_passenger_first_name=data.get("end_passenger_first_name"),
+                    end_passenger_last_name=data.get("end_passenger_last_name"),
+                    end_passenger_id=data.get("end_passenger_id"),
+                    end_address_type=data.get("end_address_type"),
+                    end_coordinate_id=data.get("end_coordinate_id"),
+                    end_request_id=data.get("end_request_id"),
+                )
+                logger.info("Список успішно створено з ID: %s", ordered_list.id)
+
+                # 🔄 Оновлення заявок
+                passenger_requests = []
+                for index, request_id in enumerate(selected_requests):
+                    try:
+                        passenger_request = PassengerTripRequest.objects.get(id=request_id["id"])
+
+                        # 🔎 Перевіряємо чи є координати
+                        if not passenger_request.pickup_latitude or not passenger_request.pickup_longitude:
+                            logger.error(f"Заявка ID {request_id['id']} не має координат!")
+                            continue  # Пропускаємо таку заявку
+
+                        passenger_request.ordered_list = ordered_list
+                        passenger_request.sequence_number = request_id["sequence_number"]
+                        passenger_request.included_in_list = True
+                        passenger_requests.append(passenger_request)
+
+                        logger.info("Оновлено заявку ID: %s, список ID: %s, номер: %s",
+                                    request_id["id"], ordered_list.id, request_id["sequence_number"])
+
+                    except PassengerTripRequest.DoesNotExist:
+                        logger.error(f"Заявка ID {request_id['id']} не знайдена!")
+
+                # Масове оновлення
+                PassengerTripRequest.objects.bulk_update(
+                    passenger_requests, ["ordered_list", "sequence_number", "included_in_list"]
+                )
+
+                logger.info("Успішне оновлення %s заявок", len(passenger_requests))
+
+                return Response(
+                    {"message": "List created successfully", "list_id": ordered_list.id},
+                    status=status.HTTP_201_CREATED,
+                )
+
+        except Exception as e:
+            logger.error("Помилка під час створення списку: %s", str(e))
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class FilteredOrderedPassengerListView(ListAPIView):
     queryset = OrderedPassengerList.objects.all()
     serializer_class = OrderedPassengerListSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
 
     # Фільтрація з додатковими параметрами
     filterset_fields = {
@@ -1555,4 +1686,23 @@ class FilteredOrderedPassengerListView(ListAPIView):
         'estimated_start_time': ['gte', 'lte'],
         'estimated_end_time': ['gte', 'lte'],
         'passenger_count': ['gte', 'lte'],
+        'start_city': ['icontains'],
+        'end_city': ['icontains'],
+        'start_passenger_last_name': ['icontains'],
+        'end_passenger_last_name': ['icontains'],
+        'ordered_list_id': ['exact'],  # Фільтрація за номером списку
+        'sequence_number': ['gte', 'lte'],  # Фільтр за порядковим номером
+        'included_in_list': ['exact'],
+        'included_in_route': ['exact'],
+        'included_in_trip': ['exact'],
+        'pickup_time_in_route': ['gte', 'lte'],
+        'dropoff_time_in_route': ['gte', 'lte'],
     }
+
+    # Поля, за якими можна виконувати пошук
+    search_fields = ['start_passenger_first_name', 'start_passenger_last_name',
+                     'end_passenger_first_name', 'end_passenger_last_name',
+                     'start_city', 'end_city']
+
+    # Поля, за якими можна сортувати
+    ordering_fields = ['created_at', 'estimated_start_time', 'estimated_end_time']

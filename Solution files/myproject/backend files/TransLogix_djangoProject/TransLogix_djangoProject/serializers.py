@@ -639,6 +639,17 @@ class PassengerTripRequestSerializer(serializers.ModelSerializer):
     dropoff_street = serializers.CharField(source='dropoff_point.street.name', read_only=True)
     dropoff_house = serializers.CharField(source='dropoff_point.house.house_number', read_only=True)
 
+    # Нові поля
+    ordered_list_id = serializers.IntegerField(source='ordered_list.id', read_only=True)
+    sequence_number = serializers.IntegerField(required=False, allow_null=True)
+    included_in_list = serializers.BooleanField(default=False)
+    included_in_route = serializers.BooleanField(default=False)
+    included_in_trip = serializers.BooleanField(default=False)
+    pickup_time_in_route = serializers.DateTimeField(required=False, allow_null=True)
+    dropoff_time_in_route = serializers.DateTimeField(required=False, allow_null=True)
+    travel_time_in_route = serializers.IntegerField(required=False, allow_null=True)
+    wait_time_at_work = serializers.IntegerField(required=False, allow_null=True)
+
     class Meta:
         model = PassengerTripRequest
         fields = [
@@ -666,6 +677,17 @@ class PassengerTripRequestSerializer(serializers.ModelSerializer):
             'comment',
             'created_at',
             'updated_at',
+
+            # Нові поля:
+            'ordered_list_id',
+            'sequence_number',
+            'included_in_list',
+            'included_in_route',
+            'included_in_trip',
+            'pickup_time_in_route',
+            'dropoff_time_in_route',
+            'travel_time_in_route',
+            'wait_time_at_work',
         ]
 
 
@@ -678,7 +700,17 @@ class PassengerTripRequestCreateSerializer(serializers.ModelSerializer):
             'dropoff_latitude', 'dropoff_longitude',
             'direction', 'is_active', 'comment',
             'dropoff_point', 'passenger', 'pickup_point',
-            'arrival_time', 'departure_time'
+            'arrival_time', 'departure_time',
+
+            'ordered_list',
+            'sequence_number',
+            'included_in_list',
+            'included_in_route',
+            'included_in_trip',
+            'pickup_time_in_route',
+            'dropoff_time_in_route',
+            'travel_time_in_route',
+            'wait_time_at_work',
         ]
 
 

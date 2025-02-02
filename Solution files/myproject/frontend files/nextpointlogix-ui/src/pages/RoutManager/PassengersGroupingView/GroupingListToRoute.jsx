@@ -9,8 +9,10 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import axios from "axios";
 import dayjs from "dayjs";
-
+import utc from "dayjs/plugin/utc";
 // Приклад для Жені/ Ще один приклад.
+// Підключення плагіна utc для роботи з часовими зонами
+dayjs.extend(utc);
 
 const GroupingListToRoute = () => {
   const { t } = useTranslation();
@@ -37,6 +39,8 @@ const GroupingListToRoute = () => {
   const [allowExtendedInterval, setAllowExtendedInterval] = useState(false);
   const [showAllRequests, setShowAllRequests] = useState(false);
   const [routeSettings, setRouteSettings] = useState(null);
+  const [showIncludedInList, setShowIncludedInList] = useState(false);
+  const [showIncludedInRoute, setShowIncludedInRoute] = useState(false);
 
   const [routeDetails, setRouteDetails] = useState({
     distance: null,
@@ -106,6 +110,12 @@ const GroupingListToRoute = () => {
         return true; // Показуємо всі заявки
       }
       if (request.direction !== directionFilter) {
+        return false;
+      }
+      if (!showIncludedInList && request.included_in_list) {
+        return false;
+      }
+      if (!showIncludedInRoute && request.included_in_route) {
         return false;
       }
       const requestDate = new Date(
@@ -216,6 +226,17 @@ const GroupingListToRoute = () => {
   //     }
   //   }
   // };
+  const getLeftTableRowStyle = (params) => {
+    const { included_in_list, included_in_route } = params.data;
+    if (included_in_route) {
+      return { color: "red", fontWeight: "bold" }; // Маршрут червоний
+    }
+    if (included_in_list) {
+      return { color: "blue", fontWeight: "bold" }; // Список синій
+    }
+    return null;
+  };
+
   const getRowStyle = (params) => {
     const { sequence_number } = params.data;
     const maxSequence = Math.max(
@@ -287,20 +308,103 @@ const GroupingListToRoute = () => {
     }
   };
 
-  const saveList = () => {
-    const formattedList = selectedRequests.map((request) => ({
-      id: request.id,
-      pickup: `${request.pickup_city}, ${request.pickup_street}`,
-      dropoff: `${request.dropoff_city}, ${request.dropoff_street}`,
-      sequence_number: request.sequence_number,
-    }));
+  const saveList = async () => {
+    if (selectedRequests.length === 0) {
+      alert(t("no_requests_selected"));
+      return;
+    }
 
-    console.log("Saving list:", formattedList);
-    alert(t("list_saved"));
+    const token = localStorage.getItem("access_token");
+
+    // Формуємо параметри маршруту
+    const firstRequest = selectedRequests[0];
+    const lastRequest = selectedRequests[selectedRequests.length - 1];
+
+    // 🟢 Перевіряємо та встановлюємо значення `estimated_travel_time`
+    const estimatedTravelTime =
+      routeDetails.duration && !isNaN(routeDetails.duration)
+        ? Math.round(routeDetails.duration)
+        : 0; // Якщо значення `NaN`, ставимо 0
+
+    const requestData = {
+      direction: directionFilter || "WORK_TO_HOME",
+      estimated_start_time: dayjs().utc().format("YYYY-MM-DD HH:mm:ss"),
+      estimated_end_time: dayjs()
+        .add(1, "day")
+        .utc()
+        .format("YYYY-MM-DD HH:mm:ss"),
+      estimated_travel_time: estimatedTravelTime, // 🟢 Виправлення NaN
+      estimated_wait_time: 10,
+      has_both_directions: allowMixedDirections ? 1 : 0,
+      route_distance_km: Math.round(routeDetails.distance || 0),
+      stop_count: selectedRequests.length - 2,
+      passenger_count: selectedRequests.length,
+      multiple_work_addresses_allowed:
+        routeSettings?.allow_multiple_work_addresses ? 1 : 0,
+      is_active: 1,
+      allow_copy: 1,
+      allow_edit: 1,
+
+      start_city: firstRequest.pickup_city || "Unknown",
+      start_street: firstRequest.pickup_street || "Unknown",
+      start_building: firstRequest.pickup_house || "", // 🟢 Уникаємо `undefined`
+      start_latitude: parseFloat(firstRequest.pickup_latitude) || 0.0,
+      start_longitude: parseFloat(firstRequest.pickup_longitude) || 0.0,
+      start_passenger_first_name:
+        firstRequest.passenger_first_name || "Unknown",
+      start_passenger_last_name: firstRequest.passenger_last_name || "Unknown",
+      start_passenger_id: firstRequest.passenger || null,
+      start_address_type: "pickup",
+      start_coordinate_id: firstRequest.pickup_point_id || null,
+      start_request_id: firstRequest.id,
+
+      end_city: lastRequest.dropoff_city || "Unknown",
+      end_street: lastRequest.dropoff_street || "Unknown",
+      end_building: lastRequest.dropoff_house || "", // 🟢 Уникаємо `undefined`
+      end_latitude: parseFloat(lastRequest.dropoff_latitude) || 0.0,
+      end_longitude: parseFloat(lastRequest.dropoff_longitude) || 0.0,
+      end_passenger_first_name: lastRequest.passenger_first_name || "Unknown",
+      end_passenger_last_name: lastRequest.passenger_last_name || "Unknown",
+      end_passenger_id: lastRequest.passenger || null,
+      end_address_type: "dropoff",
+      end_coordinate_id: lastRequest.dropoff_point_id || null,
+      end_request_id: lastRequest.id,
+
+      selected_requests: selectedRequests.map((request, index) => ({
+        id: request.id,
+        sequence_number: index + 1,
+        pickup_latitude: request.pickup_latitude || "0.000000",
+        pickup_longitude: request.pickup_longitude || "0.000000",
+      })),
+    };
+
+    console.log("🔵 Відправка даних для створення списку:", requestData);
+
+    try {
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/ordered-passenger-list/create_ordered_list/",
+        requestData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("✅ Список успішно створено:", response.data);
+      alert(t("list_saved"));
+
+      // Очищуємо список після збереження
+      setSelectedRequests([]);
+    } catch (error) {
+      console.error("❌ Помилка при збереженні списку:", error);
+      alert(t("error_saving_list"));
+    }
   };
 
   const createColumnDefs = (isLeft) => {
-    console.log("isLeft:", isLeft); // Діагностика
+    // console.log("isLeft:", isLeft); // Діагностика
     const columnDefs = [
       {
         headerName: t("is_selected"),
@@ -590,6 +694,22 @@ const GroupingListToRoute = () => {
                 </label>
               )}
             </div>
+            <label>
+              <input
+                type="checkbox"
+                checked={showIncludedInList}
+                onChange={(e) => setShowIncludedInList(e.target.checked)}
+              />
+              {t("show_included_in_list")}
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={showIncludedInRoute}
+                onChange={(e) => setShowIncludedInRoute(e.target.checked)}
+              />
+              {t("show_included_in_route")}
+            </label>
           </div>
           <div
             className="ag-theme-alpine"
@@ -726,7 +846,28 @@ const GroupingListToRoute = () => {
                 },
                 { headerName: t("is_active"), field: "is_active", width: 40 },
                 { headerName: t("comment"), field: "comment", width: 600 },
+                {
+                  headerName: t("included_in_list"),
+                  field: "included_in_list",
+                  width: 100,
+                  valueFormatter: (params) =>
+                    params.value ? t("yes") : t("no"),
+                },
+                {
+                  headerName: t("ordered_list_id"),
+                  field: "ordered_list_id",
+                  width: 100,
+                },
+                {
+                  headerName: t("included_in_route"),
+                  field: "included_in_route",
+                  width: 100,
+                  valueFormatter: (params) =>
+                    params.value ? t("yes") : t("no"),
+                },
+                { headerName: t("route_id"), field: "route_id", width: 100 },
               ]}
+              getRowStyle={getLeftTableRowStyle} // ✅ Тільки для лівої таблиці
               pagination
               paginationPageSize={10}
             />
