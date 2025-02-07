@@ -14158,3 +14158,1525 @@ ERROR 2025-02-02 11:19:11,373 log Internal Server Error: /api/ordered-passenger-
 ERROR 2025-02-02 11:19:41,943 log Internal Server Error: /api/ordered-passenger-list/create_ordered_list/
 ERROR 2025-02-02 11:44:38,132 log Internal Server Error: /api/ordered-passenger-list/create_ordered_list/
 ERROR 2025-02-02 11:50:41,867 log Internal Server Error: /api/ordered-passenger-list/create_ordered_list/
+WARNING 2025-02-02 13:45:06,167 log Unauthorized: /api/passenger-trip-requests/
+WARNING 2025-02-02 13:45:29,481 log Unauthorized: /api/passenger-trip-requests/
+WARNING 2025-02-02 13:45:41,915 log Unauthorized: /api/passenger-trip-requests/
+WARNING 2025-02-02 13:45:49,866 log Unauthorized: /api/fuel-types/
+WARNING 2025-02-02 13:45:49,876 log Unauthorized: /api/fuel-types/
+WARNING 2025-02-02 13:45:49,945 log Unauthorized: /api/drivers/
+WARNING 2025-02-02 13:45:49,947 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 13:45:49,950 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 13:45:49,965 log Unauthorized: /api/vehicles/
+WARNING 2025-02-02 13:45:49,983 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 13:45:50,007 log Unauthorized: /api/vehicles/
+WARNING 2025-02-02 13:45:49,999 log Unauthorized: /api/drivers/
+WARNING 2025-02-02 13:45:50,014 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 13:45:50,974 log Unauthorized: /api/routes/
+WARNING 2025-02-02 13:45:50,979 log Unauthorized: /api/passengers/
+WARNING 2025-02-02 13:45:50,983 log Unauthorized: /api/me/
+WARNING 2025-02-02 13:45:51,003 log Unauthorized: /api/passengers/
+WARNING 2025-02-02 13:45:51,042 log Unauthorized: /api/routes/
+WARNING 2025-02-02 13:45:51,044 log Unauthorized: /api/me/
+WARNING 2025-02-02 13:45:56,669 log Unauthorized: /api/allowed-apps/
+WARNING 2025-02-02 13:45:56,726 log Unauthorized: /api/allowed-apps/
+WARNING 2025-02-02 13:46:08,305 log Unauthorized: /api/routes/
+WARNING 2025-02-02 13:46:16,543 log Unauthorized: /api/passenger-trip-requests/
+WARNING 2025-02-02 13:46:33,718 log Unauthorized: /api/ordered-passenger-list/filter/
+WARNING 2025-02-02 13:46:57,129 log Unauthorized: /api/routes/
+ERROR 2025-02-02 13:47:48,323 log Internal Server Error: /api/passenger-trip-requests/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+  File "C:\TransLogix\Solution files\myproject\backend files\TransLogix_djangoProject\TransLogix_djangoProject\views.py", line 1270, in list
+    return super().list(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 795, in data
+    ret = super().data
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 713, in to_representation
+    return [
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\query.py", line 400, in __iter__
+    self._fetch_all()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\query.py", line 1928, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\sql\compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\sql\compiler.py", line 736, in as_sql
+    extra_select, order_by, group_by = self.pre_sql_setup(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\sql\compiler.py", line 84, in pre_sql_setup
+    self.setup_query(with_col_aliases=with_col_aliases)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\sql\compiler.py", line 73, in setup_query
+    self.select, self.klass_info, self.annotation_col_map = self.get_select(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\sql\compiler.py", line 279, in get_select
+    related_klass_infos = self.get_related_selections(select, select_mask)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\sql\compiler.py", line 1367, in get_related_selections
+    raise FieldError(
+django.core.exceptions.FieldError: Invalid field name(s) given in select_related: 'city', 'coordinatepoint', 'house', 'street'. Choices are: passenger, pickup_point, dropoff_point, ordered_list
+ERROR 2025-02-02 13:49:42,628 log Internal Server Error: /api/passenger-trip-requests/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+  File "C:\TransLogix\Solution files\myproject\backend files\TransLogix_djangoProject\TransLogix_djangoProject\views.py", line 1270, in list
+    return super().list(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 795, in data
+    ret = super().data
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 713, in to_representation
+    return [
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\query.py", line 400, in __iter__
+    self._fetch_all()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\query.py", line 1928, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\sql\compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\sql\compiler.py", line 736, in as_sql
+    extra_select, order_by, group_by = self.pre_sql_setup(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\sql\compiler.py", line 84, in pre_sql_setup
+    self.setup_query(with_col_aliases=with_col_aliases)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\sql\compiler.py", line 73, in setup_query
+    self.select, self.klass_info, self.annotation_col_map = self.get_select(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\sql\compiler.py", line 279, in get_select
+    related_klass_infos = self.get_related_selections(select, select_mask)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\sql\compiler.py", line 1367, in get_related_selections
+    raise FieldError(
+django.core.exceptions.FieldError: Invalid field name(s) given in select_related: 'city', 'coordinatepoint', 'house', 'street'. Choices are: passenger, pickup_point, dropoff_point, ordered_list
+WARNING 2025-02-02 16:30:47,175 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:30:47,187 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 16:30:47,199 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:30:47,204 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 16:30:47,210 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:30:47,217 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:31:57,132 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:31:57,142 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:31:57,144 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 16:32:10,161 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 16:32:10,168 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:32:10,173 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:32:58,130 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:32:58,139 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 16:32:58,142 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:33:41,177 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:33:41,185 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:33:41,188 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 16:35:46,268 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:35:46,275 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 16:35:46,277 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:37:30,150 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:37:30,157 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 16:37:30,159 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:37:44,643 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 16:37:44,647 log Unauthorized: /api/vehicles/
+WARNING 2025-02-02 16:37:44,664 log Unauthorized: /api/fuel-types/
+WARNING 2025-02-02 16:37:44,669 log Unauthorized: /api/drivers/
+WARNING 2025-02-02 16:37:44,671 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:37:44,678 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 16:37:44,684 log Unauthorized: /api/vehicles/
+WARNING 2025-02-02 16:37:44,687 log Unauthorized: /api/drivers/
+WARNING 2025-02-02 16:37:44,692 log Unauthorized: /api/fuel-types/
+WARNING 2025-02-02 16:37:44,694 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:37:46,766 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:37:46,769 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 16:37:46,777 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:37:46,781 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 16:37:46,791 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:37:46,807 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:37:58,306 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:38:00,032 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:38:04,785 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:38:10,701 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:38:12,307 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:38:16,238 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:38:17,352 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:38:20,334 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:38:21,694 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:38:36,142 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:38:40,932 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:38:41,974 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:38:44,540 log Unauthorized: /api/drivers/
+WARNING 2025-02-02 16:38:44,544 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:38:44,547 log Unauthorized: /api/fuel-types/
+WARNING 2025-02-02 16:38:44,551 log Unauthorized: /api/vehicles/
+WARNING 2025-02-02 16:38:44,555 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 16:38:44,567 log Unauthorized: /api/drivers/
+WARNING 2025-02-02 16:38:44,570 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-02 16:38:44,573 log Unauthorized: /api/vehicles/
+WARNING 2025-02-02 16:38:44,576 log Unauthorized: /api/get-settings/
+WARNING 2025-02-02 16:38:44,578 log Unauthorized: /api/fuel-types/
+WARNING 2025-02-02 16:38:45,425 log Unauthorized: /api/routes/
+WARNING 2025-02-02 16:38:45,430 log Unauthorized: /api/me/
+WARNING 2025-02-02 16:38:45,433 log Unauthorized: /api/passengers/
+WARNING 2025-02-02 16:38:45,443 log Unauthorized: /api/routes/
+WARNING 2025-02-02 16:38:45,447 log Unauthorized: /api/me/
+WARNING 2025-02-02 16:38:45,450 log Unauthorized: /api/passengers/
+WARNING 2025-02-02 16:38:49,266 log Unauthorized: /api/allowed-apps/
+WARNING 2025-02-02 16:38:49,278 log Unauthorized: /api/allowed-apps/
+WARNING 2025-02-02 16:38:49,287 log Unauthorized: /api/allowed-apps/
+WARNING 2025-02-02 16:38:49,294 log Unauthorized: /api/allowed-apps/
+WARNING 2025-02-02 16:39:03,102 log Unauthorized: /api/routes/
+WARNING 2025-02-02 16:40:01,980 log Not Found: /api/coordinate-point/182/house-number/
+WARNING 2025-02-02 16:40:01,994 log Not Found: /api/coordinate-point/184/house-number/
+WARNING 2025-02-02 16:40:02,000 log Not Found: /api/coordinate-point/183/house-number/
+WARNING 2025-02-02 16:40:02,030 log Not Found: /api/coordinate-point/182/house-number/
+WARNING 2025-02-02 16:40:02,044 log Not Found: /api/coordinate-point/184/house-number/
+WARNING 2025-02-02 16:40:02,078 log Not Found: /api/coordinate-point/183/house-number/
+WARNING 2025-02-02 16:40:02,446 log Not Found: /api/passengers/187/addresses/
+WARNING 2025-02-02 16:40:02,464 log Not Found: /api/passengers/187/addresses/
+WARNING 2025-02-02 16:47:01,409 log Not Found: /api/passengers/177/addresses/
+WARNING 2025-02-02 16:47:01,448 log Not Found: /api/passengers/177/addresses/
+WARNING 2025-02-02 16:47:05,402 log Unauthorized: /api/passengers/177/
+WARNING 2025-02-02 16:47:05,439 log Unauthorized: /api/passengers/177/
+WARNING 2025-02-02 16:48:15,969 log Not Found: /api/passengers/177/addresses/
+WARNING 2025-02-02 16:48:16,174 log Not Found: /api/passengers/177/addresses/
+WARNING 2025-02-03 17:40:53,172 log Unauthorized: /api/routes/
+WARNING 2025-02-03 18:03:13,729 log Bad Request: /api/change-password/
+ERROR 2025-02-03 18:03:31,165 log Internal Server Error: /api/users/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\MySQLdb\cursors.py", line 179, in execute
+    res = self._query(mogrified_query)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\MySQLdb\cursors.py", line 330, in _query
+    db.query(q)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\MySQLdb\connections.py", line 265, in query
+    _mysql.connection.query(self, query)
+MySQLdb.IntegrityError: (1062, "Duplicate entry 'testuser@example.com' for key 'translogix_djangoproject_user.email'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\TransLogix\Solution files\myproject\backend files\TransLogix_djangoProject\TransLogix_djangoProject\views.py", line 99, in post
+    serializer.save()  # Збереження нового користувача
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 208, in save
+    self.instance = self.create(validated_data)
+  File "C:\TransLogix\Solution files\myproject\backend files\TransLogix_djangoProject\TransLogix_djangoProject\serializers.py", line 44, in create
+    user = User.objects.create_user(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\contrib\auth\models.py", line 161, in create_user
+    return self._create_user(username, email, password, **extra_fields)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\contrib\auth\models.py", line 155, in _create_user
+    user.save(using=self._db)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\contrib\auth\base_user.py", line 78, in save
+    super().save(*args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\base.py", line 822, in save
+    self.save_base(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\base.py", line 909, in save_base
+    updated = self._save_table(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\base.py", line 1067, in _save_table
+    results = self._do_insert(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\base.py", line 1108, in _do_insert
+    return manager._insert(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\query.py", line 1847, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\sql\compiler.py", line 1823, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\MySQLdb\cursors.py", line 179, in execute
+    res = self._query(mogrified_query)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\MySQLdb\cursors.py", line 330, in _query
+    db.query(q)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\MySQLdb\connections.py", line 265, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry 'testuser@example.com' for key 'translogix_djangoproject_user.email'")
+ERROR 2025-02-03 18:07:32,466 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-03 18:07:32,524 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-03 18:13:27,592 log Internal Server Error: /api/users/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\MySQLdb\cursors.py", line 179, in execute
+    res = self._query(mogrified_query)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\MySQLdb\cursors.py", line 330, in _query
+    db.query(q)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\MySQLdb\connections.py", line 265, in query
+    _mysql.connection.query(self, query)
+MySQLdb.IntegrityError: (1062, "Duplicate entry 'testuser@example.com' for key 'translogix_djangoproject_user.email'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\TransLogix\Solution files\myproject\backend files\TransLogix_djangoProject\TransLogix_djangoProject\views.py", line 99, in post
+    serializer.save()  # Збереження нового користувача
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 208, in save
+    self.instance = self.create(validated_data)
+  File "C:\TransLogix\Solution files\myproject\backend files\TransLogix_djangoProject\TransLogix_djangoProject\serializers.py", line 44, in create
+    user = User.objects.create_user(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\contrib\auth\models.py", line 161, in create_user
+    return self._create_user(username, email, password, **extra_fields)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\contrib\auth\models.py", line 155, in _create_user
+    user.save(using=self._db)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\contrib\auth\base_user.py", line 78, in save
+    super().save(*args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\base.py", line 822, in save
+    self.save_base(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\base.py", line 909, in save_base
+    updated = self._save_table(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\base.py", line 1067, in _save_table
+    results = self._do_insert(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\base.py", line 1108, in _do_insert
+    return manager._insert(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\query.py", line 1847, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\models\sql\compiler.py", line 1823, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\MySQLdb\cursors.py", line 179, in execute
+    res = self._query(mogrified_query)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\MySQLdb\cursors.py", line 330, in _query
+    db.query(q)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\MySQLdb\connections.py", line 265, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry 'testuser@example.com' for key 'translogix_djangoproject_user.email'")
+WARNING 2025-02-03 22:05:48,976 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:05:48,985 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:07:35,108 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:07:35,116 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:07:41,314 log Unauthorized: /api/vehicles/
+WARNING 2025-02-03 22:07:41,323 log Unauthorized: /api/drivers/
+WARNING 2025-02-03 22:07:41,337 log Unauthorized: /api/vehicles/
+WARNING 2025-02-03 22:07:41,342 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:07:41,345 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:07:41,350 log Unauthorized: /api/fuel-types/
+WARNING 2025-02-03 22:07:41,368 log Unauthorized: /api/drivers/
+WARNING 2025-02-03 22:07:41,376 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:07:41,379 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:07:41,381 log Unauthorized: /api/fuel-types/
+WARNING 2025-02-03 22:07:42,640 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:07:42,649 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:07:42,653 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:07:42,658 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:07:42,661 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:07:42,670 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:07:42,675 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:07:42,678 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:07:42,689 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:07:42,695 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:10:15,120 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:10:15,423 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:10:15,434 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:10:15,437 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:10:25,039 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:10:25,042 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:10:25,045 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:10:25,057 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:10:25,060 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:10:25,067 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:10:25,065 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:10:25,082 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:10:25,086 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:10:25,091 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:11:57,223 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:11:57,234 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:11:57,237 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:11:57,239 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:11:57,241 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:11:57,255 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:19:05,547 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:19:05,855 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:19:05,858 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:19:05,863 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:19:56,171 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:19:56,174 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:19:56,176 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:19:56,185 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:19:56,188 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:19:56,191 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:19:56,193 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:19:56,206 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:19:56,210 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:19:56,219 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:29:06,547 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:29:06,862 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:29:06,865 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:29:06,872 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:29:46,252 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:29:46,257 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:29:46,260 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:29:46,274 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:30:16,003 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:30:16,292 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:30:16,295 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:30:16,301 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:53:13,670 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:53:13,680 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:53:13,987 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:53:13,992 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:53:13,998 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:53:14,004 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:53:14,013 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:53:14,023 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:53:25,587 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:57:20,346 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 22:57:20,596 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 22:57:20,599 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 22:57:20,612 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:02:55,570 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 23:02:55,871 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:02:55,885 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 23:02:55,887 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:03:37,580 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:03:37,583 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 23:03:37,585 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 23:03:37,593 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:03:44,223 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:03:44,225 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 23:03:44,228 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 23:03:44,259 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:04:16,000 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:04:16,002 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 23:04:16,006 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 23:04:16,025 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:05:53,403 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 23:05:53,701 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:05:53,710 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 23:05:53,715 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:06:04,007 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:06:04,010 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 23:06:04,012 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 23:06:04,030 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:06:20,865 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:06:20,867 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 23:06:20,869 log Unauthorized: /api/ordered-passenger-list/
+WARNING 2025-02-03 23:06:20,879 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:06:25,347 log Unauthorized: /api/drivers/
+WARNING 2025-02-03 23:06:25,350 log Unauthorized: /api/vehicles/
+WARNING 2025-02-03 23:06:25,352 log Unauthorized: /api/fuel-types/
+WARNING 2025-02-03 23:06:25,361 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 23:06:25,365 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:06:25,368 log Unauthorized: /api/drivers/
+WARNING 2025-02-03 23:06:25,382 log Unauthorized: /api/vehicles/
+WARNING 2025-02-03 23:06:25,384 log Unauthorized: /api/fuel-types/
+WARNING 2025-02-03 23:06:25,387 log Unauthorized: /api/get-settings/
+WARNING 2025-02-03 23:06:25,398 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-03 23:06:26,464 log Unauthorized: /api/me/
+WARNING 2025-02-03 23:06:26,471 log Unauthorized: /api/passengers/
+WARNING 2025-02-03 23:06:26,482 log Unauthorized: /api/routes/
+WARNING 2025-02-03 23:06:26,509 log Unauthorized: /api/me/
+WARNING 2025-02-03 23:06:26,520 log Unauthorized: /api/passengers/
+WARNING 2025-02-03 23:06:26,523 log Unauthorized: /api/routes/
+WARNING 2025-02-03 23:06:29,008 log Unauthorized: /api/allowed-apps/
+WARNING 2025-02-03 23:06:29,014 log Unauthorized: /api/allowed-apps/
+WARNING 2025-02-03 23:06:29,088 log Unauthorized: /api/allowed-apps/
+WARNING 2025-02-03 23:06:29,096 log Unauthorized: /api/allowed-apps/
+WARNING 2025-02-03 23:06:36,359 log Unauthorized: /api/routes/
+ERROR 2025-02-03 23:06:44,384 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-03 23:06:44,471 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-03 23:14:40,771 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-03 23:14:40,897 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-03 23:15:03,436 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-03 23:15:04,137 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-03 23:26:10,616 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-03 23:27:01,976 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-03 23:27:02,323 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-03 23:29:01,521 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-03 23:29:01,617 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-03 23:50:25,369 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-03 23:50:25,485 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-03 23:52:31,740 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-03 23:52:31,875 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\generics.py", line 154, in filter_queryset
+    queryset = backend().filter_queryset(self.request, queryset, self)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 68, in filter_queryset
+    filterset = self.get_filterset(request, queryset, view)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 20, in get_filterset
+    filterset_class = self.get_filterset_class(view, queryset)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\rest_framework\backends.py", line 51, in get_filterset_class
+    class AutoFilterSet(self.filterset_base):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 78, in __new__
+    new_class.base_filters = new_class.get_filters()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django_filters\filterset.py", line 367, in get_filters
+    raise TypeError(
+TypeError: 'Meta.fields' must not contain non-model field names: ordered_list_id, sequence_number, included_in_list, included_in_route, included_in_trip, pickup_time_in_route, dropoff_time_in_route
+ERROR 2025-02-04 00:18:25,561 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 795, in data
+    ret = super().data
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 713, in to_representation
+    return [
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 714, in <listcomp>
+    self.child.to_representation(item) for item in iterable
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 523, in to_representation
+    for field in fields:
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 384, in _readable_fields
+    for field in self.fields.values():
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 373, in fields
+    fields[key] = value
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\utils\serializer_helpers.py", line 167, in __setitem__
+    field.bind(field_name=key, parent=self.serializer)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\fields.py", line 358, in bind
+    assert self.source != field_name, (
+AssertionError: It is redundant to specify `source='trip_requests'` on field 'ListSerializer' in serializer 'OrderedPassengerListSerializer', because it is the same as the field name. Remove the `source` keyword argument.
+ERROR 2025-02-04 00:18:25,831 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 795, in data
+    ret = super().data
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 713, in to_representation
+    return [
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 714, in <listcomp>
+    self.child.to_representation(item) for item in iterable
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 523, in to_representation
+    for field in fields:
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 384, in _readable_fields
+    for field in self.fields.values():
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 373, in fields
+    fields[key] = value
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\utils\serializer_helpers.py", line 167, in __setitem__
+    field.bind(field_name=key, parent=self.serializer)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\fields.py", line 358, in bind
+    assert self.source != field_name, (
+AssertionError: It is redundant to specify `source='trip_requests'` on field 'ListSerializer' in serializer 'OrderedPassengerListSerializer', because it is the same as the field name. Remove the `source` keyword argument.
+ERROR 2025-02-04 00:21:28,744 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 795, in data
+    ret = super().data
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 713, in to_representation
+    return [
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 714, in <listcomp>
+    self.child.to_representation(item) for item in iterable
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 523, in to_representation
+    for field in fields:
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 384, in _readable_fields
+    for field in self.fields.values():
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 373, in fields
+    fields[key] = value
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\utils\serializer_helpers.py", line 167, in __setitem__
+    field.bind(field_name=key, parent=self.serializer)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\fields.py", line 358, in bind
+    assert self.source != field_name, (
+AssertionError: It is redundant to specify `source='trip_requests'` on field 'ListSerializer' in serializer 'OrderedPassengerListSerializer', because it is the same as the field name. Remove the `source` keyword argument.
+ERROR 2025-02-04 00:21:28,899 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 795, in data
+    ret = super().data
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 713, in to_representation
+    return [
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 714, in <listcomp>
+    self.child.to_representation(item) for item in iterable
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 523, in to_representation
+    for field in fields:
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 384, in _readable_fields
+    for field in self.fields.values():
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 373, in fields
+    fields[key] = value
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\utils\serializer_helpers.py", line 167, in __setitem__
+    field.bind(field_name=key, parent=self.serializer)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\fields.py", line 358, in bind
+    assert self.source != field_name, (
+AssertionError: It is redundant to specify `source='trip_requests'` on field 'ListSerializer' in serializer 'OrderedPassengerListSerializer', because it is the same as the field name. Remove the `source` keyword argument.
+ERROR 2025-02-04 00:21:33,884 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 795, in data
+    ret = super().data
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 713, in to_representation
+    return [
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 714, in <listcomp>
+    self.child.to_representation(item) for item in iterable
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 523, in to_representation
+    for field in fields:
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 384, in _readable_fields
+    for field in self.fields.values():
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 373, in fields
+    fields[key] = value
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\utils\serializer_helpers.py", line 167, in __setitem__
+    field.bind(field_name=key, parent=self.serializer)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\fields.py", line 358, in bind
+    assert self.source != field_name, (
+AssertionError: It is redundant to specify `source='trip_requests'` on field 'ListSerializer' in serializer 'OrderedPassengerListSerializer', because it is the same as the field name. Remove the `source` keyword argument.
+WARNING 2025-02-04 17:45:33,392 log Unauthorized: /api/vehicles/
+WARNING 2025-02-04 17:45:33,395 log Unauthorized: /api/drivers/
+WARNING 2025-02-04 17:45:33,404 log Unauthorized: /api/fuel-types/
+WARNING 2025-02-04 17:45:33,412 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-04 17:45:33,424 log Unauthorized: /api/get-settings/
+WARNING 2025-02-04 17:45:33,435 log Unauthorized: /api/vehicles/
+WARNING 2025-02-04 17:45:33,442 log Unauthorized: /api/filtered-passenger-trip-requests/
+WARNING 2025-02-04 17:45:33,477 log Unauthorized: /api/drivers/
+WARNING 2025-02-04 17:45:33,455 log Unauthorized: /api/fuel-types/
+WARNING 2025-02-04 17:45:33,510 log Unauthorized: /api/get-settings/
+WARNING 2025-02-04 17:45:34,620 log Unauthorized: /api/me/
+WARNING 2025-02-04 17:45:34,628 log Unauthorized: /api/passengers/
+WARNING 2025-02-04 17:45:34,646 log Unauthorized: /api/me/
+WARNING 2025-02-04 17:45:34,661 log Unauthorized: /api/passengers/
+WARNING 2025-02-04 17:45:34,677 log Unauthorized: /api/routes/
+WARNING 2025-02-04 17:45:34,692 log Unauthorized: /api/routes/
+WARNING 2025-02-04 17:45:38,539 log Unauthorized: /api/allowed-apps/
+WARNING 2025-02-04 17:45:38,543 log Unauthorized: /api/allowed-apps/
+WARNING 2025-02-04 17:45:56,810 log Bad Request: /api/change-password/
+WARNING 2025-02-04 17:59:29,018 log Bad Request: /api/change-password/
+WARNING 2025-02-04 18:13:36,693 log Bad Request: /api/change-password/
+WARNING 2025-02-04 18:14:11,909 log Bad Request: /api/change-password/
+WARNING 2025-02-04 18:14:17,195 log Bad Request: /api/change-password/
+WARNING 2025-02-04 18:14:42,278 log Bad Request: /api/change-password/
+WARNING 2025-02-04 18:15:03,569 log Bad Request: /api/change-password/
+WARNING 2025-02-04 18:17:39,341 log Bad Request: /api/change-password/
+WARNING 2025-02-04 18:18:31,391 log Not Found: /favicon.ico
+WARNING 2025-02-04 18:20:36,623 log Unauthorized: /api/routes/
+WARNING 2025-02-04 18:20:36,630 log Unauthorized: /api/routes/
+WARNING 2025-02-04 18:20:36,632 log Unauthorized: /api/me/
+WARNING 2025-02-04 18:20:36,641 log Unauthorized: /api/passengers/
+WARNING 2025-02-04 18:20:36,643 log Unauthorized: /api/me/
+WARNING 2025-02-04 18:20:36,648 log Unauthorized: /api/passengers/
+WARNING 2025-02-04 18:36:19,180 log Bad Request: /api/change-password/
+WARNING 2025-02-04 20:43:28,104 log Bad Request: /api/change-password/
+WARNING 2025-02-04 20:44:09,606 log Bad Request: /api/change-password/
+WARNING 2025-02-04 20:44:41,386 log Bad Request: /api/change-password/
+WARNING 2025-02-04 20:49:04,022 log Unauthorized: /api/routes/
+WARNING 2025-02-04 20:49:04,025 log Unauthorized: /api/me/
+WARNING 2025-02-04 20:49:04,051 log Unauthorized: /api/passengers/
+WARNING 2025-02-04 20:49:04,061 log Unauthorized: /api/routes/
+WARNING 2025-02-04 20:49:04,074 log Unauthorized: /api/me/
+WARNING 2025-02-04 20:49:04,077 log Unauthorized: /api/passengers/
+WARNING 2025-02-04 20:51:13,988 log Bad Request: /api/change-password/
+WARNING 2025-02-04 20:57:21,839 log Bad Request: /api/change-password/
+WARNING 2025-02-04 20:57:41,388 log Bad Request: /api/change-password/
+WARNING 2025-02-04 20:58:22,581 log Unauthorized: /api/routes/
+ERROR 2025-02-04 20:59:52,580 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 795, in data
+    ret = super().data
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 713, in to_representation
+    return [
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 714, in <listcomp>
+    self.child.to_representation(item) for item in iterable
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 523, in to_representation
+    for field in fields:
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 384, in _readable_fields
+    for field in self.fields.values():
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 373, in fields
+    fields[key] = value
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\utils\serializer_helpers.py", line 167, in __setitem__
+    field.bind(field_name=key, parent=self.serializer)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\fields.py", line 358, in bind
+    assert self.source != field_name, (
+AssertionError: It is redundant to specify `source='trip_requests'` on field 'ListSerializer' in serializer 'OrderedPassengerListSerializer', because it is the same as the field name. Remove the `source` keyword argument.
+ERROR 2025-02-04 20:59:52,691 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 795, in data
+    ret = super().data
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 713, in to_representation
+    return [
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 714, in <listcomp>
+    self.child.to_representation(item) for item in iterable
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 523, in to_representation
+    for field in fields:
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 384, in _readable_fields
+    for field in self.fields.values():
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 373, in fields
+    fields[key] = value
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\utils\serializer_helpers.py", line 167, in __setitem__
+    field.bind(field_name=key, parent=self.serializer)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\fields.py", line 358, in bind
+    assert self.source != field_name, (
+AssertionError: It is redundant to specify `source='trip_requests'` on field 'ListSerializer' in serializer 'OrderedPassengerListSerializer', because it is the same as the field name. Remove the `source` keyword argument.
+ERROR 2025-02-04 21:03:49,895 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 795, in data
+    ret = super().data
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 713, in to_representation
+    return [
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 714, in <listcomp>
+    self.child.to_representation(item) for item in iterable
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 523, in to_representation
+    for field in fields:
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 384, in _readable_fields
+    for field in self.fields.values():
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 373, in fields
+    fields[key] = value
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\utils\serializer_helpers.py", line 167, in __setitem__
+    field.bind(field_name=key, parent=self.serializer)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\fields.py", line 358, in bind
+    assert self.source != field_name, (
+AssertionError: It is redundant to specify `source='trip_requests'` on field 'ListSerializer' in serializer 'OrderedPassengerListSerializer', because it is the same as the field name. Remove the `source` keyword argument.
+ERROR 2025-02-04 21:03:49,984 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 795, in data
+    ret = super().data
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 713, in to_representation
+    return [
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 714, in <listcomp>
+    self.child.to_representation(item) for item in iterable
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 523, in to_representation
+    for field in fields:
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 384, in _readable_fields
+    for field in self.fields.values():
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 373, in fields
+    fields[key] = value
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\utils\serializer_helpers.py", line 167, in __setitem__
+    field.bind(field_name=key, parent=self.serializer)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\fields.py", line 358, in bind
+    assert self.source != field_name, (
+AssertionError: It is redundant to specify `source='trip_requests'` on field 'ListSerializer' in serializer 'OrderedPassengerListSerializer', because it is the same as the field name. Remove the `source` keyword argument.
+ERROR 2025-02-04 21:07:09,496 log Internal Server Error: /api/ordered-passenger-list/
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 795, in data
+    ret = super().data
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 713, in to_representation
+    return [
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 714, in <listcomp>
+    self.child.to_representation(item) for item in iterable
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 523, in to_representation
+    for field in fields:
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 384, in _readable_fields
+    for field in self.fields.values():
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\serializers.py", line 373, in fields
+    fields[key] = value
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\utils\serializer_helpers.py", line 167, in __setitem__
+    field.bind(field_name=key, parent=self.serializer)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python310\lib\site-packages\rest_framework\fields.py", line 358, in bind
+    assert self.source != field_name, (
+AssertionError: It is redundant to specify `source='trip_requests'` on field 'ListSerializer' in serializer 'OrderedPassengerListSerializer', because it is the same as the field name. Remove the `source` keyword argument.

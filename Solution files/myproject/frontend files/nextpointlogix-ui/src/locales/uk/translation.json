@@ -610,5 +610,13 @@
   "work_to_home": "З Роботи Додому",
   "home_to_work": "з Дому на Роботу",
   "all": "Всі",
-  "list_saved": "Список збережено"
+  "list_saved": "Список збережено",
+  "list_not_saved": "Список не збережено",
+  "route_not_saved": "Маршрут не збережено",
+  "route_saved": "Маршрут не збережено",
+  "list_calculated": "Список розраховано",
+  "route_calculated": "Маршрут розраховано",
+  "new_list_summary": "Новий список",
+  "new_route_summary": "Відомості про новий маршрут",
+  "list_summary": "Відомості про список пасажирів"
 }

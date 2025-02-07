@@ -5,9 +5,8 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('TransLogix_djangoProject', '0048_rename_end_passenger_name_orderedpassengerlist_end_passenger_first_name_and_more'),
+        ('TransLogix_djangoProject', '0048_rename_end_passenger_name_orderedpassengerlist'),
     ]
 
     operations = [

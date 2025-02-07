@@ -25,6 +25,8 @@ import random
 import string
 import requests
 import logging
+import django_filters
+from .models import OrderedPassengerList
 
 from django.conf import settings
 from django.db.models import Q
@@ -54,6 +56,9 @@ from rest_framework.filters import SearchFilter
 
 from .models import OrderedPassengerList
 from .serializers import OrderedPassengerListSerializer
+
+
+
 
 
 # Включення логування SQL-запитів
@@ -1481,6 +1486,27 @@ class FilteredPassengerTripRequestView(ListAPIView):
                 Q(comment__icontains=search_query)
             )
 
+        # ✅ Фільтрація за включенням у список або маршрут
+        included_in_list = self.request.query_params.get('included_in_list')
+        included_in_route = self.request.query_params.get('included_in_route')
+        ordered_list_id = self.request.query_params.get('ordered_list_id')
+        route_id = self.request.query_params.get('route_id')
+
+        if included_in_list == "false":
+            queryset = queryset.filter(ordered_list_id__isnull=True)
+            logger.info("Filtering out requests that are already in a list.")
+
+        if included_in_route == "false":
+            queryset = queryset.filter(route_id__isnull=True)
+            logger.info("Filtering out requests that are already in a route.")
+
+        if ordered_list_id:
+            queryset = queryset.filter(ordered_list_id=ordered_list_id)
+            logger.info(f"Filtering by specific ordered_list_id: {ordered_list_id}")
+
+        if route_id:
+            queryset = queryset.filter(route_id=route_id)
+            logger.info(f"Filtering by specific route_id: {route_id}")
 
         logging.info(f"Final Queryset Count: {queryset.count()}")
         return queryset
@@ -1532,11 +1558,27 @@ from .serializers import OrderedPassengerListSerializer
 # Ініціалізація логування
 logger = logging.getLogger(__name__)
 
+class OrderedPassengerListFilter(django_filters.FilterSet):
+    ordered_list_id = django_filters.NumberFilter(field_name="trip_requests__ordered_list_id")
+    sequence_number = django_filters.NumberFilter(field_name="trip_requests__sequence_number")
+    included_in_list = django_filters.BooleanFilter(field_name="trip_requests__included_in_list")
+    included_in_route = django_filters.BooleanFilter(field_name="trip_requests__included_in_route")
+    included_in_trip = django_filters.BooleanFilter(field_name="trip_requests__included_in_trip")
+    pickup_time_in_route = django_filters.DateTimeFilter(field_name="trip_requests__pickup_time_in_route")
+    dropoff_time_in_route = django_filters.DateTimeFilter(field_name="trip_requests__dropoff_time_in_route")
+
+    class Meta:
+        model = OrderedPassengerList
+        fields = [
+            'start_city', 'end_city', 'direction', 'estimated_start_time',
+            'estimated_end_time', 'passenger_count', 'stop_count', 'route_distance_km', 'is_active'
+        ]
 
 class OrderedPassengerListViewSet(viewsets.ModelViewSet):
-    queryset = OrderedPassengerList.objects.all()
+    queryset = OrderedPassengerList.objects.prefetch_related('trip_requests')
     serializer_class = OrderedPassengerListSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = OrderedPassengerListFilter
 
     filterset_fields = {
         'direction': ['exact'],
@@ -1706,3 +1748,4 @@ class FilteredOrderedPassengerListView(ListAPIView):
 
     # Поля, за якими можна сортувати
     ordering_fields = ['created_at', 'estimated_start_time', 'estimated_end_time']
+

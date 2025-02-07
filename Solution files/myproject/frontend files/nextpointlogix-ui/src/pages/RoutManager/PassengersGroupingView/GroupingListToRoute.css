@@ -73,6 +73,12 @@
   box-sizing: border-box;
   padding: 5px;
 }
+.gltr-top-field {
+  flex: 1;
+  padding: 5px;
+  border-bottom: 3px solid #c0c0c0;
+  box-sizing: border-box;
+}
 
 .gltr-template2s-upper-right,
 .gltr-template2s-lower-right {

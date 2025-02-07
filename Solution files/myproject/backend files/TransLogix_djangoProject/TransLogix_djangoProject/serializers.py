@@ -1,4 +1,5 @@
 from rest_framework import serializers
+import django_filters
 
 from .models import User, Route, CoordinatePoint, House, Driver, Vehicle
 from .models import  Country, Region, City, District, Street
@@ -717,6 +718,9 @@ class PassengerTripRequestCreateSerializer(serializers.ModelSerializer):
 
 
 class OrderedPassengerListSerializer(serializers.ModelSerializer):
+    trip_requests = PassengerTripRequestSerializer(many=True, read_only=True)
+
     class Meta:
         model = OrderedPassengerList
         fields = '__all__'
+

@@ -626,5 +626,13 @@
   "work_to_home": "Work to Home",
   "home_to_work": "Home to Work",
   "all": "All",
-  "list_saved": "List saved"
+  "list_saved": "List saved",
+  "list_not_saved": "List not saved",
+  "route_not_saved": "Route not saved",
+  "route_saved": "Route saved",
+  "list_calculated": "List calculated",
+  "route_calculated": "Route calculated",
+  "new_list_summary": "New list summary",
+  "new_route_summary": "New route summary",
+  "list_summary": "List of passengers summary"
 }
