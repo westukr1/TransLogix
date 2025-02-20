@@ -634,5 +634,8 @@
   "route_calculated": "Route calculated",
   "new_list_summary": "New list summary",
   "new_route_summary": "New route summary",
-  "list_summary": "List of passengers summary"
+  "list_summary": "List of passengers summary",
+  "show_included_in_list": "Show included in list",
+  "show_included_in_route": "Show included in route",
+  "view": "View"
 }

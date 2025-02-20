@@ -618,5 +618,8 @@
   "route_calculated": "Маршрут розраховано",
   "new_list_summary": "Новий список",
   "new_route_summary": "Відомості про новий маршрут",
-  "list_summary": "Відомості про список пасажирів"
+  "list_summary": "Відомості про список пасажирів",
+  "show_included_in_list": "Показати включені в список",
+  "show_included_in_route": "Показати включені в маршрут",
+  "view": "Перегляд"
 }

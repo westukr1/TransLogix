@@ -1580,6 +1580,23 @@ class OrderedPassengerListViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = OrderedPassengerListFilter
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        request = self.request
+
+        start_time = request.GET.get("estimated_start_time__gte")
+        end_time = request.GET.get("estimated_end_time__lte")
+
+        logger.info(f"📌 Фільтрація за датами: start_time={start_time}, end_time={end_time}")
+
+        if start_time and end_time:
+            queryset = queryset.filter(
+                estimated_start_time__gte=start_time,
+                estimated_end_time__lte=end_time
+            )
+
+        return queryset
+
     filterset_fields = {
         'direction': ['exact'],
         'is_active': ['exact'],
@@ -1749,3 +1766,31 @@ class FilteredOrderedPassengerListView(ListAPIView):
     # Поля, за якими можна сортувати
     ordering_fields = ['created_at', 'estimated_start_time', 'estimated_end_time']
 
+
+@api_view(["DELETE"])
+def delete_ordered_list(request, list_id):
+    """
+    Видаляє список пасажирів і очищує прив'язані заявки.
+    """
+    try:
+        # Знайти всі заявки, які були включені в цей список
+        passenger_requests = PassengerTripRequest.objects.filter(ordered_list_id=list_id)
+
+        # Оновити заявки (очистити список)
+        passenger_requests.update(
+            ordered_list_id=None,
+            included_in_list=0,
+            sequence_number=None
+        )
+
+        # Видалити список пасажирів
+        ordered_list = OrderedPassengerList.objects.filter(id=list_id)
+        if not ordered_list.exists():
+            return Response({"error": "Список не знайдено"}, status=status.HTTP_404_NOT_FOUND)
+
+        ordered_list.delete()
+
+        return Response({"message": f"Список {list_id} успішно видалено"}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

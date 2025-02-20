@@ -45,6 +45,13 @@
 .nav-button:hover {
   background-color: #3a3a3a;
 }
+.nav-button:disabled {
+  background-color: #474747;
+  color: #999;
+  border-color: #666;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
 
 .gltr-template2s-content {
   display: flex;
@@ -56,7 +63,8 @@
   box-sizing: border-box;
 }
 
-.gltr-template2s-left-column {
+.gltr-template2s-left-column,
+.gltr-template2s-right-column {
   flex: 0 0 50%;
   padding: 20px;
   background-color: #3a3a3a;
@@ -65,14 +73,6 @@
   padding: 5px;
 }
 
-.gltr-template2s-right-column {
-  flex: 0 0 50%;
-  display: flex;
-  flex-direction: column;
-  background-color: #2c2c2c;
-  box-sizing: border-box;
-  padding: 5px;
-}
 .gltr-top-field {
   flex: 1;
   padding: 5px;
@@ -100,4 +100,47 @@ input[disabled] {
   flex: 1;
   flex-direction: column;
   background-color: #2c2c2c;
+  font-size: 0.8em;
+}
+.name-container,
+.filter-container,
+.info-container,
+.button-container,
+.grid-container,
+.search-container {
+  width: 100%; /* Автоматично підлаштовується під колонку */
+  margin: 0;
+  border: none;
+  padding: 5px;
+  color: white;
+}
+
+.name-container {
+  height: 15px;
+  font-size: 1.4em;
+}
+
+.search-container {
+  height: 20px;
+}
+.info-container {
+  height: 80px;
+}
+
+.filter-container {
+  height: 160px !important;
+  margin-top: 10px;
+}
+.button-container {
+  height: 40px;
+  padding: 3px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.grid-container {
+  height: 620px;
+}
+.filter-container {
+  margin-top: 10px;
 }

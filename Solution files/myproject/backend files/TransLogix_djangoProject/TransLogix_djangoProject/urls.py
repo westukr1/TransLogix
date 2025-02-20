@@ -57,10 +57,11 @@ from .views import (CoordinatePointUpdateView,
 from .views import (DriverVehicleAssignmentViewSet,
                     FuelTypeViewSet, AssignedVehiclesView,
                     update_fuel_type, calculate_route, PassengerTripRequestViewSet,
-                    update_trip_request_status)
+                    update_trip_request_status, delete_ordered_list)
 
 from .views import PassengerTripRequestCreateView
 from .views import FilteredPassengerTripRequestView, OrderedPassengerListViewSet, FilteredOrderedPassengerListView
+
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
@@ -165,5 +166,7 @@ urlpatterns = [
     path('', include(router.urls)),
     path('api/', include(router.urls)),  # CRUD
     path('api/ordered-passenger-list/filter/', FilteredOrderedPassengerListView.as_view(), name='filtered_ordered_passenger_list'),  # Фільтрація
+    path('api/ordered-passenger-list/<int:list_id>/delete/', delete_ordered_list, name='delete_ordered_list'),
+
 ]
 
