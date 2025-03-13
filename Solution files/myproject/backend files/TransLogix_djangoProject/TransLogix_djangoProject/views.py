@@ -56,6 +56,11 @@ from rest_framework.filters import SearchFilter
 
 from .models import OrderedPassengerList
 from .serializers import OrderedPassengerListSerializer
+from rest_framework.decorators import action
+from .models import TemporaryPassengerList
+from .serializers import TemporaryPassengerListSerializer
+from django.utils.timezone import now
+from uuid import UUID
 
 
 
@@ -1364,6 +1369,8 @@ class PassengerTripRequestViewSet(ModelViewSet):
 # Завантажуємо ключ із .env
 GOOGLE_API_KEY = config("GOOGLE_MAPS_API_KEY")
 
+OPTIMIZATION_THRESHOLD = 10  # 🔴 Поріг оптимізації (у відсотках)
+
 @csrf_exempt
 def calculate_route(request):
     if request.method == "POST":
@@ -1375,35 +1382,69 @@ def calculate_route(request):
             waypoints = data.get("waypoints", [])
             language = data.get("language", "en")
 
-            # Формуємо запит до Google Directions API
-            url = "https://maps.googleapis.com/maps/api/directions/json"
-            params = {
+            # 🔹 1. Отримуємо маршрут **без оптимізації**
+            standard_params = {
                 "origin": origin,
                 "destination": destination,
                 "waypoints": "|".join(waypoints),
                 "key": GOOGLE_API_KEY,
                 "language": language,
             }
+            standard_response = requests.get("https://maps.googleapis.com/maps/api/directions/json", params=standard_params)
+            standard_data = standard_response.json()
 
-            response = requests.get(url, params=params)
-            google_data = response.json()
+            if standard_data.get("status") != "OK":
+                return JsonResponse({"error": "Google API error (Standard Route)", "details": standard_data}, status=400)
 
-            if google_data.get("status") != "OK":
-                return JsonResponse({"error": "Error from Google Directions API", "details": google_data}, status=400)
+            # 🔹 2. Отримуємо маршрут **з оптимізацією**
+            optimized_params = standard_params.copy()
+            optimized_params["waypoints"] = f"optimize:true|{'|'.join(waypoints)}"
+            optimized_response = requests.get("https://maps.googleapis.com/maps/api/directions/json", params=optimized_params)
+            optimized_data = optimized_response.json()
 
-            # Отримуємо результати маршруту
-            route = google_data["routes"][0]
-            legs = route["legs"]
-            distance = sum(leg["distance"]["value"] for leg in legs) / 1000  # км
-            duration = sum(leg["duration"]["value"] for leg in legs) / 60  # хвилини
+            if optimized_data.get("status") != "OK":
+                return JsonResponse({"error": "Google API error (Optimized Route)", "details": optimized_data}, status=400)
+
+            # 📌 Функція обчислення параметрів маршруту
+            def extract_route_info(route_data):
+                route = route_data["routes"][0]
+                legs = route["legs"]
+                total_distance = sum(leg["distance"]["value"] for leg in legs) / 1000  # км
+                total_duration = sum(leg["duration"]["value"] for leg in legs) / 60  # хвилини
+
+                cumulative_durations = []
+                accumulated_time = 0
+                for leg in legs:
+                    accumulated_time += leg["duration"]["value"] / 60  # Хвилини
+                    cumulative_durations.append(accumulated_time)
+
+                return {
+                    "total_distance": total_distance,
+                    "total_duration": total_duration,
+                    "cumulative_durations": cumulative_durations,
+                    "start_address": legs[0]["start_address"],
+                    "end_address": legs[-1]["end_address"],
+                }
+
+            # 🔹 Отримуємо деталі для обох маршрутів
+            standard_route = extract_route_info(standard_data)
+            optimized_route = extract_route_info(optimized_data)
+            optimized_order = optimized_data["routes"][0].get("waypoint_order", list(range(len(waypoints))))
+
+            # 📌 Обчислення різниці в оптимізації
+            distance_difference = ((standard_route["total_distance"] - optimized_route["total_distance"]) / standard_route["total_distance"]) * 100
+            duration_difference = ((standard_route["total_duration"] - optimized_route["total_duration"]) / standard_route["total_duration"]) * 100
+
+            # 🔹 Якщо оптимізація незначна, не показуємо другий маршрут
+            is_significant_optimization = distance_difference > OPTIMIZATION_THRESHOLD or duration_difference > OPTIMIZATION_THRESHOLD
 
             result = {
-                "distance": distance,
-                "duration": duration,
-                "stops": len(waypoints),
-                "start_address": legs[0]["start_address"],
-                "end_address": legs[-1]["end_address"],
+                "standard_route": standard_route,  # Дані для маршруту без оптимізації
+                "optimized_route": optimized_route if is_significant_optimization else None,  # Приховуємо, якщо немає значної оптимізації
+                "optimized_order": optimized_order if is_significant_optimization else None,  # Приховуємо, якщо немає значної оптимізації
+                "optimization_applied": is_significant_optimization,  # Флаг, чи була застосована оптимізація
             }
+
             return JsonResponse(result)
 
         except Exception as e:
@@ -1426,6 +1467,22 @@ class FilteredPassengerTripRequestView(ListAPIView):
     def get_queryset(self):
         logger.info("Method 'get_queryset' was called")
         queryset = super().get_queryset()
+        
+        # Отримуємо параметри
+        ids_include = self.request.query_params.get("ids_include")
+        ids_exclude = self.request.query_params.get("ids_exclude")
+
+        # Якщо передано ids_include - повертаємо лише вибрані заявки
+        if ids_include:
+            selected_ids = [int(id) for id in ids_include.split(",") if id.isdigit()]
+            queryset = queryset.filter(id__in=selected_ids)
+        elif ids_include == "":  # Якщо параметр переданий, але пустий
+            return queryset.none()
+
+        # Якщо передано ids_exclude - виключаємо ці заявки
+        if ids_exclude:
+            excluded_ids = [int(id) for id in ids_exclude.split(",") if id.isdigit()]
+            queryset = queryset.exclude(id__in=excluded_ids)
 
         # Фільтрація за активністю
         is_active = self.request.query_params.get('is_active')
@@ -1794,3 +1851,123 @@ def delete_ordered_list(request, list_id):
 
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class TemporaryPassengerListViewSet(viewsets.ModelViewSet):
+    """
+    API для управління тимчасовими списками пасажирів.
+    """
+    queryset = TemporaryPassengerList.objects.all()
+    serializer_class = TemporaryPassengerListSerializer
+
+    def get_queryset(self):
+        """
+        Повертає тільки списки, які належать поточному користувачу.
+        """
+        return TemporaryPassengerList.objects.filter(user=self.request.user)
+
+    @action(detail=False, methods=['get'])
+    def get_active_list(self, request):
+        """
+        Отримання активного тимчасового списку пасажирів для користувача.
+        Якщо список відсутній, повертаємо порожній об'єкт без помилки.
+        """
+        user = request.user
+        session_id = request.headers.get('Session-ID')  # Отримуємо session_id з заголовків
+
+        print(f"🔍 Перевіряємо тимчасовий список для user={user} (ID: {user.id}), session_id={session_id}")
+
+        if not session_id:
+            return Response({"message": "Session ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            session_id = UUID(session_id)  # Перетворюємо рядок у UUID
+        except ValueError:
+            return Response({"message": "Invalid session_id format"}, status=status.HTTP_400_BAD_REQUEST)
+
+        instance = TemporaryPassengerList.objects.filter(
+            user=user, session_id=session_id, expires_at__gt=now()
+        ).first()
+
+        if instance:
+            # Перевіряємо, чи є в списку заявки, які вже включені в постійний список
+            stored_requests = instance.requests  # Заявки у тимчасовому списку
+            conflicting_requests = PassengerTripRequest.objects.filter(id__in=stored_requests, included_in_list=True)
+
+            if conflicting_requests.exists():
+                # Видаляємо тимчасовий список, бо він втратив актуальність
+                instance.delete()
+                return Response({"message": "Тимчасовий список втратив актуальність"}, status=status.HTTP_410_GONE)
+
+            return Response(TemporaryPassengerListSerializer(instance).data, status=status.HTTP_200_OK)
+
+        # Якщо запису немає в БД, повертаємо порожній список фільтрів замість помилки
+        print("⚠️ Тимчасовий список не знайдено, повертаємо порожній результат.")
+        return Response({"filter_params": {}}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'])
+    def save_list(self, request):
+        """
+        Збереження тимчасового списку пасажирів.
+        """
+        data = request.data
+        instance, created = TemporaryPassengerList.objects.update_or_create(
+            user=request.user, session_id=data.get("session_id"),
+            defaults={
+                "filter_params": data.get("filter_params"),
+                "requests": data.get("requests") or [],  # Якщо None → []
+                "last_modified": now()
+            }
+        )
+        return Response(TemporaryPassengerListSerializer(instance).data,
+                        status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'])
+    def finalize_list(self, request):
+        """
+        Фіналізація маршруту та перенесення у підтверджені маршрути.
+        """
+        session_id = request.data.get("session_id")
+        instance = TemporaryPassengerList.objects.filter(user=request.user, session_id=session_id).first()
+
+        if instance:
+            # 🚀 Тут буде логіка перенесення списку у `confirmed_passenger_lists`
+            instance.delete()
+            return Response({"message": "List finalized and moved to confirmed routes"}, status=status.HTTP_200_OK)
+
+        return Response({"message": "List not found"}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['DELETE'])
+def delete_expired_lists(request):
+    """Видаляє всі тимчасові списки, термін яких закінчився"""
+    expired_lists = TemporaryPassengerList.objects.filter(expires_at__lt=now())
+    count = expired_lists.count()
+    expired_lists.delete()
+    return Response({"message": f"Deleted {count} expired temporary passenger lists."})
+
+@api_view(['GET'])
+def get_available_passenger_requests(request):
+    """
+    Отримання списку доступних заявок (тільки ті, які ще не включені в постійний список).
+    """
+    available_requests = OrderedPassengerList.objects.filter(included_in_list=False)
+    serializer = OrderedPassengerListSerializer(available_requests, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(["POST"])
+def get_passenger_requests_details(request):
+    """Отримання повної інформації про заявки за списком ID"""
+    request_ids = request.data.get("request_ids", [])
+
+    if not request_ids:
+        return Response({"error": "Немає переданих ID заявок"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Отримуємо заявки по їх ID
+    passenger_requests = PassengerTripRequest.objects.filter(id__in=request_ids)
+
+    # Перевіряємо, чи є заявки, що вже включені у маршрут
+    if passenger_requests.filter(included_in_list=True).exists():
+        return Response({"error": "Список не актуальний"}, status=status.HTTP_409_CONFLICT)
+
+    # Відправляємо дані у вигляді списку
+    return Response(PassengerTripRequestSerializer(passenger_requests, many=True).data, status=status.HTTP_200_OK)

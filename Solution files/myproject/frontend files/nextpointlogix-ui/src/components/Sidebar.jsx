@@ -34,6 +34,9 @@ function Sidebar() {
         <Link to="/developers-tools" className="sidebar-item">
           {t("developers_tools")}
         </Link>
+        <Link to="/requests-grouping" className="sidebar-item">
+        {t("requests_grouping")}
+        </Link>
         <Link to="/settings" className="sidebar-item">
           {t("settings")}
         </Link>

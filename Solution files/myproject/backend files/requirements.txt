@@ -6,38 +6,39 @@ certifi==2022.6.15
 charset-normalizer==2.0.12
 colorama==0.4.6
 comm==0.2.2
-debugpy==1.8.2
-decorator==5.1.1
-diff-match-patch==20230430
-distro==1.9.0
-Django==5.1
-django-cors-headers==4.4.0
-django-environ==0.11.2
-django-filter==24.3
-django-import-export==4.1.1
-djangorestframework==3.15.2
-djangorestframework-simplejwt==5.3.1
-et-xmlfile==1.1.0
-exceptiongroup==1.2.2
-executing==2.0.1
-h11==0.14.0
-httpcore==1.0.5
-httpx==0.27.2
-idna==3.3
-ipykernel==6.29.5
-ipython==8.26.0
-jedi==0.19.1
-jiter==0.5.0
-jupyter_client==8.6.2
-jupyter_core==5.7.2
-matplotlib-inline==0.1.7
-mysqlclient==2.2.4
-nest-asyncio==1.6.0
-numpy==1.23.1
-openai==1.47.1
-openpyxl==3.0.10
+# Базові бібліотеки Django
+Django>=5.1.6
+djangorestframework
+django-environ
+django-extensions
+django-import-export
+django-cors-headers
+django-filter
+
+# Аутентифікація та безпека
+djangorestframework-simplejwt
+
+# База даних (MySQL/PostgreSQL)
+mysqlclient
+psycopg2-binary  # Якщо використовуєте PostgreSQL
+
+# Логування та утиліти
+gunicorn  # Для продакшн сервера
+whitenoise  # Для обслуговування статичних файлів
+
+# Додаткові залежності
+requests
+openpyxl
+pandas
+django-redis
+celery
+drf-yasg  # Для Swagger документації API
+
+# Фільтрування та пошук
+django-filter
+
+# Інші корисні пакети
 packaging==24.1
-pandas==1.4.3
 parso==0.8.4
 platformdirs==4.2.2
 prompt_toolkit==3.0.47
@@ -51,7 +52,6 @@ python-dateutil==2.8.2
 pytz==2022.1
 pywin32==306
 pyzmq==26.0.3
-requests==2.28.0
 six==1.16.0
 sniffio==1.3.1
 sqlparse==0.5.1

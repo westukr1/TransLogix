@@ -64,6 +64,10 @@ from .views import FilteredPassengerTripRequestView, OrderedPassengerListViewSet
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from .views import TemporaryPassengerListViewSet, delete_expired_lists
+from .views import get_passenger_requests_details
+
+
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
@@ -71,6 +75,8 @@ router.register(r'driver-vehicle-assignments', DriverVehicleAssignmentViewSet, b
 router.register(r'fuel-types', FuelTypeViewSet, basename='fuel-type')
 #router.register(r"passenger-trip-requests", PassengerTripRequestViewSet)
 router.register(r'ordered-passenger-list', OrderedPassengerListViewSet)
+router.register(r'temporary-passenger-list', TemporaryPassengerListViewSet, basename="temporary_passenger_list")
+router.register(r'temp-lists', TemporaryPassengerListViewSet, basename='temp-list')
 
 # Для створення пасажира go fuck yourself
 import logging
@@ -167,6 +173,12 @@ urlpatterns = [
     path('api/', include(router.urls)),  # CRUD
     path('api/ordered-passenger-list/filter/', FilteredOrderedPassengerListView.as_view(), name='filtered_ordered_passenger_list'),  # Фільтрація
     path('api/ordered-passenger-list/<int:list_id>/delete/', delete_ordered_list, name='delete_ordered_list'),
+    path('api/', include(router.urls)),
+    path('api/delete-expired-lists/', delete_expired_lists, name='delete_expired_lists'),
+    path('admin/', admin.site.urls),
+    path('api/', include(router.urls)),  # <-- Включає API маршрути
+    path('api/passenger-requests/details/', get_passenger_requests_details, name='get_passenger_requests_details'),
+path('api/temp-lists/get_active_list/', TemporaryPassengerListViewSet.as_view({'get': 'get_active_list'}), name='get_active_list'),
 
 ]
 

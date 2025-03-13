@@ -6,8 +6,9 @@ from datetime import datetime
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
-
-
+from django.utils import timezone
+import uuid
+from datetime import timedelta
 
 class User(AbstractUser):
 
@@ -572,3 +573,36 @@ class OrderedPassengerList(models.Model):
             f"{self.end_passenger_first_name} {self.end_passenger_last_name}"
         )
 
+
+def default_expires_at():
+    return timezone.now() + timedelta(hours=24)
+
+
+class TemporaryPassengerList(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
+    session_id = models.CharField(max_length=36, unique=False)
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
+
+    direction = models.CharField(
+        max_length=20,
+        choices=[("HOME_TO_WORK", "На роботу"), ("WORK_TO_HOME", "Додому")],
+        null=True, blank=True
+    )
+
+    estimated_start_time = models.DateTimeField(null=True, blank=True)
+    estimated_end_time = models.DateTimeField(null=True, blank=True)
+    estimated_travel_time = models.DurationField(null=True, blank=True)
+    estimated_wait_time = models.DurationField(null=True, blank=True)
+    route_distance_km = models.FloatField(null=True, blank=True)
+    stop_count = models.IntegerField(default=0)
+    passenger_count = models.IntegerField(default=0)
+
+    filter_params = models.JSONField(default=dict)  # Якщо тут стояла `lambda: {}`, зміни на `dict`
+    requests = models.JSONField(default=list)  # Якщо тут стояла `lambda: []`, зміни на `list`
+
+    created_at = models.DateTimeField(default=timezone.now)
+    last_modified = models.DateTimeField(auto_now=True)
+    expires_at = models.DateTimeField(default=default_expires_at)  # Використовуємо функцію
+
+    def __str__(self):
+        return f"Temporary list for {self.user.username} (Session {self.session_id})"

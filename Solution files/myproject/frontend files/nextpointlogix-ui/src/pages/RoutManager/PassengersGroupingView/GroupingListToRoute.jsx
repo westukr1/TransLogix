@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback  } from "react";
 import "./GroupingListToRoute.css";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { AgGridReact } from "ag-grid-react";
@@ -11,14 +11,18 @@ import axios from "axios";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import OrderedPassengerList from "../OrderedPassengerListView/OrderedPassengerList";
-// Приклад для Жені/ Ще один приклад.
-// Підключення плагіна utc для роботи з часовими зонами
+import RouteComparisonModal from "./RouteComparisonModal";
+import RouteMapModal from "./RouteMapModal"; 
+
+
+
+
 dayjs.extend(utc);
 
 const GroupingListToRoute = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-
+  const location = useLocation();
   const tomorrow = dayjs()
     .add(1, "day")
     .startOf("day")
@@ -41,7 +45,8 @@ const GroupingListToRoute = () => {
   const [loading, setLoading] = useState(false);
   const [allRequests, setAllRequests] = useState([]);
   const [unselectedRequests, setUnselectedRequests] = useState([]);
-  const [selectedRequests, setSelectedRequests] = useState([]);
+  // const [selectedRequests, setSelectedRequests] = useState([]);
+  
   const [directionFilter, setDirectionFilter] = useState("WORK_TO_HOME");
   const [allowMixedDirections, setAllowMixedDirections] = useState(false);
   const [allowExtendedInterval, setAllowExtendedInterval] = useState(false);
@@ -54,6 +59,153 @@ const GroupingListToRoute = () => {
 
   const [selectedListDetails, setSelectedListDetails] = useState(null);
   const [selectedListPassengers, setSelectedListPassengers] = useState([]);
+  const [modalData, setModalData] = useState({ show: false });
+  const [showMapModal, setShowMapModal] = useState(false);
+ 
+  const [standardRoute, setStandardRoute] = useState([]);
+  const [optimizedRoute, setOptimizedRoute] = useState([]);
+  const stopDetails = location.state?.stopDetails || [];
+  const token = localStorage.getItem('access_token'); 
+  const [passengerRequests, setPassengerRequests] = useState({ left: [], right: [] });
+  const [filters, setFilters] = useState(null);
+
+// 1️⃣ Отримання активного списку фільтрів
+const fetchFilters = useCallback(async () => {
+  console.log("📤 Запит на отримання активного списку фільтрів...");
+
+  let sessionId = localStorage.getItem("session_id");
+  if (!sessionId) {
+      console.warn("⚠️ Session ID не знайдено! Використовується тимчасовий.");
+      sessionId = "bd1e7f30-12d3-4b56-92a3-bc46e2c84cda";
+      localStorage.setItem("session_id", sessionId);
+  }
+
+  try {
+      const response = await axios.get(`http://localhost:8000/api/temp-lists/get_active_list/`, {
+          params: { session_id: sessionId },
+          headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data) {
+          console.log("✅ Отримано активний список фільтрів:", response.data);
+          setFilters(response.data.filter_params);
+      } else {
+          console.warn("⚠️ Активний список фільтрів не знайдено. Використовуємо дефолтні.");
+          saveDefaultFilters();
+      }
+  } catch (error) {
+      console.error("❌ Немає активного списку, створюємо дефолтний:", error);
+      saveDefaultFilters();
+  }
+}, [token]);
+
+// 2️⃣ Отримання заявок пасажирів (фільтрованих)
+const fetchPassengerRequests = useCallback(async (filters) => {
+  if (!filters || Object.keys(filters).length === 0) {
+      console.error("⚠️ Не можна отримати заявки пасажирів без фільтрів");
+      return;
+  }
+
+  console.log("📤 Запит на отримання списку заявок пасажирів із фільтрами:", filters);
+
+  try {
+      const response = await axios.get('http://localhost:8000/api/filtered-passenger-trip-requests/', {
+          params: { ...filters, included_in_list: false },
+          headers: { Authorization: `Bearer ${token}` }
+      });
+
+      console.log("✅ Отримано заявки після фільтрації:", response.data);
+      const availableRequests = response.data;
+
+      let sessionId = localStorage.getItem("session_id");
+      const tempListResponse = await axios.get(`http://localhost:8000/api/temp-lists/get_active_list/`, {
+          params: { session_id: sessionId },
+          headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const selectedRequestsIds = tempListResponse.data?.requests || [];
+
+      if (selectedRequestsIds.length > 0) {
+          console.log("📤 Отримання повної інформації про заявки з тимчасового списку...");
+          fetchSelectedRequests(selectedRequestsIds);
+      } else {
+          console.warn("⚠️ Тимчасовий список порожній.");
+          console.log("📌 Встановлення даних у ліву таблицю:", availableRequests);
+          setPassengerRequests(prevState => ({
+            ...prevState,
+            left: availableRequests
+        }));
+        
+        setUnselectedRequests(availableRequests); // Додаємо цю зміну
+      }
+  } catch (error) {
+      console.error("❌ Помилка при отриманні списку пасажирів:", error);
+  }
+}, [token]);
+
+// 3️⃣ Отримання повної інформації про заявки із тимчасового списку
+const fetchSelectedRequests = useCallback(async (selectedRequestIds) => {
+  if (!selectedRequestIds || selectedRequestIds.length === 0) {
+      console.log("⚠️ Тимчасовий список порожній.");
+      return;
+  }
+
+  console.log("📤 Запит на отримання повної інформації про заявки:", selectedRequestIds);
+
+  try {
+      const response = await axios.post(
+          "http://localhost:8000/api/get_passenger_requests_details/",
+          { request_ids: selectedRequestIds },
+          {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                  "Content-Type": "application/json",
+              },
+          }
+      );
+
+      if (response.data.error) {
+          console.error("❌ Список неактуальний:", response.data.error);
+          alert("⛔ Тимчасовий список втратив актуальність.");
+          await deleteTemporaryList();
+          return;
+      }
+
+      console.log("✅ Отримані заявки у правильному порядку:", response.data);
+      setPassengerRequests(prevState => ({ ...prevState, right: response.data }));
+  } catch (error) {
+      console.error("❌ Помилка при отриманні повної інформації про заявки:", error);
+  }
+}, [token]);
+
+// 4️⃣ Отримання фільтрів при завантаженні сторінки
+useEffect(() => {
+  fetchFilters();
+}, [fetchFilters]);
+
+// 5️⃣ Виклик запиту `fetchPassengerRequests` тільки після отримання фільтрів
+useEffect(() => {
+  if (filters) {
+      console.log("📤 Виклик fetchPassengerRequests із актуальними фільтрами:", filters);
+      fetchPassengerRequests(filters);
+  }
+}, [filters, fetchPassengerRequests]);
+
+
+
+// const fetchRequests = async (filters) => {
+//   try {
+//       const response = await axios.get('http://localhost:8000/api/filtered-passenger-trip-requests/', {
+//           params: filters,
+//           headers: { Authorization: `Bearer ${token}` }
+//       });
+//       const leftList = response.data.filter(req => !req.included_in_list);
+//       const rightList = response.data.filter(req => req.included_in_list);
+//       setPassengerRequests({ left: leftList, right: rightList });
+//   } catch (error) {
+//       console.error('Error fetching passenger requests:', error);
+//   }
+// };
 
   const [routeDetails, setRouteDetails] = useState({
     distance: null,
@@ -64,60 +216,194 @@ const GroupingListToRoute = () => {
     endAddress: null,
   });
 
-  const [filters, setFilters] = useState({
-    direction: "",
-    is_active: "",
-    start_city: "",
-    start_date: tomorrow,
-    end_date: endOfTomorrow,
-    search_query: "",
-  });
+  // const defaultFilters = {
+  //   direction: "",
+  //   is_active: "",
+  //   start_city: "",
+  //   start_date: dayjs().add(1, 'day').startOf('day').format("YYYY-MM-DD HH:mm:ss"),
+  //   end_date: dayjs().add(1, 'day').endOf('day').format("YYYY-MM-DD HH:mm:ss"),
+  //   search_query: "",
+  // };
 
-  useEffect(() => {
-    fetchRequests();
-  }, [searchQuery, showIncludedInList, showIncludedInRoute]);
 
-  const fetchRequests = () => {
-    const start = dayjs(startDate).format("YYYY-MM-DD HH:mm:ss");
-    const end = dayjs(endDate).format("YYYY-MM-DD HH:mm:ss");
+const [availableRequests, setAvailableRequests] = useState([]);
+const [selectedRequests, setSelectedRequests] = useState([]);
 
-    const filters = {
-      direction: directionFilter,
-      included_in_list: showIncludedInList ? true : undefined,
-      included_in_route: showIncludedInRoute ? true : undefined,
-    };
-    console.log("Відправка запиту на бекенд:", {
-      start_date: start,
-      end_date: end,
-      search: searchQuery,
-      ...filters,
-    });
-    axios
-      .get("http://localhost:8000/api/filtered-passenger-trip-requests/", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          "Content-Type": "application/json",
-        },
-        params: {
-          start_date: start,
-          end_date: end,
-          search: searchQuery,
-          ...filters,
-        },
-      })
-      .then((response) => {
-        console.log("✅ Отримані дані:", response.data);
-        const data = response.data.map((item) => ({
-          ...item,
-          is_selected: false,
-        }));
-        setAllRequests(data);
-        setUnselectedRequests(data);
-        setSelectedRequests([]); // Clear selected requests
-        applyFilters(data);
-      })
-      .catch((error) => console.error("Error fetching requests data:", error));
+// 4️⃣ Видалення тимчасового списку
+const deleteTemporaryList = async (sessionId) => {
+  try {
+      console.log(`🗑️ Видаляємо тимчасовий список: ${sessionId}`);
+      await axios.delete(`http://localhost:8000/api/temp-lists/delete/`, {
+          params: { session_id: sessionId },
+          headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log("✅ Тимчасовий список успішно видалено.");
+  } catch (error) {
+      console.error("❌ Помилка при видаленні тимчасового списку:", error);
+  }
+};
+
+// 5️⃣ Збереження дефолтних фільтрів
+const saveDefaultFilters = async () => {
+  const defaultFilters = {
+      start_date: null,
+      end_date: null,
+      allow_more_than_day: false,
+      include_directions: false,
+      show_included: false,
+      show_in_route: false
   };
+  console.log("\ud83d\udce4 Збереження дефолтних фільтрів:", defaultFilters);
+  try {
+      await axios.post('http://localhost:8000/api/temp-lists/save_list/', {
+          session_id: localStorage.getItem("session_id"),
+          filter_params: defaultFilters
+      }, {
+          headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log("✅ Дефолтні фільтри збережено");
+      setFilters(defaultFilters);
+  } catch (error) {
+      console.error("❌ Помилка при збереженні дефолтних фільтрів:", error);
+  }
+};
+
+
+
+  
+// const saveFilters = async (newFilters) => {
+  
+//   try {
+//       await axios.post('http://localhost:8000/api/temp-lists/save_list/', {
+//           filter_params: newFilters
+//       }, {
+//           headers: { Authorization: `Bearer ${token}` }
+//       });
+//       console.log("✅ Нові фільтри збережено успішно.");
+     
+//   } catch (error) {
+//       console.error('Error saving filters:', error);
+//   }
+// };
+
+  // useEffect(() => {
+  //   fetchRequests();
+  // }, [searchQuery, showIncludedInList, showIncludedInRoute]);
+
+  // // Відновлення вибраних заявок із sessionStorage при завантаженні сторінки
+  // useEffect(() => {
+  //   try {
+  //     // Отримуємо вибрані заявки з sessionStorage
+  //     const storedRequests = sessionStorage.getItem("selectedRequests");
+  //     const parsedRequests = storedRequests ? JSON.parse(storedRequests) : [];
+  
+  //     setSelectedRequests(parsedRequests);
+  
+  //     // Отримуємо фільтри з sessionStorage
+  //     const storedFilters = sessionStorage.getItem("filters");
+  //     const parsedFilters = storedFilters ? JSON.parse(storedFilters) : {};
+  
+  //     if (Object.keys(parsedFilters).length > 0) {
+  //       setSearchQuery(parsedFilters.searchQuery || "");
+  
+  //       // Перетворюємо `startDate` і `endDate` у `dayjs()` об'єкти, якщо вони не є `dayjs()`
+  //       setStartDate(parsedFilters.startDate ? dayjs(parsedFilters.startDate) : dayjs().startOf("day"));
+  //       setEndDate(parsedFilters.endDate ? dayjs(parsedFilters.endDate) : dayjs().endOf("day"));
+  
+  //       setDirectionFilter(parsedFilters.directionFilter || "");
+  //       setShowIncludedInList(parsedFilters.showIncludedInList || false);
+  //       setShowIncludedInRoute(parsedFilters.showIncludedInRoute || false);
+  //     }
+  
+  //     // Викликаємо fetchRequests тільки якщо parsedRequests є масивом
+  //     if (Array.isArray(parsedRequests)) {
+  //       fetchRequests(parsedRequests.map(req => req.id));
+  //     }
+  //   } catch (error) {
+  //     console.error("❌ Error parsing data from sessionStorage:", error);
+  //     setSelectedRequests([]);
+  //     setStartDate(dayjs().startOf("day")); // Додаємо безпечне значення
+  //     setEndDate(dayjs().endOf("day")); // Додаємо безпечне значення
+  //   }
+  // }, []);
+  
+  
+// тимчасово закосітив цю функцію, щоб спробувати аналогічну
+  // const fetchRequests = () => {
+  //   // console.log("🔑 Token:", localStorage.getItem("access_token"));
+  //   console.log("📤 Запит на отримання списку заявок з фільтрами:");
+  //   let storedRequests = [];
+  //   try {
+  //     storedRequests = JSON.parse(sessionStorage.getItem("selectedRequests")) || [];
+  //   } catch (error) {
+  //     console.error("❌ Error parsing selectedRequests from sessionStorage:", error);
+  //     storedRequests = [];
+  //   }
+  
+  //   const selectedIds = storedRequests.map(req => req.id);
+  
+  //   // const storedRequests = JSON.parse(sessionStorage.getItem("selectedRequests")) || [];
+  //   // const selectedIds = storedRequests.map(req => req.id);
+  
+  //   const start = dayjs(startDate).format("YYYY-MM-DD HH:mm:ss");
+  //   const end = dayjs(endDate).format("YYYY-MM-DD HH:mm:ss");
+  
+  //   const filters = {
+  //     direction: directionFilter,
+  //     included_in_list: showIncludedInList ? true : undefined,
+  //     included_in_route: showIncludedInRoute ? true : undefined,
+  //   };
+  
+  //   axios.get(`http://localhost:8000/api/filtered-passenger-trip-requests/`, {
+  //     headers: {
+  //       Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+  //     },
+  //     params: {
+  //       start_date: start,
+  //       end_date: end,
+  //       search: searchQuery,
+  //       ...filters,
+  //       ids_exclude: selectedIds.length > 0 ? selectedIds.join(",") : undefined
+  //     }
+  //   }).then(response => {
+  //     setUnselectedRequests(response.data);
+  //   });
+  
+  //   axios.get(`http://localhost:8000/api/filtered-passenger-trip-requests/`, {
+  //     headers: {
+  //       Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+  //     },
+  //     params: {
+  //       start_date: start,
+  //       end_date: end,
+  //       search: searchQuery,
+  //       ...filters,
+  //       ids_include: selectedIds.length > 0 ? selectedIds.join(",") : undefined
+  //     }
+  //   }).then(response => {
+  //     setSelectedRequests(response.data);
+  //   });
+  // };
+  
+  
+  //  // Оновлення списку вибраних заявок
+   const updateSelectedRequests = (requestId) => {
+    let storedData = sessionStorage.getItem("selectedRequests") ? JSON.parse(sessionStorage.getItem("selectedRequests")) : [];
+    const isSelected = storedData.some(req => req.id === requestId);
+
+    if (isSelected) {
+      storedData = storedData.filter(req => req.id !== requestId); // Видаляємо з вибраних
+    } else {
+      storedData.push({ id: requestId }); // Додаємо у вибрані
+    }
+
+    sessionStorage.setItem("selectedRequests", JSON.stringify(storedData));
+    fetchPassengerRequests(); // Оновлюємо таблиці після зміни
+  };
+  
+
+  
+
   // Функція для отримання налаштувань
   const fetchRouteSettings = async () => {
     try {
@@ -139,35 +425,44 @@ const GroupingListToRoute = () => {
     fetchRouteSettings();
   }, []);
 
+
   const fetchPassengerLists = async () => {
     try {
+      if (!filters) {
+        console.error("⚠️ `filters` не визначено! Використовуємо дефолтні значення.");
+        return;
+      }
+  
+      // Додаємо перевірку, чи `filters.start_date` та `filters.end_date` існують та мають правильний формат
+      const formattedStartDate =
+        filters.start_date && dayjs(filters.start_date).isValid()
+          ? dayjs(filters.start_date).format("YYYY-MM-DDTHH:mm:ss")
+          : null;
+  
+      const formattedEndDate =
+        filters.end_date && dayjs(filters.end_date).isValid()
+          ? dayjs(filters.end_date).format("YYYY-MM-DDTHH:mm:ss")
+          : null;
+  
       console.log("📤 Відправка фільтрів:", {
-        estimated_start_time__gte: dayjs(filters.start_date).format(
-          "YYYY-MM-DDTHH:mm:ss"
-        ),
-        estimated_end_time__lte: dayjs(filters.end_date).format(
-          "YYYY-MM-DDTHH:mm:ss"
-        ),
-        direction: filters.direction,
-        is_active: filters.is_active,
-        start_city__icontains: filters.start_city,
-        search: filters.search_query,
+        estimated_start_time__gte: formattedStartDate,
+        estimated_end_time__lte: formattedEndDate,
+        direction: filters.direction || null,
+        is_active: filters.is_active ?? null,
+        start_city__icontains: filters.start_city || null,
+        search: filters.search_query || null,
       });
-
+  
       const response = await axios.get(
-        "http://127.0.0.1:8000/api/ordered-passenger-list/", // 🟢 Виправлено URL
+        "http://127.0.0.1:8000/api/ordered-passenger-list/",
         {
           params: {
-            estimated_start_time__gte: dayjs(filters.start_date).format(
-              "YYYY-MM-DDTHH:mm:ss"
-            ),
-            estimated_end_time__lte: dayjs(filters.end_date).format(
-              "YYYY-MM-DDTHH:mm:ss"
-            ),
-            direction: filters.direction || undefined,
-            is_active: filters.is_active || undefined,
-            start_city__icontains: filters.start_city || undefined,
-            search: filters.search_query || undefined,
+            estimated_start_time__gte: formattedStartDate,
+            estimated_end_time__lte: formattedEndDate,
+            direction: filters.direction || null,
+            is_active: filters.is_active ?? null,
+            start_city__icontains: filters.start_city || null,
+            search: filters.search_query || null,
           },
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -175,7 +470,7 @@ const GroupingListToRoute = () => {
           },
         }
       );
-
+  
       console.log("📥 Отримані дані:", response.data);
       setPassengerLists(response.data);
     } catch (error) {
@@ -185,6 +480,7 @@ const GroupingListToRoute = () => {
       );
     }
   };
+  
 
   // Запуск при зміні фільтрів
   useEffect(() => {
@@ -276,7 +572,7 @@ const GroupingListToRoute = () => {
   };
 
   useEffect(() => {
-    fetchRequests();
+    fetchPassengerRequests(filters);
   }, [
     startDate,
     endDate,
@@ -332,65 +628,70 @@ const GroupingListToRoute = () => {
   };
 
   const handleReorder = (id, direction) => {
-    setIsRouteCalculated(false);
+    setIsRouteCalculated(false); // Маршрут тепер вимагає перерахунку
     setSelectedRequests((prevRequests) => {
-      const index = prevRequests.findIndex((r) => r.id === id);
-      if (
-        index === -1 ||
-        (direction === "up" && index === 0) ||
-        (direction === "down" && index === prevRequests.length - 1)
-      ) {
-        return prevRequests;
-      }
+        const index = prevRequests.findIndex((r) => r.id === id);
+        if (
+            index === -1 ||
+            (direction === "up" && index === 0) ||
+            (direction === "down" && index === prevRequests.length - 1)
+        ) {
+            return prevRequests;
+        }
 
-      const newRequests = [...prevRequests];
-      const [movedItem] = newRequests.splice(index, 1);
-      newRequests.splice(
-        direction === "up" ? index - 1 : index + 1,
-        0,
-        movedItem
-      );
-      return newRequests.map((req, idx) => ({
-        ...req,
-        sequence_number: idx + 1,
-      }));
+        const newRequests = [...prevRequests];
+        const [movedItem] = newRequests.splice(index, 1);
+        newRequests.splice(
+            direction === "up" ? index - 1 : index + 1,
+            0,
+            movedItem
+        );
+
+        return newRequests.map((req, idx) => ({
+            ...req,
+            sequence_number: idx + 1,
+        }));
     });
-  };
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    let updatedFilters = { ...filters };
+};
+const handleFilterChange = (e) => {
+  const { name, value } = e.target;
+  let updatedFilters = { ...filters };
 
-    if (name === "start_date" || name === "end_date") {
+  if (name === "start_date" || name === "end_date") {
       const formattedDate = value
-        ? dayjs(value).format("YYYY-MM-DD HH:mm:ss")
-        : "";
+          ? dayjs(value).format("YYYY-MM-DD HH:mm:ss")
+          : "";
       updatedFilters[name] = formattedDate;
 
       if (
-        name === "start_date" &&
-        dayjs(formattedDate).isAfter(dayjs(filters.end_date))
+          name === "start_date" &&
+          dayjs(formattedDate).isAfter(dayjs(filters.end_date))
       ) {
-        updatedFilters.end_date = dayjs(formattedDate)
-          .endOf("day")
-          .format("YYYY-MM-DD HH:mm:ss");
+          updatedFilters.end_date = dayjs(formattedDate)
+              .endOf("day")
+              .format("YYYY-MM-DD HH:mm:ss");
       }
 
       if (
-        name === "end_date" &&
-        dayjs(formattedDate).isBefore(dayjs(filters.start_date))
+          name === "end_date" &&
+          dayjs(formattedDate).isBefore(dayjs(filters.start_date))
       ) {
-        updatedFilters.start_date = dayjs(formattedDate)
-          .startOf("day")
-          .format("YYYY-MM-DD HH:mm:ss");
+          updatedFilters.start_date = dayjs(formattedDate)
+              .startOf("day")
+              .format("YYYY-MM-DD HH:mm:ss");
       }
-    } else {
+  } else {
       updatedFilters[name] = value;
-    }
+  }
 
-    console.log("Оновлені фільтри (форматовані дати):", updatedFilters);
-    setFilters(updatedFilters);
-  };
-  // Оновлення фільтрів для обох таблиць згідно з верхнім фільтром часу
+  console.log("Оновлені фільтри (форматовані дати):", updatedFilters);
+  setFilters(updatedFilters);
+
+  // ❗ Якщо фільтр змінюється, знову робимо маршрут не розрахованим
+  setIsRouteCalculated(false);
+};
+
+  
   // Оновлення фільтрів для обох таблиць згідно з верхнім фільтром часу
   useEffect(() => {
     setFilters((prevFilters) => ({
@@ -449,62 +750,288 @@ const GroupingListToRoute = () => {
       alert(t("minimum_points_required"));
       return;
     }
-
+  
     const origin = `${selectedRequests[0].pickup_latitude},${selectedRequests[0].pickup_longitude}`;
-    const destination = `${
-      selectedRequests[selectedRequests.length - 1].dropoff_latitude
-    },${selectedRequests[selectedRequests.length - 1].dropoff_longitude}`;
+    const destination = `${selectedRequests[selectedRequests.length - 1].dropoff_latitude},${selectedRequests[selectedRequests.length - 1].dropoff_longitude}`;
     const waypoints = selectedRequests
       .slice(1, -1)
-      .map(
-        (request) => `${request.pickup_latitude},${request.pickup_longitude}`
-      );
-
+      .map((request) => `${request.pickup_latitude},${request.pickup_longitude}`);
+   // 🔹 Логування перед відправкою запиту
+   console.log("📤 Відправка запиту на бекенд для розрахунку маршруту:");
+   console.log("📌 Початкова точка:", origin);
+   console.log("📌 Кінцева точка:", destination);
+   console.log("📌 Проміжні точки:", waypoints);
+   console.log("📌 Вибрана мова:", userLanguage);
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/calculate-route/",
-        {
-          origin,
-          destination,
-          waypoints,
-          language: userLanguage,
-        }
-      );
-
+      const response = await axios.post("http://127.0.0.1:8000/api/calculate-route/", {
+        origin,
+        destination,
+        waypoints,
+        language: userLanguage,
+      });
+  
+      console.log("✅ Отримано маршрут:", response.data);
+  
       const formatAddress = (address) => {
         const parts = address.split(",");
         if (parts.length >= 3) {
-          const Street = parts[0].trim(); // Номер будинку та вулиця
+          const street = parts[0].trim();
           const house = parts[1].trim();
-          const city = parts[2].trim(); // Місто
-          return `${city}, ${Street}, ${house}`;
+          const city = parts[2].trim();
+          return `${city}, ${street}, ${house}`;
         }
-        return address; // Якщо формат не відповідає очікуваному
+        return address;
       };
-
+  
       const formatDuration = (minutes) => {
-        const hours = Math.floor(minutes / 60); // Цілі години
-        const remainingMinutes = Math.round(minutes % 60); // Округлення хвилин
+        const hours = Math.floor(minutes / 60);
+        const remainingMinutes = Math.round(minutes % 60);
         return `${hours}h ${remainingMinutes}m`;
       };
-
-      setRouteDetails({
-        distance: Math.round(response.data.distance),
-        duration: formatDuration(response.data.duration),
-        stops: response.data.stops,
+  
+      const { standard_route, optimized_route, optimization_applied } = response.data;
+  
+      if (!standard_route) {
+        alert("Помилка: Дані маршруту не отримані.");
+        return;
+      }
+  
+      // Форматуємо дані маршруту
+      const formattedStandardRoute = {
+        distance: Math.round(standard_route.total_distance),
+        duration: formatDuration(standard_route.total_duration),
+        stops: standard_route.stops,
         passengers: selectedRequests.length,
-        startAddress: formatAddress(response.data.start_address),
-        endAddress: formatAddress(response.data.end_address),
+        startAddress: formatAddress(standard_route.start_address),
+        endAddress: formatAddress(standard_route.end_address),
+      };
+  
+      const formattedOptimizedRoute = optimized_route
+        ? {
+            distance: Math.round(optimized_route.total_distance),
+            duration: formatDuration(optimized_route.total_duration),
+            stops: optimized_route.stops,
+            passengers: selectedRequests.length,
+            startAddress: formatAddress(optimized_route.start_address),
+            endAddress: formatAddress(optimized_route.end_address),
+          }
+        : null;
+  
+      // Відкриваємо спливаюче вікно
+      console.log("📌 Відповідь від бекенду перед збереженням:", response.data);
+      setModalData({
+        show: true,
+        standardRoute: {
+          distance: Math.round(standard_route.total_distance),
+          duration: `${Math.floor(standard_route.total_duration / 60)}h ${Math.round(standard_route.total_duration % 60)}m`,
+          stops: standard_route.stops,
+          startAddress: standard_route.start_address,
+          endAddress: standard_route.end_address,
+        },
+        optimizedRoute: optimization_applied
+          ? {
+              distance: Math.round(optimized_route.total_distance),
+              duration: `${Math.floor(optimized_route.total_duration / 60)}h ${Math.round(optimized_route.total_duration % 60)}m`,
+              stops: optimized_route.stops,
+              startAddress: optimized_route.start_address,
+              endAddress: optimized_route.end_address,
+            }
+          : null,
+        optimizedOrder: response.data.optimized_order || null,
+        optimizationApplied: optimization_applied,
+        
       });
-
-      alert(t("route_calculated"));
-      setIsRouteCalculated(true);
+      setStandardRoute(response.data.standard_route || []);
+      setOptimizedRoute(response.data.optimized_route || []);
     } catch (error) {
-      console.error("Error calculating route:", error);
+      console.error("❌ Помилка при розрахунку маршруту:", error);
       alert(t("error_calculating_route"));
     }
   };
 
+    
+  // Функція прийняття стандартного маршруту
+const acceptStandardRoute = () => {
+  if (!modalData.standardRoute) {
+    console.error("❌ Дані стандартного маршруту відсутні.");
+    return;
+  }
+
+  console.log("🛣 Використано маршрут користувача:", modalData.standardRoute);
+
+  setRouteDetails({
+    distance: modalData.standardRoute.distance,
+    duration: modalData.standardRoute.duration,
+    stops: modalData.standardRoute.stops,
+    passengers: selectedRequests.length,
+    startAddress: modalData.standardRoute.startAddress,
+    endAddress: modalData.standardRoute.endAddress,
+    
+  });
+
+  setModalData({ show: false }); // Закриваємо вікно
+  // 🔹 Додаємо можливість збереження списку після підтвердження маршруту
+  setIsRouteCalculated(true);
+};
+
+// Функція прийняття оптимізованого маршруту
+// Юзер може виконувати цю послідовність дій скільки завгодно разів:
+// 1. Формувати список відібраних заявок пасажирів (додавати, віднімати, змінювати порядок).
+// 2. Відправляти сформований список на перевірку.
+// 3. Щоразу дані для перевірки беруться з таблиці у тому порядку, який є актуальним після змін юзера.
+
+const acceptOptimizedRoute = () => {
+  console.log("🔄 Натиснуто 'Прийняти оптимізований маршрут'");
+  console.log("📌 Поточний стан modalData:", modalData);
+
+  if (!modalData.optimizedRoute || !modalData.optimizedOrder) {
+    console.error("❌ Оптимізовані дані не знайдено.");
+    console.log("📌 Дані, отримані з бекенду:", modalData);
+    return;
+  }
+
+  console.log("✅ Оптимізований маршрут прийнято:", modalData.optimizedRoute);
+  console.log("📌 Оптимізований порядок точок:", modalData.optimizedOrder);
+
+  // Враховуємо, що початкова і кінцева точка не змінюються
+  const expectedOptimizedLength = selectedRequests.length - 2;
+  if (modalData.optimizedOrder.length !== expectedOptimizedLength) {
+    console.warn("⚠️ Деякі точки були пропущені при оптимізації.");
+    console.log("📌 Очікувана кількість точок для оптимізації:", expectedOptimizedLength);
+    console.log("📌 Отримано точок:", modalData.optimizedOrder.length);
+  }
+
+  // Оновлення деталей маршруту
+  setRouteDetails({
+    distance: modalData.optimizedRoute.total_distance || 0,
+    duration: modalData.optimizedRoute.total_duration || "N/A",
+    stops: modalData.optimizedRoute.stops || 0,
+    passengers: selectedRequests.length,
+    startAddress: modalData.optimizedRoute.start_address || "N/A",
+    endAddress: modalData.optimizedRoute.end_address || "N/A",
+  });
+
+  console.log("📌 Перед сортуванням selectedRequests:", selectedRequests);
+
+  // Додаємо початкову та кінцеву точки та сортуємо решту точок
+  const sortedRequests = [
+    selectedRequests[0], // Початкова точка
+    ...modalData.optimizedOrder.map((index, newIndex) => {
+      if (!selectedRequests[index + 1]) {
+        console.error("❌ Некоректний індекс в optimizedOrder:", index);
+        console.log("📌 Поточний список запитів:", selectedRequests);
+        return null;
+      }
+      const updatedRequest = { ...selectedRequests[index + 1] };
+      updatedRequest.sequence_number = newIndex + 1; // Оновлення порядкового номера
+      return updatedRequest;
+    }).filter(request => request !== null),
+    selectedRequests[selectedRequests.length - 1] // Кінцева точка
+  ];
+
+  console.log("🔄 Оновлений список запитів після оптимізації:", sortedRequests);
+
+  // Оновлення стану
+  setSelectedRequests([...sortedRequests]);
+  console.log("📌 Після оновлення setSelectedRequests:", sortedRequests);
+  setModalData({ show: false }); // Закриття модального вікна
+
+  // 🔹 Додаємо можливість збереження списку після підтвердження маршруту
+  setIsRouteCalculated(true);
+};
+// Якщо юзер вносить зміни у список (додає/видаляє заявки чи змінює порядок), кнопка збереження стає неактивною
+useEffect(() => {
+  setIsRouteCalculated(false);
+}, [selectedRequests]);
+
+// Функція відкриття модального вікна карти
+const handleShowMap = () => {
+  sessionStorage.setItem("selectedRequests", JSON.stringify(selectedRequests));
+  sessionStorage.setItem("filters", JSON.stringify(filters)); // Зберігаємо фільтри
+  // sessionStorage.setItem("filters", JSON.stringify({
+  //   searchQuery,
+  //   startDate: startDate.toISOString(),
+  //   endDate: endDate.toISOString(),
+  //   directionFilter,
+  //   showIncludedInList,
+  //   showIncludedInRoute
+  // }));
+  navigate("/route-map", {
+    state: { selectedRequests }
+  });
+};
+//Тимчасово закоментимо щоб виявити помилку
+useEffect(() => {
+  try {
+    const storedRequests = sessionStorage.getItem("selectedRequests");
+    const parsedRequests = storedRequests ? JSON.parse(storedRequests) : [];
+    setSelectedRequests(parsedRequests);
+
+    const storedRequestIds = sessionStorage.getItem("selectedRequestIds");
+    const parsedRequestIds = storedRequestIds ? JSON.parse(storedRequestIds) : [];
+
+    const storedStandardRoute = sessionStorage.getItem("standardRoute");
+    const parsedStandardRoute = storedStandardRoute ? JSON.parse(storedStandardRoute) : null;
+
+    const storedOptimizedRoute = sessionStorage.getItem("optimizedRoute");
+    const parsedOptimizedRoute = storedOptimizedRoute ? JSON.parse(storedOptimizedRoute) : null;
+
+    if (location.state?.savedRequests) {
+      console.log("🔄 Відновлюємо selectedRequests із location.state");
+      setSelectedRequests(location.state.savedRequests);
+    } else {
+      console.log("🔄 Відновлюємо selectedRequests із sessionStorage");
+      setSelectedRequests(parsedRequests);
+    }
+
+    if (parsedRequestIds.length > 0) {
+      console.log("📌 Викликаємо fetchPassengerRequests(filters) із фільтром:", filters);
+      fetchPassengerRequests(filters);
+    }
+
+    if (parsedStandardRoute) {
+      setStandardRoute(parsedStandardRoute);
+    }
+
+    if (parsedOptimizedRoute) {
+      setOptimizedRoute(parsedOptimizedRoute);
+    }
+  } catch (error) {
+    console.error("❌ Помилка парсингу даних із sessionStorage:", error);
+    setSelectedRequests([]);
+  }
+}, []);
+
+
+
+const clearSessionStorage = () => {
+  console.log("🗑 Очищення sessionStorage при виході з сторінки...");
+  sessionStorage.removeItem("selectedRequests");
+  sessionStorage.removeItem("selectedRequestIds");
+  sessionStorage.removeItem("directionFilter");
+  sessionStorage.removeItem("filters");
+};
+
+  // Очищення sessionStorage тільки при виході на інші сторінки, окрім RouteMapModal
+  useEffect(() => {
+    return () => {
+      if (!location.pathname.includes("/route-map")) {
+        sessionStorage.removeItem("selectedRequests");
+        // sessionStorage.removeItem("filters");
+      }
+    };
+  }, [location]);
+
+
+const filteredRequests = allRequests.filter(
+  (req) => !selectedRequests.some((selected) => selected.id === req.id)
+);
+
+// Функція закриття модального вікна карти
+const handleCloseMap = () => {
+  console.log("❌ Закриваємо карту...");
+  setShowMapModal(false);
+};
   const saveList = async () => {
     if (!isRouteCalculated || selectedRequests.length === 0) {
       alert(t("no_requests_selected"));
@@ -620,7 +1147,7 @@ const GroupingListToRoute = () => {
       fetchPassengerLists(); // Оновлення списку
       setSelectedListDetails(null); // Очистка інформації про список
       setSelectedListPassengers([]); // Очистка таблиці "Відомості про список пасажирів"
-      fetchRequests(); // Оновлення таблиці "Запити пасажирів"
+      fetchPassengerRequests(filters); // Оновлення таблиці "Запити пасажирів"
     } catch (error) {
       console.error(
         `❌ Помилка при видаленні списку ID ${listId}:`,
@@ -640,12 +1167,8 @@ const GroupingListToRoute = () => {
         cellRenderer: (params) => (
           <input
             type="checkbox"
-            checked={params.value}
-            onChange={() =>
-              isLeft
-                ? handleSelect(params.data.id)
-                : handleDeselect(params.data.id)
-            }
+            checked={selectedRequests.some(selected => selected.id === params.data.id)}
+            onChange={() => updateSelectedRequests(params.data.id)}
           />
         ),
       },
@@ -1106,8 +1629,32 @@ const GroupingListToRoute = () => {
       ? { border: "2px solid black", fontWeight: "bold" }
       : {};
   };
+  const applyOptimizedRoute = () => {
+    if (!modalData.optimizedRoute || !modalData.optimizedOrder) {
+      console.error("❌ Оптимізовані дані не знайдено.");
+      return;
+    }
+  
+    console.log("🔄 Оновлення таблиці відповідно до оптимізованого маршруту...");
+    console.log("📌 Оптимізований порядок точок:", modalData.optimizedOrder);
+  
+    // Сортуємо `selectedRequests` у відповідності до порядку, запропонованого Google
+    const sortedRequests = modalData.optimizedOrder.map((index, newIndex) => ({
+      ...selectedRequests[index],
+      sequence_number: newIndex + 1, // Оновлюємо порядковий номер
+    }));
+  
+    console.log("✅ Оновлений список запитів після оптимізації:", sortedRequests);
+  
+    // Оновлюємо стан
+    setSelectedRequests(sortedRequests);
+    setModalData({ show: false }); // Закриваємо вікно
+  };
+  
+  
 
   return (
+    
     <div className="gltr-two-column-template">
       <div
         className="
@@ -1168,21 +1715,22 @@ const GroupingListToRoute = () => {
             </div>
 
             <div className="filters">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={allowExtendedInterval}
-                  onChange={(e) => {
-                    setAllowExtendedInterval(e.target.checked);
-                    if (!e.target.checked) {
-                      setEndDate(
-                        new Date(startDate.getTime() + 24 * 60 * 60 * 1000)
-                      );
-                    }
-                  }}
-                />
-                {t("allow_extended_interval")}
-              </label>
+            <label> 
+  <input
+    type="checkbox"
+    checked={allowExtendedInterval}
+    onChange={(e) => {
+      setAllowExtendedInterval(e.target.checked);
+      if (!e.target.checked) {
+        setEndDate(
+          new Date(dayjs(startDate).toDate().getTime() + 24 * 60 * 60 * 1000)
+        );
+      }
+    }}
+  />
+  {t("allow_extended_interval")}
+</label>
+
               <input
                 type="checkbox"
                 checked={allowMixedDirections}
@@ -1251,9 +1799,10 @@ const GroupingListToRoute = () => {
               style={{ height: "50%", marginTop: "20px" }}
             >
               <AgGridReact
-                key={JSON.stringify(unselectedRequests)}
-                rowData={unselectedRequests}
+                key={JSON.stringify(passengerRequests.left)}
+                rowData={passengerRequests.left}
                 columnDefs={[
+                  
                   {
                     headerName: t("is_selected"),
                     field: "is_selected",
@@ -1261,11 +1810,13 @@ const GroupingListToRoute = () => {
                     cellRenderer: (params) => (
                       <input
                         type="checkbox"
-                        checked={params.value}
-                        onChange={() => handleSelect(params.data.id)}
+                        checked={selectedRequests.some(selected => selected.id === params.data.id)}
+                        onChange={() => updateSelectedRequests(params.data.id)}
                       />
                     ),
                   },
+
+
 
                   { headerName: t("request_id"), field: "id", width: 60 },
                   {
@@ -1409,7 +1960,7 @@ const GroupingListToRoute = () => {
             </div>
           </div>
           <div className="button-container">
-            <button onClick={fetchRequests} className="nav-button">
+            <button onClick={fetchPassengerRequests} className="nav-button">
               {t("update_table")}
             </button>
             <button
@@ -1584,6 +2135,24 @@ const GroupingListToRoute = () => {
             <button className="nav-button" onClick={calculateRoute}>
               {t("calculate_route")}
             </button>
+            <button className="nav-button" onClick={handleShowMap}>
+            {t("show_on_map")}
+            </button>
+             {/* Спливаюче вікно для порівняння маршрутів */}
+             <RouteComparisonModal
+  modalData={modalData}
+  onClose={() => setModalData({ show: false })}
+  onAcceptOptimized={acceptOptimizedRoute}
+  onAcceptStandard={acceptStandardRoute}
+  onShowMap={handleShowMap}
+/>
+
+{showMapModal && (
+  <RouteMapModal
+    modalData={modalData}
+    onClose={() => setShowMapModal(false)}
+  />
+)}
             <button
               className="nav-button"
               onClick={saveList}
@@ -1652,6 +2221,7 @@ const GroupingListToRoute = () => {
         </div>
       </div>
     </div>
+    
   );
 };
 

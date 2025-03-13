@@ -5,7 +5,7 @@ from .models import User, Route, CoordinatePoint, House, Driver, Vehicle
 from .models import  Country, Region, City, District, Street
 from .models import DriverVehicleAssignment, FuelType
 from .models import Passenger, PassengerTripRequest,OrderedPassengerList
-
+from .models import TemporaryPassengerList
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -724,3 +724,8 @@ class OrderedPassengerListSerializer(serializers.ModelSerializer):
         model = OrderedPassengerList
         fields = '__all__'
 
+
+class TemporaryPassengerListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TemporaryPassengerList
+        fields = '__all__'

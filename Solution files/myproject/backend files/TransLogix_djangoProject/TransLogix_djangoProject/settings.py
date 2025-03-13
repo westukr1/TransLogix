@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'import_export',
     'django_filters',
     'django_extensions',
+    'django_cron',
 
 
 ]
@@ -170,6 +171,24 @@ SIMPLE_JWT = {
 }
 CORS_ALLOW_ALL_ORIGINS = True
 
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'session-id',  # Додаємо дозволений заголовок
+]
+
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+
+CORS_ALLOW_CREDENTIALS = True  # Дозволяє відправку кукі або авторизаційних заголовків
+
 # Email settings (замініть на свої)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -233,3 +252,6 @@ LOGGING = {
     },
 }
 
+CRON_CLASSES = [
+    "TransLogix_djangoProject.crons.DeleteExpiredListsCronJob",
+]

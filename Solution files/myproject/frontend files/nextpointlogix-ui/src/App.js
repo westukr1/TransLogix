@@ -6,11 +6,13 @@ import Calendar from "./pages/Calendar/Calendar";
 import FuelManagement from "./pages/FuelManagement/FuelManagement";
 import MapOfRoutes from "./pages/MapOfRoutes/MapOfRoutes";
 import PlanningScreen from "./pages/RoutManager/PlanningScreen";
+import RouteMapModal from './pages/RoutManager/PassengersGroupingView/RouteMapModal'; 
 
 import VehicleRegistration from "./pages/VehicleAndDriverRegistration/VehicleRegistration";
 import DriverRegistration from "./pages/VehicleAndDriverRegistration/DriverRegistration";
 import TransportRequest from "./pages/TransportRequests/TransportRequest";
 import DevelopersTools from "./pages/DevelopersTools/DevelopersTools";
+
 
 // Ваш новий компонент
 
@@ -40,6 +42,7 @@ import PointsSelectView from "./pages/PassengerTripRequestView/PointsSelectView"
 import RepeatTripView from "./pages/PassengerTripRequestView/RepeatTripView";
 
 import GroupingListToRoute from "./pages/RoutManager/PassengersGroupingView/GroupingListToRoute";
+import RequestsGrouping from './pages/RoutManager/PassengersGroupingView/RequestsGrouping';
 import UserRoutesSettings from "./pages/RoutManager/UserSettingsView/UserRoutesSettings";
 
 import "react-toastify/dist/ReactToastify.css";
@@ -129,6 +132,10 @@ function App() {
             path="/ordered-passenger-list/ordered-passenger-list"
             element={<OrderedPassengerList />}
           />
+          <Route path="/route-map" element={<RouteMapModal />} />
+         
+          <Route path="/requests-grouping" element={<RequestsGrouping />} />
+        
         </Routes>
 
         <ToastContainer />
