@@ -643,6 +643,7 @@
   "total_distance": "Total Distance",
   "total_duration": "Total Duration",
   "start_address": "Start Address",
-  "end_address": "End Address"
+  "end_address": "End Address",
+  "clear_filters": "Clear filters"
   
 }

@@ -29,6 +29,7 @@ const PassengerTripRequestView = () => {
     toHome: true,
   });
   const [onlyActive, setOnlyActive] = useState(false);
+  const formatDateToCompareDay = (isoString) => dayjs(isoString).format("YYYY-MM-DD");
 
   useEffect(() => {
     fetchRequests();
@@ -68,8 +69,13 @@ const PassengerTripRequestView = () => {
             (r) =>
               r.passenger === request.passenger &&
               r.direction === request.direction &&
-              dayjs(r.departure_time).isSame(request.departure_time, "day")
+              r.is_active === true &&
+              ((r.direction === "WORK_TO_HOME" && r.departure_time && request.departure_time &&
+                dayjs(r.departure_time).format("YYYY-MM-DD") === dayjs(request.departure_time).format("YYYY-MM-DD")) ||
+              (r.direction === "HOME_TO_WORK" && r.arrival_time && request.arrival_time &&
+                dayjs(r.arrival_time).format("YYYY-MM-DD") === dayjs(request.arrival_time).format("YYYY-MM-DD")))
           );
+        
           return {
             ...request,
             isConflict: sameDayRequests.length > 1,
@@ -145,6 +151,8 @@ const PassengerTripRequestView = () => {
     // Виклик функції для завантаження даних із фільтром
     fetchRequests();
   }, [directionFilter]);
+
+  
 
   const columnDefs = [
     { headerName: t("request_id"), field: "id", width: 60 },
@@ -444,6 +452,7 @@ const PassengerTripRequestView = () => {
           <AgGridReact
             className="ag-theme-alpine"
             rowData={requests}
+            // getRowStyle={getRowStyle}
             columnDefs={columnDefs}
             pagination={true}
             paginationPageSize={10}

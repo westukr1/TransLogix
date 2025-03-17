@@ -33,17 +33,18 @@ function RequestsGrouping() {
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date(new Date().getTime() + 24 * 60 * 60 * 1000));
     const [searchQuery, setSearchQuery] = useState('');
-    const [allowExtendedInterval, setAllowExtendedInterval] = useState(false);
-    const [allowMixedDirections, setAllowMixedDirections] = useState(false);
+    // const [allowExtendedInterval, setAllowExtendedInterval] = useState(false);
+    // const [allowMixedDirections, setAllowMixedDirections] = useState(false);
     const [directionFilter, setDirectionFilter] = useState('WORK_TO_HOME');
-    const [showIncludedInList, setShowIncludedInList] = useState(false);
-    const [showIncludedInRoute, setShowIncludedInRoute] = useState(false);
+    // const [showIncludedInList, setShowIncludedInList] = useState(false);
+    // const [showIncludedInRoute, setShowIncludedInRoute] = useState(false);
     // чи потрібно це видалити?
     const [filtersLoaded, setFiltersLoaded] = useState(false); // Новий прапор для уникнення зайвих записів
     const [passengerRequests, setPassengerRequests] = useState([]);
     const [onlyActive, setOnlyActive] = useState(true);
     
     const formatDate = (isoString) => dayjs(isoString).format("YYYY-MM-DD HH:mm:ss");
+    const formatDateToCompareDay = (isoString) => dayjs(isoString).format("YYYY-MM-DD");
 
     const sessionId = localStorage.getItem("session_id") || "bd1e7f30-12d3-4b56-92a3-bc46e2c84cda";
     localStorage.setItem("session_id", sessionId);
@@ -108,14 +109,7 @@ useEffect(() => {
     });
 }, []);
 
-useEffect(() => {
-  if (filtersLoaded) {
-      console.log("📤 Оновлення sessionStorage...");
-      saveFiltersInSessionStorage();
-  }
-}, [filtersLoaded, startDate, endDate, allowExtendedInterval, allowMixedDirections, showIncludedInList, showIncludedInRoute, onlyActive, directionFilter]);
 
-// Додано 16.03.2025
 
 const saveFiltersToBackend = useCallback(async (updatedFilters) => {
   console.log("📤 Відправка оновлених фільтрів на бекенд:", updatedFilters);
@@ -377,6 +371,28 @@ const handleAllowExtendedIntervalChange = () => {
       return updatedFilters;
   });
 };
+const getRowStyle = (params) => {
+  if (params.data.included_in_route) {
+      return { color: 'green', fontWeight: 'bold' };
+  }
+  if (params.data.included_in_list) {
+      return { color: 'blue', fontWeight: 'bold' };
+  }
+  const sameDayRequests = passengerRequests.filter(req => 
+      req.passenger === params.data.passenger && 
+      req.direction === params.data.direction &&
+
+      req.is_active === true &&
+
+      ((req.direction === "WORK_TO_HOME" && req.departure_time && params.data.departure_time && formatDateToCompareDay(req.departure_time) === formatDateToCompareDay(params.data.departure_time)) ||
+      (req.direction === "HOME_TO_WORK" && req.arrival_time && params.data.arrival_time && formatDateToCompareDay(req.arrival_time) === formatDateToCompareDay(params.data.arrival_time)))
+    );
+  if (sameDayRequests.length > 1) {
+      return { color: 'red', fontWeight: 'bold' };
+  }
+  return {};
+};
+
 const columnDefs = [
     { headerName: t("request_id"), field: "id", width: 60 },
     {
@@ -569,11 +585,11 @@ const columnDefs = [
         <div className="gltr-template2s-left-column">
         <div className="requests-grouping">
             <h2>{t("Temporary Passenger List")}</h2>
-            <button onClick={fetchFilters}>🔄 {t("Update Filters")}</button>
+            <button className="nav-button" onClick={fetchFilters}>🔄 {t("Update Filters")}</button>
             {error && <p className="error">⚠️ {error}</p>}
-            <button onClick={clearSavedFilters} className="clear-filters-btn">
-    Очистити фільтри
-</button>
+            <button onClick={clearSavedFilters} className="nav-button">
+                {t("clear_filters")}
+            </button>
 
             <div className="filter-container">
                 <label>{t("start_time")}</label>
@@ -672,6 +688,7 @@ const columnDefs = [
             <AgGridReact
                     rowData={filteredRequests}
                     columnDefs={columnDefs}
+                    getRowStyle={getRowStyle}
                     pagination={true}
                     paginationPageSize={10}
                 />

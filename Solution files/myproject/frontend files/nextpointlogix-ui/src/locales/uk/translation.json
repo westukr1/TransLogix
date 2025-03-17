@@ -622,10 +622,12 @@
   "show_included_in_list": "Показати включені в список",
   "show_included_in_route": "Показати включені в маршрут",
   "view": "Перегляд",
-  "user_route": "User route",
-  "optimized_route": "Optimized route",
-  "total_distance": "Total Distance",
-  "total_duration": "Total Duration",
-  "start_address": "Start Address",
-  "end_address": "End Address"
+  "user_route": "Маршрут користувача",
+  "optimized_route": "Оптимізований маршрут",
+  "total_distance": "Загальна дистанція",
+  "total_duration": "Загальна тривалість",
+  "total_passengers": "Загальна кількість пасажирів",
+  "start_address": "Початкова адреса",
+  "end_address": "Кінцева адреса",
+  "clear_filters": "Очитити фільтри"
 }
