@@ -9,87 +9,85 @@ import dayjs from "dayjs";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+  // Додано 14.03.2025
+  const defaultFilters = {
+    start_date: new Date().toISOString(),
+    end_date: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString(),
+    direction: "WORK_TO_HOME",
+    show_in_route: false,
+    show_included: false,
+    allow_mixed_directions: false,
+    allow_extended_interval: false,
+    onlyActive: true,
+  };
+
 function RequestsGrouping() {
     const { t } = useTranslation();
-    const [filters, setFilters] = useState({});
+    const [filters, setFilters] = useState(() => {
+      const savedFilters = JSON.parse(sessionStorage.getItem("filters"));
+      return savedFilters || defaultFilters;
+  });
     const [error, setError] = useState(null);
     const token = localStorage.getItem('access_token');
+    // чи потрібно це видалити?
     const [startDate, setStartDate] = useState(new Date());
-    const [endDate, setEndDate] = useState(new Date(startDate.getTime() + 24 * 60 * 60 * 1000));
+    const [endDate, setEndDate] = useState(new Date(new Date().getTime() + 24 * 60 * 60 * 1000));
     const [searchQuery, setSearchQuery] = useState('');
     const [allowExtendedInterval, setAllowExtendedInterval] = useState(false);
     const [allowMixedDirections, setAllowMixedDirections] = useState(false);
     const [directionFilter, setDirectionFilter] = useState('WORK_TO_HOME');
     const [showIncludedInList, setShowIncludedInList] = useState(false);
     const [showIncludedInRoute, setShowIncludedInRoute] = useState(false);
+    // чи потрібно це видалити?
     const [filtersLoaded, setFiltersLoaded] = useState(false); // Новий прапор для уникнення зайвих записів
     const [passengerRequests, setPassengerRequests] = useState([]);
-    const [onlyActive, setOnlyActive] = useState(false);
+    const [onlyActive, setOnlyActive] = useState(true);
     
+    const formatDate = (isoString) => dayjs(isoString).format("YYYY-MM-DD HH:mm:ss");
 
     const sessionId = localStorage.getItem("session_id") || "bd1e7f30-12d3-4b56-92a3-bc46e2c84cda";
     localStorage.setItem("session_id", sessionId);
-  // Додано 10.03.2025
-  const defaultFilters = {
-    start_date: new Date().toISOString(),
-    end_date: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString(),
-    direction: "",
-    show_in_route: false,
-    show_included: false,
-    allow_mixed_directions: false,
-    allow_extended_interval: false,
-  };
-  const checkSavedFilters = useCallback(async () => {
-    console.log("📤 Перевірка збережених фільтрів...");
-    try {
-        const response = await axios.get(`http://localhost:8000/api/temp-lists/get_active_list/`, {
-            headers: { Authorization: `Bearer ${token}`, 'Session-ID': sessionId }
-        });
-        if (response.status === 200) {
-            const data = response.data;
-            console.log("✅ Отримано активний список фільтрів:", data);
-            if (data.expires_at && new Date(data.expires_at) < new Date()) {
-                console.warn("⚠️ Фільтри застаріли, встановлюємо дефолтні значення...");
-                sessionStorage.setItem("filters", JSON.stringify(defaultFilters));
-                await deleteExpiredFilters();
-            } else {
-                sessionStorage.setItem("filters", JSON.stringify(data.filter_params || defaultFilters));
-            }
-        }
-    } catch (error) {
-        console.error("❌ Помилка отримання списку фільтрів, встановлюємо дефолтні:", error);
-        sessionStorage.setItem("filters", JSON.stringify(defaultFilters));
-    }
-}, [token, sessionId]);
 
-// Додано 10.03.2025
-const initiateFiltersFromStorage = useCallback(() => {
-  const savedFilters = JSON.parse(sessionStorage.getItem("filters")) || defaultFilters;
-  setStartDate(new Date(savedFilters.start_date));
-  setEndDate(new Date(savedFilters.end_date));
-  setAllowExtendedInterval(savedFilters.allow_extended_interval);
-  setAllowMixedDirections(savedFilters.allow_mixed_directions);
-  setShowIncludedInList(savedFilters.show_included);
-  setShowIncludedInRoute(savedFilters.show_in_route);
-  setOnlyActive(savedFilters.onlyActive || false);
-  setDirectionFilter(savedFilters.direction);
-  console.log("✅ Фільтри ініціалізовано зі сховища:", savedFilters);
+    const checkSavedFilters = useCallback(async () => {
+      const savedFilters = JSON.parse(sessionStorage.getItem("filters"));
+      if (savedFilters) {
+          console.log("✅ Використовуємо збережені фільтри з Session Storage:", savedFilters);
+          setFilters(savedFilters);
+          setFiltersLoaded(true);
+          return;
+      }
+
+      try {
+          const response = await axios.get(`http://localhost:8000/api/temp-lists/get_active_list/`, {
+              headers: { Authorization: `Bearer ${token}`, 'Session-ID': sessionId }
+          });
+
+          if (response.status === 200 && response.data.filter_params) {
+              console.log("✅ Завантажено фільтри з бекенду:", response.data.filter_params);
+              sessionStorage.setItem("filters", JSON.stringify(response.data.filter_params));
+              setFilters(response.data.filter_params);
+          } else {
+              console.warn("⚠️ Немає збережених фільтрів на бекенді, встановлюємо значення за замовчуванням.");
+              sessionStorage.setItem("filters", JSON.stringify(defaultFilters));
+              setFilters(defaultFilters);
+          }
+      } catch (error) {
+          console.error("❌ Помилка отримання фільтрів з бекенду, використовуємо значення за замовчуванням:", error);
+          sessionStorage.setItem("filters", JSON.stringify(defaultFilters));
+          setFilters(defaultFilters);
+      }
+      setFiltersLoaded(true);
+  }, [token, sessionId]);
+
+  // Додано 10.03.2025
+  const clearSavedFilters = useCallback(() => {
+    console.log("🗑️ Очищення збережених фільтрів...");
+    sessionStorage.removeItem("filters"); // Видаляємо збережені фільтри
+    setFilters(defaultFilters); // Встановлюємо значення за замовчуванням
+    console.log("✅ Фільтри очищено, встановлено значення за замовчуванням:", defaultFilters);
 }, []);
 
-const saveFiltersInSessionStorage = useCallback(() => {
-  const updatedFilters = {
-      start_date: startDate.toISOString(),
-      end_date: endDate.toISOString(),
-      allow_extended_interval: allowExtendedInterval,
-      allow_mixed_directions: allowMixedDirections,
-      show_included: showIncludedInList,
-      show_in_route: showIncludedInRoute,
-      onlyActive: onlyActive,
-      direction: directionFilter,
-  };
-  sessionStorage.setItem("filters", JSON.stringify(updatedFilters));
-  console.log("💾 Фільтри збережено у Session Storage:", updatedFilters);
-}, [startDate, endDate, allowExtendedInterval, allowMixedDirections, showIncludedInList, showIncludedInRoute, onlyActive, directionFilter]);
+
 
 const deleteExpiredFilters = useCallback(async () => {
   console.log("🗑️ Видаляємо застарілі фільтри з тимчасового сховища...");
@@ -102,65 +100,48 @@ const deleteExpiredFilters = useCallback(async () => {
       console.error("❌ Помилка видалення застарілих фільтрів:", error);
   }
 }, [token]);
-// Додано 10.03.2025
+// Додано 14.03.2025
 useEffect(() => {
-  checkSavedFilters();
-  initiateFiltersFromStorage();
+    checkSavedFilters().then(() => {
+        // initiateFiltersFromStorage();
+        setFiltersLoaded(true);
+    });
 }, []);
-useEffect(() => {
-  saveFiltersInSessionStorage();
-}, [startDate, endDate, allowExtendedInterval, allowMixedDirections, showIncludedInList, showIncludedInRoute, onlyActive, directionFilter]);
-// Додано 10.03.2025
 
-const saveFiltersToBackend = useCallback(async () => {
-  const updatedFilters = {
-      start_date: startDate.toISOString(),
-      end_date: endDate.toISOString(),
-      allow_extended_interval: allowExtendedInterval,
-      allow_mixed_directions: allowMixedDirections,
-      show_included: showIncludedInList,
-      show_in_route: showIncludedInRoute,
-      onlyActive: onlyActive,
-      direction: directionFilter,
-  };
+useEffect(() => {
+  if (filtersLoaded) {
+      console.log("📤 Оновлення sessionStorage...");
+      saveFiltersInSessionStorage();
+  }
+}, [filtersLoaded, startDate, endDate, allowExtendedInterval, allowMixedDirections, showIncludedInList, showIncludedInRoute, onlyActive, directionFilter]);
+
+// Додано 16.03.2025
+
+const saveFiltersToBackend = useCallback(async (updatedFilters) => {
+  console.log("📤 Відправка оновлених фільтрів на бекенд:", updatedFilters);
+
   try {
-      await axios.post(`http://localhost:8000/api/temp-lists/save_list/`, {
+      const response = await axios.post(`http://localhost:8000/api/temp-lists/save_list/`, {
           session_id: sessionId,
-          filter_params: updatedFilters,
+          filter_params: filters,
       }, {
           headers: { Authorization: `Bearer ${token}` }
       });
-      console.log("✅ Фільтри оновлено у тимчасовій таблиці на бекенді:", updatedFilters);
+
+      console.log("✅ Фільтри оновлено у тимчасовій таблиці на бекенді.", response.data);
   } catch (error) {
-      console.error("❌ Помилка оновлення фільтрів на бекенді:", error);
+      console.error("❌ Помилка оновлення фільтрів на бекенді:", error.response?.data || error);
   }
-}, [startDate, endDate, allowExtendedInterval, allowMixedDirections, showIncludedInList, showIncludedInRoute, onlyActive, directionFilter, token, sessionId]);
+}, [filters, token, sessionId]);
 
-// Додано 10.03.2025
-
-useEffect(() => {
-  setFilters({
-    start_date: startDate.toISOString(),
-    end_date: endDate.toISOString(),
-    allow_extended_interval: allowExtendedInterval,
-    allow_mixed_directions: allowMixedDirections,
-    show_included: showIncludedInList,
-    show_in_route: showIncludedInRoute,
-    onlyActive: onlyActive,
-    direction: directionFilter,
-  });
-}, [startDate, endDate, allowExtendedInterval, allowMixedDirections, showIncludedInList, showIncludedInRoute, onlyActive, directionFilter]);
-
-useEffect(() => {
-  if (filters) {
-      console.log("📤 Виклик saveFiltersToBackend із новими фільтрами:", filters);
-      saveFiltersToBackend();
-  }
-}, [filters]);
+const saveFiltersInSessionStorage = useCallback(() => {
+  sessionStorage.setItem("filters", JSON.stringify(filters));
+  console.log("💾 Фільтри збережено у Session Storage:", filters);
+  saveFiltersToBackend();
+}, [filters, saveFiltersToBackend]);
 
 
-// Додано 10.03.2025
-// 13.03.2025 додано/змінено
+
 const fetchFilters = useCallback(async () => {
   console.log("📤 Оновлення списку фільтрів...");
   try {
@@ -185,50 +166,21 @@ const fetchFilters = useCallback(async () => {
 }, [token, sessionId]);
 
 
-//     const handleFilterChange = (newFilters) => {
-//       setFilters((prevFilters) => ({
-//           ...prevFilters,
-//           ...newFilters
-//       }));
-  
-//       // Оновлюємо фільтри на бекенді
-//       updateFilters({ 
-//           ...filters, 
-//           ...newFilters 
-//       });
-  
-//       // Отримуємо новий список заявок після зміни фільтрів
-//       fetchPassengerRequests();
-//   };
-// 13.03.2025 додано/змінено
 const handleDirectionChange = (newDirection) => {
+  if (!newDirection) return; // Запобігаємо встановленню порожнього значення
+
+  setFilters((prevFilters) => {
+    const updatedFilters = { ...prevFilters, direction: newDirection };
+    sessionStorage.setItem("filters", JSON.stringify(updatedFilters));
+    saveFiltersToBackend(updatedFilters);
+    return updatedFilters;
+  });
+
   setDirectionFilter(newDirection);
-  const updatedFilters = { ...filters, direction: newDirection };
-  updateFilters(updatedFilters);
 };
 
 
-// 13.03.2025 додано/змінено
-const updateFilters = useCallback(async (updatedFilters) => {
-  console.log("📤 Відправка оновлених фільтрів на бекенд:", updatedFilters);
-  try {
-      await axios.post(`http://localhost:8000/api/temp-lists/save_list/`, {
-          session_id: sessionId,
-          filter_params: updatedFilters,
-      }, {
-          headers: { Authorization: `Bearer ${token}` }
-      });
-      console.log("✅ Фільтри оновлено у тимчасовій таблиці на бекенді.");
-      sessionStorage.setItem("filters", JSON.stringify(updatedFilters));
-      setFilters(updatedFilters);
-      fetchPassengerRequests(); // Отримуємо нові заявки після оновлення фільтрів
-  } catch (error) {
-      console.error("❌ Помилка оновлення фільтрів на бекенді:", error);
-  }
-}, [token, sessionId]);
 
-  
-// 13.03.2025 додано/змінено
 const fetchPassengerRequests = useCallback(async () => {
   let currentFilters = JSON.parse(sessionStorage.getItem("filters"));
 
@@ -254,7 +206,7 @@ const fetchPassengerRequests = useCallback(async () => {
       }
   }
 
-  const formatDate = (isoString) => dayjs(isoString).format("YYYY-MM-DD HH:mm:ss");
+ 
   console.log("📤 Використовуємо фільтри у запиті:", currentFilters);
   
   let directionQuery = "";
@@ -268,12 +220,12 @@ const fetchPassengerRequests = useCallback(async () => {
       const response = await axios.get("http://localhost:8000/api/filtered-passenger-trip-requests/", {
           headers: { Authorization: `Bearer ${token}` },
           params: {
-              included_in_list: "false",
-              start_date: currentFilters.start_date ? formatDate(currentFilters.start_date) : '',
-              end_date: currentFilters.end_date ? formatDate(currentFilters.end_date) : '',
-              direction: directionQuery,
-              search: '',
-              is_active: onlyActive
+            included_in_list: "false",
+            start_date: currentFilters.start_date ? formatDate(currentFilters.start_date) : '',
+            end_date: currentFilters.end_date ? formatDate(currentFilters.end_date) : '',
+            direction: directionQuery,
+            search: '',
+            is_active: onlyActive
           }
       });
       if (response.status === 200) {
@@ -290,24 +242,16 @@ useEffect(() => {
 }, [filters]); // Викликаємо отримання заявок при зміні фільтрів
 
 
+
+    
+    useEffect(() => {
+      if (filtersLoaded) {
+          saveFiltersInSessionStorage(filters);
+          fetchPassengerRequests();
+      }
+  }, [filters, filtersLoaded]);
   
-    // useEffect(() => {
-    //     fetchPassengerRequests();
-    // }, [fetchPassengerRequests]);
 
-   
-
-    
-    // useEffect(() => {
-    //     if (filtersLoaded) {
-    //         updateFilters(); // Оновлюємо лише після першого завантаження
-    //         fetchPassengerRequests(); // 🔄 Викликаємо запит заявок після збереження фільтрів
-    //     }
-    // }, [startDate, endDate, allowExtendedInterval, allowMixedDirections, directionFilter, showIncludedInList, showIncludedInRoute]);
-    
-  //   useEffect(() => {
-  //     fetchFilters();
-  // }, []);
 
   useEffect(() => {
     if (filtersLoaded && filters && Object.keys(filters).length > 0) {
@@ -317,44 +261,55 @@ useEffect(() => {
 }, [filtersLoaded]);
 
 useEffect(() => {
-  if (filters) {
-      console.log("🔄 Виклик fetchPassengerRequests після зміни фільтрів:", filters);
+  if (filtersLoaded) {
+      console.log("🔄 Виклик fetchPassengerRequests після першого завантаження фільтрів:", filters);
       fetchPassengerRequests();
   }
-}, [filters]);
+}, [filtersLoaded]); // Викликається лише після першого завантаження фільтрів
 
 const handleStartDateChange = (date) => {
   if (!date || isNaN(date.getTime())) {
-      console.warn("⚠️ Некоректна дата! Оновлення скасовано.");
-      return;
+    console.warn("⚠️ Некоректна дата! Оновлення скасовано.");
+    return;
   }
 
-  setStartDate(date);
+  setFilters((prevFilters) => {
+    const updatedFilters = { ...prevFilters, start_date: date.toISOString() };
 
-  if (!allowExtendedInterval) {
-      const newEndDate = new Date(date.getTime() + 24 * 60 * 60 * 1000);
-      setEndDate(newEndDate);
-      setFilters(prevFilters => ({
-          ...prevFilters,
-          start_date: date.toISOString(),
-          end_date: newEndDate.toISOString(),
-      }));
-  } else {
-      setFilters(prevFilters => ({
-          ...prevFilters,
-          start_date: date.toISOString(),
-      }));
-  }
-};                                                                               
+    if (!prevFilters.allow_extended_interval) {
+      updatedFilters.end_date = new Date(date.getTime() + 24 * 60 * 60 * 1000).toISOString();
+    }
+
+    saveFiltersInSessionStorage(updatedFilters);
+    return updatedFilters;
+  });
+};
+                                                                       
 
 const handleEndDateChange = (newDate) => {
-  if (allowExtendedInterval) {
-      setEndDate(newDate);
-      setFilters(prevFilters => ({
-          ...prevFilters,
-          end_date: newDate.toISOString(),
-      }));
+  setFilters((prevFilters) => {
+      const updatedFilters = { ...prevFilters, end_date: newDate.toISOString() };
+      saveFiltersInSessionStorage(updatedFilters);
+      return updatedFilters;
+  });
+}
+
+useEffect(() => {
+  if (filters.start_date) {
+    setStartDate(new Date(filters.start_date));
   }
+  if (filters.end_date) {
+    setEndDate(new Date(filters.end_date));
+  }
+}, [filters]);
+
+const handleOnlyActiveChange = () => {
+  setFilters((prevFilters) => {
+      const updatedFilters = { ...prevFilters, onlyActive: !prevFilters.onlyActive };
+      sessionStorage.setItem("filters", JSON.stringify(updatedFilters)); // Зберігаємо в Session Storage
+      saveFiltersToBackend(updatedFilters); // Зберігаємо на бекенді
+      return updatedFilters;
+  });
 };
 
 
@@ -392,7 +347,36 @@ const handleEndDateChange = (newDate) => {
             toast.error(t("Error during {{status}} of the request.", { status }));
           });
       };
-
+      const handleShowInRouteChange = () => {
+        setFilters((prevFilters) => {
+            const updatedFilters = { ...prevFilters, show_in_route: !prevFilters.show_in_route };
+            return updatedFilters;
+        });
+    };
+    const handleShowIncludedChange = () => {
+      setFilters((prevFilters) => {
+          const updatedFilters = { ...prevFilters, show_included: !prevFilters.show_included };
+          saveFiltersInSessionStorage(updatedFilters);
+          return updatedFilters;
+      });
+  };
+  const handleAllowMixedDirectionsChange = () => {
+    setFilters((prevFilters) => {
+        const updatedFilters = { ...prevFilters, allow_mixed_directions: !prevFilters.allow_mixed_directions };
+        saveFiltersInSessionStorage(updatedFilters);
+        return updatedFilters;
+    });
+};
+const handleAllowExtendedIntervalChange = () => {
+  setFilters((prevFilters) => {
+      const updatedFilters = { ...prevFilters, allow_extended_interval: !prevFilters.allow_extended_interval };
+      if (!updatedFilters.allow_extended_interval) {
+          updatedFilters.end_date = new Date(new Date(updatedFilters.start_date).getTime() + 24 * 60 * 60 * 1000).toISOString();
+      }
+      saveFiltersInSessionStorage(updatedFilters);
+      return updatedFilters;
+  });
+};
 const columnDefs = [
     { headerName: t("request_id"), field: "id", width: 60 },
     {
@@ -587,16 +571,24 @@ const columnDefs = [
             <h2>{t("Temporary Passenger List")}</h2>
             <button onClick={fetchFilters}>🔄 {t("Update Filters")}</button>
             {error && <p className="error">⚠️ {error}</p>}
-            
+            <button onClick={clearSavedFilters} className="clear-filters-btn">
+    Очистити фільтри
+</button>
+
             <div className="filter-container">
                 <label>{t("start_time")}</label>
-                <input type="datetime-local" value={startDate.toISOString().slice(0, 16)}
-                       onChange={(e) => handleStartDateChange(new Date(e.target.value))} className="form-control" />
+                <input type="datetime-local" 
+                value={filters.start_date ? new Date(filters.start_date).toISOString().slice(0, 16) : ""}
+                onChange={(e) => handleStartDateChange(new Date(e.target.value))}
+                className="form-control" />
                 
                 <label>{t("end_time")}</label>
-                <input type="datetime-local" value={endDate.toISOString().slice(0, 16)}
-                       onChange={(e) => handleEndDateChange(new Date(e.target.value))} className="form-control"
-                       disabled={!allowExtendedInterval} />
+                <input type="datetime-local"
+                value={filters.end_date ? new Date(filters.end_date).toISOString().slice(0, 16) : ""}
+                onChange={(e) => handleEndDateChange(new Date(e.target.value))}
+                className="form-control"
+                disabled={!filters.allow_extended_interval} />
+
                 <input
                 type="text"
                 placeholder={t("Search..." )}
@@ -606,33 +598,37 @@ const columnDefs = [
                 style={{ marginBottom: "10px" }}
              />
                 <label>
-                    <input type="checkbox" checked={allowExtendedInterval} 
-                           onChange={(e) => setAllowExtendedInterval(e.target.checked)} />
+                    <input  type="checkbox"
+                    checked={filters.allow_extended_interval}
+                    onChange={handleAllowExtendedIntervalChange} />
                     {t("allow_extended_interval")}
                 </label>
                 
                 <label>
-                    <input type="checkbox" checked={allowMixedDirections} 
-                           onChange={(e) => setAllowMixedDirections(e.target.checked)} />
+                    <input type="checkbox"
+                    checked={filters.allow_mixed_directions}
+                    onChange={handleAllowMixedDirectionsChange} />
                     {t("allow_mixed_directions")}
                 </label>
                 
                 <label>
-                    <input type="checkbox" checked={showIncludedInList} 
-                           onChange={(e) => setShowIncludedInList(e.target.checked)} />
+                    <input type="checkbox"
+                    checked={filters.show_included}
+                    onChange={handleShowIncludedChange} />
                     {t("show_included_in_list")}
                 </label>
                 
                 <label>
-                    <input type="checkbox" checked={showIncludedInRoute} 
-                           onChange={(e) => setShowIncludedInRoute(e.target.checked)} />
+                    <input type="checkbox"
+                    checked={filters.show_in_route}
+                    onChange={handleShowInRouteChange} />
                     {t("show_included_in_route")}
                 </label>
                 <label>
                <input
-                  type="checkbox"
-                  checked={onlyActive}
-                  onChange={(e) => setOnlyActive(e.target.checked)}
+                   type="checkbox"
+                   checked={filters.onlyActive}
+                   onChange={handleOnlyActiveChange}
                />
                 {t("is_active_only")}
               </label>
@@ -659,13 +655,13 @@ const columnDefs = [
                   {t("to_work")}
                 </label>
                 <label></label>
-                {allowMixedDirections && (
+                {filters.allow_mixed_directions && (
                   <label>
                     <input
                      type="radio"
                       name="directionFilter"
                       checked={directionFilter === "ALL"}
-                      onChange={() => setDirectionFilter("ALL")}
+                      onChange={() => handleDirectionChange("ALL")}
                     />
                    {t("show_all_requests")}
                   </label>
