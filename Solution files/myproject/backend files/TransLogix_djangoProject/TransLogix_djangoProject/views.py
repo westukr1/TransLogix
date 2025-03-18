@@ -61,6 +61,7 @@ from .models import TemporaryPassengerList
 from .serializers import TemporaryPassengerListSerializer
 from django.utils.timezone import now
 from uuid import UUID
+from datetime import timedelta
 
 
 
@@ -1911,14 +1912,22 @@ class TemporaryPassengerListViewSet(viewsets.ModelViewSet):
         Збереження тимчасового списку пасажирів.
         """
         data = request.data
+        expires_at = data.get("expires_at")
+
+        if not expires_at:
+            expires_at = (now() + timedelta(hours=24)).isoformat()  # Якщо немає, додаємо +24 години
+
         instance, created = TemporaryPassengerList.objects.update_or_create(
-            user=request.user, session_id=data.get("session_id"),
+            user=request.user,
+            session_id=data.get("session_id"),
             defaults={
                 "filter_params": data.get("filter_params"),
-                "requests": data.get("requests") or [],  # Якщо None → []
-                "last_modified": now()
+                "requests": data.get("requests") or [],
+                "last_modified": now(),
+                "expires_at": expires_at,  # ✅ Додаємо оновлення expires_at
             }
         )
+
         return Response(TemporaryPassengerListSerializer(instance).data,
                         status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 

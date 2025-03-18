@@ -50,8 +50,9 @@ function RequestsGrouping() {
     localStorage.setItem("session_id", sessionId);
 
     const checkSavedFilters = useCallback(async () => {
+      console.log("📤 Перевірка збережених фільтрів...");
       const savedFilters = JSON.parse(sessionStorage.getItem("filters"));
-      if (savedFilters) {
+      if (savedFilters && new Date(savedFilters.expires_at) > new Date()) {
           console.log("✅ Використовуємо збережені фільтри з Session Storage:", savedFilters);
           setFilters(savedFilters);
           setFiltersLoaded(true);
@@ -64,13 +65,16 @@ function RequestsGrouping() {
           });
 
           if (response.status === 200 && response.data.filter_params) {
-              console.log("✅ Завантажено фільтри з бекенду:", response.data.filter_params);
-              sessionStorage.setItem("filters", JSON.stringify(response.data.filter_params));
-              setFilters(response.data.filter_params);
-          } else {
-              console.warn("⚠️ Немає збережених фільтрів на бекенді, встановлюємо значення за замовчуванням.");
-              sessionStorage.setItem("filters", JSON.stringify(defaultFilters));
-              setFilters(defaultFilters);
+              const backendFilters = response.data.filter_params;
+              if (response.data.expires_at && new Date(response.data.expires_at) > new Date()) {
+                  console.log("✅ Завантажено фільтри з бекенду:", backendFilters);
+                  sessionStorage.setItem("filters", JSON.stringify(backendFilters));
+                  setFilters(backendFilters);
+              } else {
+                  console.warn("⚠️ Немає збережених фільтрів на бекенді або вони застарілі, встановлюємо значення за замовчуванням.");
+                  sessionStorage.setItem("filters", JSON.stringify(defaultFilters));
+                  setFilters(defaultFilters);
+              }
           }
       } catch (error) {
           console.error("❌ Помилка отримання фільтрів з бекенду, використовуємо значення за замовчуванням:", error);
@@ -80,7 +84,7 @@ function RequestsGrouping() {
       setFiltersLoaded(true);
   }, [token, sessionId]);
 
-  // Додано 10.03.2025
+  
   const clearSavedFilters = useCallback(() => {
     console.log("🗑️ Очищення збережених фільтрів...");
     sessionStorage.removeItem("filters"); // Видаляємо збережені фільтри
@@ -91,16 +95,22 @@ function RequestsGrouping() {
 
 
 const deleteExpiredFilters = useCallback(async () => {
-  console.log("🗑️ Видаляємо застарілі фільтри з тимчасового сховища...");
+  console.log("🗑️ Видаляємо застарілі фільтри з session storage і бекенду...");
   try {
+      // Видаляємо фільтри з sessionStorage
+      sessionStorage.removeItem("filters");
+
+      // Видаляємо фільтри з бекенду
       await axios.delete(`http://localhost:8000/api/temp-lists/delete_expired/`, {
           headers: { Authorization: `Bearer ${token}` }
       });
-      console.log("✅ Застарілі фільтри видалено");
+
+      console.log("✅ Застарілі фільтри видалено з session storage і бекенду.");
   } catch (error) {
       console.error("❌ Помилка видалення застарілих фільтрів:", error);
   }
 }, [token]);
+
 // Додано 14.03.2025
 useEffect(() => {
     checkSavedFilters().then(() => {
@@ -115,9 +125,13 @@ const saveFiltersToBackend = useCallback(async (updatedFilters) => {
   console.log("📤 Відправка оновлених фільтрів на бекенд:", updatedFilters);
 
   try {
+    const filtersWithExpiration = {
+      ...updatedFilters,
+      expires_at: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString()
+  };
       const response = await axios.post(`http://localhost:8000/api/temp-lists/save_list/`, {
           session_id: sessionId,
-          filter_params: filters,
+          filter_params: filtersWithExpiration,
       }, {
           headers: { Authorization: `Bearer ${token}` }
       });
@@ -126,12 +140,16 @@ const saveFiltersToBackend = useCallback(async (updatedFilters) => {
   } catch (error) {
       console.error("❌ Помилка оновлення фільтрів на бекенді:", error.response?.data || error);
   }
-}, [filters, token, sessionId]);
+}, [ token, sessionId]);
 
 const saveFiltersInSessionStorage = useCallback(() => {
-  sessionStorage.setItem("filters", JSON.stringify(filters));
-  console.log("💾 Фільтри збережено у Session Storage:", filters);
-  saveFiltersToBackend();
+  const filtersWithExpiration = {
+    ...filters,
+    expires_at: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString()
+};
+  sessionStorage.setItem("filters", JSON.stringify(filtersWithExpiration));
+  console.log("💾 Фільтри збережено у Session Storage:", filtersWithExpiration);
+  saveFiltersToBackend(filtersWithExpiration);
 }, [filters, saveFiltersToBackend]);
 
 
@@ -373,10 +391,10 @@ const handleAllowExtendedIntervalChange = () => {
 };
 const getRowStyle = (params) => {
   if (params.data.included_in_route) {
-      return { color: 'green', fontWeight: 'bold' };
+      return { color: 'green' };
   }
   if (params.data.included_in_list) {
-      return { color: 'blue', fontWeight: 'bold' };
+      return { color: 'blue'};
   }
   const sameDayRequests = passengerRequests.filter(req => 
       req.passenger === params.data.passenger && 
@@ -388,7 +406,7 @@ const getRowStyle = (params) => {
       (req.direction === "HOME_TO_WORK" && req.arrival_time && params.data.arrival_time && formatDateToCompareDay(req.arrival_time) === formatDateToCompareDay(params.data.arrival_time)))
     );
   if (sameDayRequests.length > 1) {
-      return { color: 'red', fontWeight: 'bold' };
+      return { color: 'red'};
   }
   return {};
 };
