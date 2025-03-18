@@ -13,6 +13,10 @@ import utc from "dayjs/plugin/utc";
 import OrderedPassengerList from "../OrderedPassengerListView/OrderedPassengerList";
 import RouteComparisonModal from "./RouteComparisonModal";
 import RouteMapModal from "./RouteMapModal"; 
+import RequestsGrouping from './RequestsGrouping';
+// import FiltersPanel from "./FiltersPanel";
+// import PassengerRequestsTable from "./PassengerRequestsTable";
+
 
 
 
@@ -67,81 +71,32 @@ const GroupingListToRoute = () => {
   const stopDetails = location.state?.stopDetails || [];
   const token = localStorage.getItem('access_token'); 
   const [passengerRequests, setPassengerRequests] = useState({ left: [], right: [] });
-  const [filters, setFilters] = useState(null);
+  const [filters, setFilters] = useState(JSON.parse(sessionStorage.getItem("filters")) || {});
 
 // 1️⃣ Отримання активного списку фільтрів
-const fetchFilters = useCallback(async () => {
-  console.log("📤 Запит на отримання активного списку фільтрів...");
 
-  let sessionId = localStorage.getItem("session_id");
-  if (!sessionId) {
-      console.warn("⚠️ Session ID не знайдено! Використовується тимчасовий.");
-      sessionId = "bd1e7f30-12d3-4b56-92a3-bc46e2c84cda";
-      localStorage.setItem("session_id", sessionId);
-  }
-
-  try {
-      const response = await axios.get(`http://localhost:8000/api/temp-lists/get_active_list/`, {
-          params: { session_id: sessionId },
-          headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (response.data) {
-          console.log("✅ Отримано активний список фільтрів:", response.data);
-          setFilters(response.data.filter_params);
-      } else {
-          console.warn("⚠️ Активний список фільтрів не знайдено. Використовуємо дефолтні.");
-          saveDefaultFilters();
-      }
-  } catch (error) {
-      console.error("❌ Немає активного списку, створюємо дефолтний:", error);
-      saveDefaultFilters();
-  }
-}, [token]);
 
 // 2️⃣ Отримання заявок пасажирів (фільтрованих)
-const fetchPassengerRequests = useCallback(async (filters) => {
-  if (!filters || Object.keys(filters).length === 0) {
-      console.error("⚠️ Не можна отримати заявки пасажирів без фільтрів");
-      return;
-  }
-
-  console.log("📤 Запит на отримання списку заявок пасажирів із фільтрами:", filters);
-
+// useEffect(() => {
+//   fetchPassengerRequests();handleIsActiveChange
+// }, [filters]);
+const fetchPassengerRequests = async () => {
   try {
-      const response = await axios.get('http://localhost:8000/api/filtered-passenger-trip-requests/', {
-          params: { ...filters, included_in_list: false },
-          headers: { Authorization: `Bearer ${token}` }
+      const response = await fetch(`http://localhost:8000/api/filtered-passenger-trip-requests/`, {
+          method: "GET",
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          }
       });
-
-      console.log("✅ Отримано заявки після фільтрації:", response.data);
-      const availableRequests = response.data;
-
-      let sessionId = localStorage.getItem("session_id");
-      const tempListResponse = await axios.get(`http://localhost:8000/api/temp-lists/get_active_list/`, {
-          params: { session_id: sessionId },
-          headers: { Authorization: `Bearer ${token}` }
-      });
-
-      const selectedRequestsIds = tempListResponse.data?.requests || [];
-
-      if (selectedRequestsIds.length > 0) {
-          console.log("📤 Отримання повної інформації про заявки з тимчасового списку...");
-          fetchSelectedRequests(selectedRequestsIds);
-      } else {
-          console.warn("⚠️ Тимчасовий список порожній.");
-          console.log("📌 Встановлення даних у ліву таблицю:", availableRequests);
-          setPassengerRequests(prevState => ({
-            ...prevState,
-            left: availableRequests
-        }));
-        
-        setUnselectedRequests(availableRequests); // Додаємо цю зміну
+      if (response.ok) {
+          const data = await response.json();
+          setPassengerRequests(data);
       }
   } catch (error) {
-      console.error("❌ Помилка при отриманні списку пасажирів:", error);
+      console.error("❌ Error fetching requests data:", error);
   }
-}, [token]);
+};
+
 
 // 3️⃣ Отримання повної інформації про заявки із тимчасового списку
 const fetchSelectedRequests = useCallback(async (selectedRequestIds) => {
@@ -179,17 +134,8 @@ const fetchSelectedRequests = useCallback(async (selectedRequestIds) => {
 }, [token]);
 
 // 4️⃣ Отримання фільтрів при завантаженні сторінки
-useEffect(() => {
-  fetchFilters();
-}, [fetchFilters]);
 
 // 5️⃣ Виклик запиту `fetchPassengerRequests` тільки після отримання фільтрів
-useEffect(() => {
-  if (filters) {
-      console.log("📤 Виклик fetchPassengerRequests із актуальними фільтрами:", filters);
-      fetchPassengerRequests(filters);
-  }
-}, [filters, fetchPassengerRequests]);
 
 
 
@@ -216,14 +162,6 @@ useEffect(() => {
     endAddress: null,
   });
 
-  // const defaultFilters = {
-  //   direction: "",
-  //   is_active: "",
-  //   start_city: "",
-  //   start_date: dayjs().add(1, 'day').startOf('day').format("YYYY-MM-DD HH:mm:ss"),
-  //   end_date: dayjs().add(1, 'day').endOf('day').format("YYYY-MM-DD HH:mm:ss"),
-  //   search_query: "",
-  // };
 
 
 const [availableRequests, setAvailableRequests] = useState([]);
@@ -244,33 +182,8 @@ const deleteTemporaryList = async (sessionId) => {
 };
 
 // 5️⃣ Збереження дефолтних фільтрів
-const saveDefaultFilters = async () => {
-  const defaultFilters = {
-      start_date: null,
-      end_date: null,
-      allow_more_than_day: false,
-      include_directions: false,
-      show_included: false,
-      show_in_route: false
-  };
-  console.log("\ud83d\udce4 Збереження дефолтних фільтрів:", defaultFilters);
-  try {
-      await axios.post('http://localhost:8000/api/temp-lists/save_list/', {
-          session_id: localStorage.getItem("session_id"),
-          filter_params: defaultFilters
-      }, {
-          headers: { Authorization: `Bearer ${token}` }
-      });
-      console.log("✅ Дефолтні фільтри збережено");
-      setFilters(defaultFilters);
-  } catch (error) {
-      console.error("❌ Помилка при збереженні дефолтних фільтрів:", error);
-  }
-};
 
 
-
-  
 // const saveFilters = async (newFilters) => {
   
 //   try {
@@ -398,7 +311,7 @@ const saveDefaultFilters = async () => {
     }
 
     sessionStorage.setItem("selectedRequests", JSON.stringify(storedData));
-    fetchPassengerRequests(); // Оновлюємо таблиці після зміни
+    // fetchPassengerRequests(); // Оновлюємо таблиці після зміни
   };
   
 
@@ -571,27 +484,7 @@ const saveDefaultFilters = async () => {
     setUnselectedRequests(filteredData);
   };
 
-  useEffect(() => {
-    fetchPassengerRequests(filters);
-  }, [
-    startDate,
-    endDate,
-    searchQuery,
-    directionFilter,
-    allowMixedDirections,
-    allowExtendedInterval,
-  ]);
 
-  const handleStartDateChange = (date) => {
-    setStartDate(date);
-    if (!allowExtendedInterval) {
-      setEndDate(new Date(date.getTime() + 24 * 60 * 60 * 1000));
-    }
-  };
-
-  const handleEndDateChange = (date) => {
-    setEndDate(date);
-  };
   const handleSelect = (id) => {
     setIsRouteCalculated(false);
     const selectedRequest = unselectedRequests.find((r) => r.id === id);
@@ -723,17 +616,7 @@ const handleFilterChange = (e) => {
   //     }
   //   }
   // };
-  const getLeftTableRowStyle = (params) => {
-    const { included_in_list, included_in_route } = params.data;
-    if (included_in_route) {
-      return { color: "red", fontWeight: "bold" }; // Маршрут червоний
-    }
-    if (included_in_list) {
-      return { color: "blue", fontWeight: "bold" }; // Список синій
-    }
-    return null;
-  };
-
+  
   const getRowStyle = (params) => {
     const { sequence_number } = params.data;
     const maxSequence = Math.max(
@@ -984,10 +867,10 @@ useEffect(() => {
       setSelectedRequests(parsedRequests);
     }
 
-    if (parsedRequestIds.length > 0) {
-      console.log("📌 Викликаємо fetchPassengerRequests(filters) із фільтром:", filters);
-      fetchPassengerRequests(filters);
-    }
+    // if (parsedRequestIds.length > 0) {
+    //   console.log("📌 Викликаємо fetchPassengerRequests(filters) із фільтром:", filters);
+    //   fetchPassengerRequests(filters);
+    // }
 
     if (parsedStandardRoute) {
       setStandardRoute(parsedStandardRoute);
@@ -1147,7 +1030,7 @@ const handleCloseMap = () => {
       fetchPassengerLists(); // Оновлення списку
       setSelectedListDetails(null); // Очистка інформації про список
       setSelectedListPassengers([]); // Очистка таблиці "Відомості про список пасажирів"
-      fetchPassengerRequests(filters); // Оновлення таблиці "Запити пасажирів"
+      // fetchPassengerRequests(filters); // Оновлення таблиці "Запити пасажирів"
     } catch (error) {
       console.error(
         `❌ Помилка при видаленні списку ID ${listId}:`,
@@ -1677,299 +1560,19 @@ const handleCloseMap = () => {
       <div className="gltr-template2s-content">
         {/* Left Column */}
         <div className="gltr-template2s-left-column">
+        
           <div className="name-container">
             <h3>{t("passenger_trip_requests")}</h3>
+            
           </div>
-          <div className="filter-container">
-            <div style={{ marginTop: "10px" }}>
-              <label>{t("start_time")}</label>
-              <input
-                type="datetime-local"
-                value={startDate.toISOString().slice(0, 16)}
-                onChange={(e) =>
-                  handleStartDateChange(new Date(e.target.value))
-                }
-                className="form-control"
-              />
-
-              <label>{t("end_time")}</label>
-              <input
-                type="datetime-local"
-                value={endDate.toISOString().slice(0, 16)}
-                onChange={(e) => handleEndDateChange(new Date(e.target.value))}
-                className="form-control"
-                disabled={!allowExtendedInterval}
-              />
-
-              <div className="search-container">
-                <label>{t("search_by_name")}</label>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={t("enter_name_or_last_name")}
-                  className="form-control"
-                  style={{ marginBottom: "20px" }}
-                />
-              </div>
-            </div>
-
-            <div className="filters">
-            <label> 
-  <input
-    type="checkbox"
-    checked={allowExtendedInterval}
-    onChange={(e) => {
-      setAllowExtendedInterval(e.target.checked);
-      if (!e.target.checked) {
-        setEndDate(
-          new Date(dayjs(startDate).toDate().getTime() + 24 * 60 * 60 * 1000)
-        );
-      }
-    }}
-  />
-  {t("allow_extended_interval")}
-</label>
-
-              <input
-                type="checkbox"
-                checked={allowMixedDirections}
-                onChange={(e) => {
-                  setAllowMixedDirections(e.target.checked);
-                  if (!e.target.checked) {
-                    setShowAllRequests(false);
-                    setDirectionFilter("WORK_TO_HOME");
-                  }
-                }}
-              />
-              {t("allow_mixed_directions")}
-            </div>
-            <div className="filters">
-              <label>
-                <input
-                  type="radio"
-                  name="directionFilter"
-                  checked={directionFilter === "WORK_TO_HOME"}
-                  onChange={() => setDirectionFilter("WORK_TO_HOME")}
-                />
-                {t("to_home")}
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="directionFilter"
-                  checked={directionFilter === "HOME_TO_WORK"}
-                  onChange={() => setDirectionFilter("HOME_TO_WORK")}
-                />
-                {t("to_work")}
-              </label>
-              <label></label>
-              {allowMixedDirections && (
-                <label>
-                  <input
-                    type="radio"
-                    name="directionFilter"
-                    checked={directionFilter === "ALL"}
-                    onChange={() => setDirectionFilter("ALL")}
-                  />
-                  {t("show_all_requests")}
-                </label>
-              )}
-            </div>
-            <label>
-              <input
-                type="checkbox"
-                checked={showIncludedInList}
-                onChange={(e) => setShowIncludedInList(e.target.checked)}
-              />
-              {t("show_included_in_list")}
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                checked={showIncludedInRoute}
-                onChange={(e) => setShowIncludedInRoute(e.target.checked)}
-              />
-              {t("show_included_in_route")}
-            </label>
-          </div>
-          <div className="grid-container">
-            <div
-              className="ag-theme-alpine"
-              style={{ height: "50%", marginTop: "20px" }}
-            >
-              <AgGridReact
-                key={JSON.stringify(passengerRequests.left)}
-                rowData={passengerRequests.left}
-                columnDefs={[
-                  
-                  {
-                    headerName: t("is_selected"),
-                    field: "is_selected",
-                    width: 50,
-                    cellRenderer: (params) => (
-                      <input
-                        type="checkbox"
-                        checked={selectedRequests.some(selected => selected.id === params.data.id)}
-                        onChange={() => updateSelectedRequests(params.data.id)}
-                      />
-                    ),
-                  },
-
-
-
-                  { headerName: t("request_id"), field: "id", width: 60 },
-                  {
-                    headerName: t("passenger_first_name"),
-                    field: "passenger_first_name",
-                    width: 70,
-                  },
-                  {
-                    headerName: t("passenger_last_name"),
-                    field: "passenger_last_name",
-                    width: 70,
-                  },
-
-                  {
-                    headerName: t("direction"),
-                    field: "direction",
-                    cellStyle: { fontWeight: "bold" },
-                    width: 120,
-                  },
-
-                  {
-                    headerName: t("departure_info"), // 🔵 Блок ВІДПРАВКА
-                    children: [
-                      {
-                        headerName: t("departure_time"),
-                        cellStyle: { fontWeight: "bold" },
-                        field: "departure_time",
-                        width: 120,
-                        valueFormatter: (params) =>
-                          params.value
-                            ? dayjs(params.value).format("DD-MM-YYYY HH:mm")
-                            : "",
-                      },
-                      {
-                        headerName: t("pickup_city"),
-                        cellStyle: { fontWeight: "bold" },
-                        field: "pickup_city",
-                        width: 70,
-                      },
-                      {
-                        headerName: t("pickup_street"),
-                        field: "pickup_street",
-                        width: 100,
-                      },
-                      {
-                        headerName: t("pickup_house"),
-                        field: "pickup_house",
-                        width: 40,
-                      },
-                      {
-                        headerName: t("pickup_latitude"),
-                        field: "pickup_latitude",
-                        width: 60,
-                      },
-                      {
-                        headerName: t("pickup_longitude"),
-                        field: "pickup_longitude",
-                        width: 60,
-                      },
-                    ],
-                  },
-
-                  {
-                    headerName: t("arrival_info"), // 🔵 Блок ПРИБУТТЯ
-                    children: [
-                      {
-                        headerName: t("arrival_time"),
-                        cellStyle: { fontWeight: "bold" },
-                        field: "arrival_time",
-                        width: 120,
-                        valueFormatter: (params) =>
-                          params.value
-                            ? dayjs(params.value).format("DD-MM-YYYY HH:mm")
-                            : "",
-                      },
-                      {
-                        headerName: t("dropoff_city"),
-                        cellStyle: { fontWeight: "bold" },
-                        field: "dropoff_city",
-                        width: 70,
-                      },
-                      {
-                        headerName: t("dropoff_street"),
-                        field: "dropoff_street",
-                        width: 100,
-                      },
-                      {
-                        headerName: t("dropoff_house"),
-                        field: "dropoff_house",
-                        width: 40,
-                      },
-                      {
-                        headerName: t("dropoff_latitude"),
-                        field: "dropoff_latitude",
-                        width: 70,
-                      },
-                      {
-                        headerName: t("dropoff_longitude"),
-                        field: "dropoff_longitude",
-                        width: 70,
-                      },
-                    ],
-                  },
-                  {
-                    headerName: t("passenger_id"),
-                    field: "passenger",
-                    width: 40,
-                  },
-                  {
-                    headerName: t("passenger_phone"),
-                    field: "passenger_phone",
-                    width: 120,
-                  },
-                  { headerName: t("is_active"), field: "is_active", width: 40 },
-                  { headerName: t("comment"), field: "comment", width: 600 },
-                  {
-                    headerName: t("included_in_list"),
-                    field: "included_in_list",
-                    width: 100,
-                    valueFormatter: (params) =>
-                      params.value ? t("yes") : t("no"),
-                  },
-                  {
-                    headerName: t("ordered_list_id"),
-                    field: "ordered_list_id",
-                    width: 100,
-                  },
-                  {
-                    headerName: t("included_in_route"),
-                    field: "included_in_route",
-                    width: 100,
-                    valueFormatter: (params) =>
-                      params.value ? t("yes") : t("no"),
-                  },
-                  { headerName: t("route_id"), field: "route_id", width: 100 },
-                ]}
-                getRowStyle={getLeftTableRowStyle} // ✅ Тільки для лівої таблиці
-                pagination
-                paginationPageSize={20}
-              />
-            </div>
-          </div>
-          <div className="button-container">
-            <button onClick={fetchPassengerRequests} className="nav-button">
-              {t("update_table")}
-            </button>
-            <button
-              className="nav-button"
-              onClick={() => navigate("/passenger-select")}
-            >
-              {t("add_request")}
-            </button>
-          </div>
+          
+          <RequestsGrouping
+    filters={filters}
+    setFilters={setFilters}
+    passengerRequests={passengerRequests}
+    setPassengerRequests={setPassengerRequests}
+/>
+        
 
           <div className="name-container">
             <h3>{t("ordered_passenger_list")}</h3>
@@ -2064,7 +1667,7 @@ const handleCloseMap = () => {
           <div className="name-container">
             <h3>{t("new_list_summary")}</h3>
           </div>
-          <div className="filter-container">
+          <div className="left-filter-container">
             {routeDetails.distance !== null ? (
               <h3>
                 {t("direction")}: {routeDetails.startAddress} →{" "}
@@ -2079,40 +1682,23 @@ const handleCloseMap = () => {
               <p>{t("no_route_data")}</p>
             )}
             <div>
-              {routeSettings && (
+            {routeSettings && (
                 <div className="route-settings-summary">
                   <h3>{t("configured_route_limits")}:</h3>
                   <p>
-                    {t("date_interval")}: {routeSettings.date_interval}{" "}
-                    {t("days")} <strong>&#8226;</strong>{" "}
-                    {t("arrival_time_tolerance")}:{" "}
-                    {routeSettings.arrival_time_tolerance} {t("minutes")}{" "}
-                    <strong>&#8226;</strong> {t("allow_mixed_directions")}:{" "}
-                    {routeSettings.allow_mixed_directions ? t("yes") : t("no")}{" "}
-                    <strong>&#8226;</strong> {t("max_route_duration")}:{" "}
-                    {routeSettings.max_route_duration} {t("minutes")}{" "}
-                    <strong>&#8226;</strong> {t("max_route_distance")}:{" "}
-                    {routeSettings.max_route_distance} {t("km")}{" "}
-                    <strong>&#8226;</strong> {t("max_stops")}:{" "}
-                    {routeSettings.max_stops} <strong>&#8226;</strong>{" "}
-                    {t("max_passengers")}: {routeSettings.max_passengers}{" "}
-                    <strong>&#8226;</strong> {t("min_passengers")}:{" "}
-                    {routeSettings.min_passengers} <strong>&#8226;</strong>{" "}
-                    {t("allow_multiple_work_addresses")}:{" "}
-                    {routeSettings.allow_multiple_work_addresses
-                      ? t("yes")
-                      : t("no")}
+                    {t("date_interval")}: <span style={{ color: 'yellow', fontWeight: 'bold' }}>{routeSettings.date_interval}</span> {t("days")} <strong>&#8226;</strong> 
+                    {t("arrival_time_tolerance")}: <span style={{ color: 'yellow', fontWeight: 'bold' }}>{routeSettings.arrival_time_tolerance}</span> {t("minutes")} <strong>&#8226;</strong> 
+                    {t("allow_mixed_directions")}: <span style={{ color: 'yellow', fontWeight: 'bold' }}>{routeSettings.allow_mixed_directions ? t("yes") : t("no")}</span> <strong>&#8226;</strong> 
+                    {t("max_route_duration")}: <span style={{ color: 'yellow', fontWeight: 'bold' }}>{routeSettings.max_route_duration}</span> {t("minutes")} <strong>&#8226;</strong> 
+                    {t("max_route_distance")}: <span style={{ color: 'yellow', fontWeight: 'bold' }}>{routeSettings.max_route_distance}</span> {t("km")} <strong>&#8226;</strong> 
+                    {t("max_stops")}: <span style={{ color: 'yellow', fontWeight: 'bold' }}>{routeSettings.max_stops}</span> <strong>&#8226;</strong> 
+                    {t("max_passengers")}: <span style={{ color: 'yellow', fontWeight: 'bold' }}>{routeSettings.max_passengers}</span> <strong>&#8226;</strong> 
+                    {t("min_passengers")}: <span style={{ color: 'yellow', fontWeight: 'bold' }}>{routeSettings.min_passengers}</span> <strong>&#8226;</strong> 
+                    {t("allow_multiple_work_addresses")}: <span style={{ color: 'yellow', fontWeight: 'bold' }}>{routeSettings.allow_multiple_work_addresses ? t("yes") : t("no")}</span>
                   </p>
                 </div>
               )}
-              <div>
-                <button
-                  className="nav-button"
-                  onClick={() => navigate("/user-routes-settings")}
-                >
-                  {t("user_routes_settings")}
-                </button>
-              </div>
+              
             </div>
           </div>
           <div className="grid-container">
@@ -2131,6 +1717,12 @@ const handleCloseMap = () => {
             </div>
           </div>
           <div className="button-container">
+          <button
+                  className="nav-button"
+                  onClick={() => navigate("/user-routes-settings")}
+                >
+                  {t("user_routes_settings")}
+                </button>
             {/* <div className="route-buttons"> */}
             <button className="nav-button" onClick={calculateRoute}>
               {t("calculate_route")}

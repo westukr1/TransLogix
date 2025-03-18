@@ -92,14 +92,15 @@ input[disabled] {
   background-color: #474747; /* Фоновий колір для вимкненого поля */
 }
 .route-settings-summary p {
+  width: 97%;
   white-space: wrap;
   white-space: normal; /* Дозволяє перенос тексту */
   word-wrap: break-word; /* Переносить довгі слова, щоб уникнути виходу за межі контейнера */
   margin: 0; /* Забирає зайві відступи */
-  width: auto;
+  /* width: auto; */
   flex: 1;
   flex-direction: column;
-  background-color: #2c2c2c;
+  background-color: #3a3a3a;
   font-size: 0.8em;
 }
 .name-container,
@@ -112,6 +113,13 @@ input[disabled] {
   margin: 0;
   border: none;
   padding: 5px;
+  color: white;
+}
+.left-filter-container {
+  width: 100%; /* Автоматично підлаштовується під колонку */
+  margin: 0;
+  border: none;
+  padding: 15px;
   color: white;
 }
 

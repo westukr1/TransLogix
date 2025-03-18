@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './GroupingListToRoute.css';
 import { useTranslation } from 'react-i18next';
+import { useNavigate} from "react-router-dom";
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -23,6 +24,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 function RequestsGrouping() {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const [filters, setFilters] = useState(() => {
       const savedFilters = JSON.parse(sessionStorage.getItem("filters"));
       return savedFilters || defaultFilters;
@@ -35,7 +37,7 @@ function RequestsGrouping() {
     const [searchQuery, setSearchQuery] = useState('');
     // const [allowExtendedInterval, setAllowExtendedInterval] = useState(false);
     // const [allowMixedDirections, setAllowMixedDirections] = useState(false);
-    const [directionFilter, setDirectionFilter] = useState('WORK_TO_HOME');
+    const [directionFilter, setDirectionFilter] = useState(filters.direction || "WORK_TO_HOME");
     // const [showIncludedInList, setShowIncludedInList] = useState(false);
     // const [showIncludedInRoute, setShowIncludedInRoute] = useState(false);
     // чи потрібно це видалити?
@@ -602,12 +604,8 @@ const columnDefs = [
     return (
         <div className="gltr-template2s-left-column">
         <div className="requests-grouping">
-            <h2>{t("Temporary Passenger List")}</h2>
-            <button className="nav-button" onClick={fetchFilters}>🔄 {t("Update Filters")}</button>
-            {error && <p className="error">⚠️ {error}</p>}
-            <button onClick={clearSavedFilters} className="nav-button">
-                {t("clear_filters")}
-            </button>
+          
+           
 
             <div className="filter-container">
                 <label>{t("start_time")}</label>
@@ -631,6 +629,9 @@ const columnDefs = [
                 className="form-control"
                 style={{ marginBottom: "10px" }}
              />
+             <div>
+
+             
                 <label>
                     <input  type="checkbox"
                     checked={filters.allow_extended_interval}
@@ -638,12 +639,7 @@ const columnDefs = [
                     {t("allow_extended_interval")}
                 </label>
                 
-                <label>
-                    <input type="checkbox"
-                    checked={filters.allow_mixed_directions}
-                    onChange={handleAllowMixedDirectionsChange} />
-                    {t("allow_mixed_directions")}
-                </label>
+                
                 
                 <label>
                     <input type="checkbox"
@@ -666,7 +662,16 @@ const columnDefs = [
                />
                 {t("is_active_only")}
               </label>
+              </div>
               <div className="filters">
+                <div>
+                <label>
+                    <input type="checkbox"
+                    checked={filters.allow_mixed_directions}
+                    onChange={handleAllowMixedDirectionsChange} />
+                    {t("allow_mixed_directions")}
+                </label>
+                </div>
                 <label>
                   <input
                     type="radio"
@@ -712,6 +717,33 @@ const columnDefs = [
                 />
             </div>
         </div>
+        <button className="nav-button" onClick={fetchFilters}>🔄 {t("Update Filters")}</button>
+            {error && <p className="error">⚠️ {error}</p>}
+            <button onClick={clearSavedFilters} className="nav-button">
+                {t("clear_filters")}
+            </button>
+            <button onClick={fetchPassengerRequests} className="nav-button">
+              {t("update_table")}
+            </button>
+            <button
+              className="nav-button"
+              onClick={() => navigate("/passenger-select")}
+            >
+              {t("add_request")}
+            </button>
+
+            {/* <Link to="/requests-grouping" className="sidebar-item">
+        {t("requests_grouping")}
+        </Link> */}
+        <button
+              className="nav-button"
+              onClick={() => navigate("/requests-grouping")}
+            >
+              {t("expanded_view")}
+            </button>
+        <button className="nav-button" onClick={() => navigate(-1)}>
+            {t("nav.back")}
+          </button>
         </div>
     );
 }

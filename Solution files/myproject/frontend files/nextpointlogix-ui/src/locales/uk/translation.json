@@ -629,5 +629,6 @@
   "total_passengers": "Загальна кількість пасажирів",
   "start_address": "Початкова адреса",
   "end_address": "Кінцева адреса",
-  "clear_filters": "Очитити фільтри"
+  "clear_filters": "Очитити фільтри",
+  "expanded_view": "Розгорнутий вигляд"
 }
