@@ -22,7 +22,7 @@ import "react-toastify/dist/ReactToastify.css";
     onlyActive: true,
   };
 
-function RequestsGrouping() {
+function RequestsGrouping({ onCheckboxClick, onUpdateRightTable }) {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [filters, setFilters] = useState(() => {
@@ -47,9 +47,10 @@ function RequestsGrouping() {
     
     const formatDate = (isoString) => dayjs(isoString).format("YYYY-MM-DD HH:mm:ss");
     const formatDateToCompareDay = (isoString) => dayjs(isoString).format("YYYY-MM-DD");
-
+    const [selectedRequests, setSelectedRequests] = useState([]);
     const sessionId = localStorage.getItem("session_id") || "bd1e7f30-12d3-4b56-92a3-bc46e2c84cda";
     localStorage.setItem("session_id", sessionId);
+
 
     const checkSavedFilters = useCallback(async () => {
       console.log("📤 Перевірка збережених фільтрів...");
@@ -125,34 +126,66 @@ useEffect(() => {
 
 const saveFiltersToBackend = useCallback(async (updatedFilters) => {
   console.log("📤 Відправка оновлених фільтрів на бекенд:", updatedFilters);
+  // console.log("📤 Значення filter_params:", updatedFilters.filter_params);
 
   try {
+    const formattedRequests = selectedRequests.map((request, index) => ({
+      id: request.id,
+      sequence_number: index + 1,
+      pickup_latitude: request.pickup_latitude || "0.000000",
+      pickup_longitude: request.pickup_longitude || "0.000000"
+    }));
     const filtersWithExpiration = {
-      ...updatedFilters,
-      expires_at: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString()
-  };
-      const response = await axios.post(`http://localhost:8000/api/temp-lists/save_list/`, {
-          session_id: sessionId,
-          filter_params: filtersWithExpiration,
-      }, {
-          headers: { Authorization: `Bearer ${token}` }
-      });
+      filter_params: {
+        start_date: updatedFilters.start_date || defaultFilters.start_date,
+        end_date: updatedFilters.end_date || defaultFilters.end_date,
+        direction: updatedFilters.direction || defaultFilters.direction,
+        show_in_route: updatedFilters.show_in_route ?? defaultFilters.show_in_route,
+        show_included: updatedFilters.show_included ?? defaultFilters.show_included,
+        allow_mixed_directions: updatedFilters.allow_mixed_directions ?? defaultFilters.allow_mixed_directions,
+        allow_extended_interval: updatedFilters.allow_extended_interval ?? defaultFilters.allow_extended_interval,
+        onlyActive: updatedFilters.onlyActive ?? defaultFilters.onlyActive,
+      },
+      requests: formattedRequests, // ✅ Тепер заявки передаються в правильному форматі
+      expires_at: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString(),
+    };
 
-      console.log("✅ Фільтри оновлено у тимчасовій таблиці на бекенді.", response.data);
+    console.log("📤 Фільтри перед відправкою:", filtersWithExpiration);
+
+    const response = await axios.post(`http://localhost:8000/api/temp-lists/save_list/`, {
+      session_id: sessionId,
+      ...filtersWithExpiration // ✅ Розгортаємо в корінь, щоб відповідати структурі бекенду
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+
+    console.log("✅ Фільтри оновлено у тимчасовій таблиці на бекенді.", response.data);
   } catch (error) {
-      console.error("❌ Помилка оновлення фільтрів на бекенді:", error.response?.data || error);
+    console.error("❌ Помилка оновлення фільтрів на бекенді:", error.response?.data || error);
   }
-}, [ token, sessionId]);
+}, [token, sessionId, selectedRequests]);
 
-const saveFiltersInSessionStorage = useCallback(() => {
+
+const saveFiltersInSessionStorage = useCallback((updatedFilters, updatedRequests) => {
   const filtersWithExpiration = {
-    ...filters,
+    ...updatedFilters,
     expires_at: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString()
-};
+  };
+
+  // ✅ Окремо зберігаємо фільтри та заявки у sessionStorage
   sessionStorage.setItem("filters", JSON.stringify(filtersWithExpiration));
+  sessionStorage.setItem("requests", JSON.stringify(updatedRequests || []));
+
   console.log("💾 Фільтри збережено у Session Storage:", filtersWithExpiration);
-  saveFiltersToBackend(filtersWithExpiration);
-}, [filters, saveFiltersToBackend]);
+  console.log("💾 Заявки збережено у Session Storage:", updatedRequests);
+
+  // ✅ Викликаємо бекенд-збереження
+  saveFiltersToBackend({
+    ...filtersWithExpiration,
+    requests: updatedRequests || []
+  });
+}, [filters, selectedRequests, saveFiltersToBackend]);
 
 
 
@@ -166,7 +199,7 @@ const fetchFilters = useCallback(async () => {
           console.log("✅ Отримано фільтри з бекенду:", response.data.filter_params);
           sessionStorage.setItem("filters", JSON.stringify(response.data.filter_params));
           setFilters(response.data.filter_params);
-          fetchPassengerRequests(); // Викликаємо отримання нових заявок після оновлення фільтрів
+          if (!filtersLoaded) fetchPassengerRequests(); // Викликаємо отримання нових заявок після оновлення фільтрів
       } else {
           console.warn("⚠️ Немає збережених фільтрів, використовується дефолтний набір.");
           sessionStorage.setItem("filters", JSON.stringify(defaultFilters));
@@ -256,23 +289,6 @@ useEffect(() => {
 }, [filters]); // Викликаємо отримання заявок при зміні фільтрів
 
 
-
-    
-    useEffect(() => {
-      if (filtersLoaded) {
-          saveFiltersInSessionStorage(filters);
-          fetchPassengerRequests();
-      }
-  }, [filters, filtersLoaded]);
-  
-
-
-  useEffect(() => {
-    if (filtersLoaded && filters && Object.keys(filters).length > 0) {
-        console.log("🔄 Виклик fetchPassengerRequests після оновлення фільтрів:", filters);
-        fetchPassengerRequests();
-    }
-}, [filtersLoaded]);
 
 useEffect(() => {
   if (filtersLoaded) {
@@ -413,33 +429,68 @@ const getRowStyle = (params) => {
   return {};
 };
 
+// Блок збереження заявок у тимчасове сховище.
+
+
+const handleAddToListChange = (request) => {
+  setSelectedRequests((prevSelected) => {
+      const isSelected = prevSelected.some((r) => r.id === request.id);
+      const updatedSelections = isSelected
+          ? prevSelected.filter((r) => r.id !== request.id)
+          : [...prevSelected, request];
+
+      updateRequestsInStorage(updatedSelections);
+      // 🚀 Викликаємо оновлення правої таблиці
+      onUpdateRightTable();
+      return updatedSelections;
+  });
+};
+
+
+
+const updateRequestsInStorage = (updatedSelections) => {
+  const storedFilters = JSON.parse(sessionStorage.getItem("filters")) || {};
+  
+  const updatedRequests = updatedSelections.map((request, index) => ({
+      id: request.id,
+      sequence_number: index + 1,
+      pickup_latitude: request.pickup_latitude || "0.000000",
+      pickup_longitude: request.pickup_longitude || "0.000000"
+  }));
+
+  const updatedFilters = {
+      ...storedFilters,
+      requests: updatedRequests, // Записуємо у поле requests
+  };
+
+  console.log("🔄 Оновлений список заявок перед збереженням:", updatedRequests);
+  console.log("🔄 Оновлені фільтри перед збереженням:", updatedFilters);
+
+  sessionStorage.setItem("filters", JSON.stringify(updatedFilters));
+  setFilters(updatedFilters);
+  saveFiltersToBackend(updatedFilters, updatedRequests);
+};
+
+
+const handleCheckboxChange = (event, requestId) => {
+  onCheckboxClick(requestId, event.target.checked);
+};
+
 const columnDefs = [
     { headerName: t("request_id"), field: "id", width: 60 },
     {
-      headerName: t("is_active"),
-      field: "is_active",
-      width: 60,
+      headerName: t("Add to List"),
+      field: "add_to_list",
+      width: 70,
       cellRenderer: (params) => (
         <input
           type="checkbox"
-          checked={params.value}
-          onChange={(e) => {
-            const isChecked = e.target.checked;
-            const action = isChecked ? t("activate") : t("deactivate");
-
-            if (
-              window.confirm(
-                t("Are you sure you want to {{action}} the request?", {
-                  action,
-                })
-              )
-            ) {
-              handleIsActiveChange(params.data.id, isChecked);
-            }
-          }}
+          checked={selectedRequests.some((req) => req.id === params.data.id)}
+      onChange={() => handleAddToListChange(params.data)}
         />
       ),
     },
+    
     {
       headerName: t("passenger_id"),
       field: "passenger",
@@ -597,7 +648,31 @@ const columnDefs = [
         },
       ],
     },
+    {
+      headerName: t("is_active"),
+      field: "is_active",
+      width: 60,
+      cellRenderer: (params) => (
+        <input
+          type="checkbox"
+          checked={params.value}
+          onChange={(e) => {
+            const isChecked = e.target.checked;
+            const action = isChecked ? t("activate") : t("deactivate");
 
+            if (
+              window.confirm(
+                t("Are you sure you want to {{action}} the request?", {
+                  action,
+                })
+              )
+            ) {
+              handleIsActiveChange(params.data.id, isChecked);
+            }
+          }}
+        />
+      ),
+    },
     { headerName: t("comment"), field: "comment", width: 600 },
   ];
 

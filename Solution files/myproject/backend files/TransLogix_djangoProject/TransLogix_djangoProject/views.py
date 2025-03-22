@@ -1874,7 +1874,7 @@ class TemporaryPassengerListViewSet(viewsets.ModelViewSet):
         Якщо список відсутній, повертаємо порожній об'єкт без помилки.
         """
         user = request.user
-        session_id = request.headers.get('Session-ID')  # Отримуємо session_id з заголовків
+        session_id = request.headers.get('Session-ID')
 
         print(f"🔍 Перевіряємо тимчасовий список для user={user} (ID: {user.id}), session_id={session_id}")
 
@@ -1882,7 +1882,7 @@ class TemporaryPassengerListViewSet(viewsets.ModelViewSet):
             return Response({"message": "Session ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            session_id = UUID(session_id)  # Перетворюємо рядок у UUID
+            session_id = UUID(session_id)
         except ValueError:
             return Response({"message": "Invalid session_id format"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1891,20 +1891,31 @@ class TemporaryPassengerListViewSet(viewsets.ModelViewSet):
         ).first()
 
         if instance:
-            # Перевіряємо, чи є в списку заявки, які вже включені в постійний список
-            stored_requests = instance.requests  # Заявки у тимчасовому списку
-            conflicting_requests = PassengerTripRequest.objects.filter(id__in=stored_requests, included_in_list=True)
+            full_requests = instance.requests  # тут структура з id, pickup_latitude, ...
+
+            # ⚠️ Для перевірки на конфлікти — дістаємо тільки ID:
+            try:
+                request_ids = [
+                    item["id"] for item in full_requests
+                    if isinstance(item, dict) and "id" in item
+                ]
+            except Exception as e:
+                print("❌ Помилка при формуванні request_ids:", e)
+                return Response({"message": "Malformed requests structure"}, status=500)
+
+            conflicting_requests = PassengerTripRequest.objects.filter(
+                id__in=request_ids,
+                included_in_list=True
+            )
 
             if conflicting_requests.exists():
-                # Видаляємо тимчасовий список, бо він втратив актуальність
                 instance.delete()
                 return Response({"message": "Тимчасовий список втратив актуальність"}, status=status.HTTP_410_GONE)
 
+            # Повертаємо всю структуру назад
             return Response(TemporaryPassengerListSerializer(instance).data, status=status.HTTP_200_OK)
 
-        # Якщо запису немає в БД, повертаємо порожній список фільтрів замість помилки
-        print("⚠️ Тимчасовий список не знайдено, повертаємо порожній результат.")
-        return Response({"filter_params": {}}, status=status.HTTP_200_OK)
+        return Response({}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'])
     def save_list(self, request):

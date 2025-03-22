@@ -14,10 +14,6 @@ import OrderedPassengerList from "../OrderedPassengerListView/OrderedPassengerLi
 import RouteComparisonModal from "./RouteComparisonModal";
 import RouteMapModal from "./RouteMapModal"; 
 import RequestsGrouping from './RequestsGrouping';
-// import FiltersPanel from "./FiltersPanel";
-// import PassengerRequestsTable from "./PassengerRequestsTable";
-
-
 
 
 
@@ -299,21 +295,202 @@ const deleteTemporaryList = async (sessionId) => {
   // };
   
   
-  //  // Оновлення списку вибраних заявок
-   const updateSelectedRequests = (requestId) => {
-    let storedData = sessionStorage.getItem("selectedRequests") ? JSON.parse(sessionStorage.getItem("selectedRequests")) : [];
-    const isSelected = storedData.some(req => req.id === requestId);
+  // //  // Оновлення списку вибраних заявок
+  //  const updateSelectedRequests = (requestId) => {
+  //   let storedData = sessionStorage.getItem("selectedRequests") ? JSON.parse(sessionStorage.getItem("selectedRequests")) : [];
+  //   const isSelected = storedData.some(req => req.id === requestId);
 
-    if (isSelected) {
-      storedData = storedData.filter(req => req.id !== requestId); // Видаляємо з вибраних
-    } else {
-      storedData.push({ id: requestId }); // Додаємо у вибрані
+  //   if (isSelected) {
+  //     storedData = storedData.filter(req => req.id !== requestId); // Видаляємо з вибраних
+  //   } else {
+  //     storedData.push({ id: requestId }); // Додаємо у вибрані
+  //   }
+
+  //   sessionStorage.setItem("selectedRequests", JSON.stringify(storedData));
+  //   // fetchPassengerRequests(); // Оновлюємо таблиці після зміни
+  // };
+  
+// додано 20.03 - новий механізм роботи лівої таблиці через бекенд.
+
+const handleCheckboxClick = async (requestId, isChecked) => {
+  let storedData = sessionStorage.getItem("selectedRequests") ? JSON.parse(sessionStorage.getItem("selectedRequests")) : [];
+  
+  if (isChecked) {
+      storedData.push({ id: requestId });
+  } else {
+      storedData = storedData.filter(req => req.id !== requestId);
+  }
+
+  sessionStorage.setItem("selectedRequests", JSON.stringify(storedData));
+
+  // Викликаємо оновлення правої таблиці після вибору у лівій таблиці
+  await fetchUpdatedRequests(storedData.map(req => req.id));
+};
+
+//  Ця функція відпрацьовує але вона неправильна!!! 
+
+const fetchUpdatedRequests = async () => {
+  try {
+    const filtersData = JSON.parse(sessionStorage.getItem("filters"));
+
+    if (!filtersData || !filtersData.requests) {
+      console.warn("⚠️ Дані фільтрів або список заявок відсутній у sessionStorage.");
+      setPassengerRequests(prevState => ({ ...prevState, right: [] }));
+      setSelectedRequests([]); // 💥 очищаємо також
+      return;
     }
 
-    sessionStorage.setItem("selectedRequests", JSON.stringify(storedData));
-    // fetchPassengerRequests(); // Оновлюємо таблиці після зміни
+    const storedRequestsFull = filtersData.requests;
+    const storedRequestIds = storedRequestsFull.map(req => req.id);
+
+    if (storedRequestIds.length === 0) {
+      console.warn("⚠️ Тимчасовий список порожній.");
+      setPassengerRequests(prevState => ({ ...prevState, right: [] }));
+      setSelectedRequests([]); // 💥 очищаємо також
+      return;
+    }
+
+    const requestDetailsResponse = await axios.get(
+      "http://localhost:8000/api/filtered-passenger-trip-requests/",
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        params: {
+          ids_include: storedRequestIds.join(","),
+        },
+      }
+    );
+
+    const enrichedRequests = storedRequestsFull.map(storedRequest => {
+      const detailedRequest = requestDetailsResponse.data.find(req => req.id === storedRequest.id);
+      return detailedRequest ? { ...storedRequest, ...detailedRequest } : storedRequest;
+    });
+
+    console.log("🔄 Об'єднані заявки:", enrichedRequests);
+
+    setPassengerRequests(prevState => ({
+      ...prevState,
+      right: enrichedRequests.sort((a, b) => a.sequence_number - b.sequence_number),
+    }));
+
+    // 💥 ОНОВЛЮЄМО ПРАВУ ТАБЛИЦЮ!
+    setSelectedRequests(enrichedRequests.sort((a, b) => a.sequence_number - b.sequence_number));
+
+  } catch (error) {
+    console.error("❌ Помилка при оновленні заявок:", error);
+  }
+};
+
+const updateRouteRequestsInStorage = (updatedSelections) => {
+  const stored = sessionStorage.getItem("filters");
+  if (!stored) {
+    console.warn("❌ sessionStorage.filters відсутній");
+    return;
+  }
+
+  const rawFilters = JSON.parse(stored);
+
+  const session_id = rawFilters.session_id || localStorage.getItem("session_id");
+
+  // Витягуємо всі поля, крім session_id та requests → це і є filter_params
+  const { requests: _, session_id: __, ...filter_params } = rawFilters;
+
+  if (!session_id || Object.keys(filter_params).length === 0) {
+    console.warn("⚠️ Не можна зберегти: відсутній session_id або порожні filter_params");
+    return;
+  }
+
+  const updatedRequests = updatedSelections.map((request, index) => ({
+    id: request.id,
+    sequence_number: index + 1,
+    pickup_latitude: request.pickup_latitude || "0.000000",
+    pickup_longitude: request.pickup_longitude || "0.000000",
+  }));
+
+  const updatedFilters = {
+    session_id,
+    filter_params,
+    requests: updatedRequests,
   };
-  
+
+  console.log("✅ Переформатовані фільтри перед збереженням:", updatedFilters);
+
+  sessionStorage.setItem("filters", JSON.stringify({ ...filter_params, requests: updatedRequests, session_id }));
+
+  setFilters(updatedFilters); // опційно, якщо потрібно зберігати в state
+
+  saveRouteFiltersToBackend(updatedFilters, updatedRequests);
+};
+
+
+
+const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
+  if (!filtersToSave.session_id || !filtersToSave.filter_params) {
+    console.warn("⚠️ Збереження неможливе: відсутні session_id або filter_params");
+    return;
+  }
+
+  try {
+    const payload = {
+      ...filtersToSave,
+      requests: requestsToSave,
+    };
+
+    await axios.post(
+      "http://localhost:8000/api/temp-lists/save_list/",
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("✅ Фільтри та заявки маршруту збережено.");
+  } catch (error) {
+    console.error("❌ Помилка при збереженні маршрутного списку:", error);
+  }
+};
+
+
+
+// const fetchAndUpdateRequests = async (selectedRequestIds) => {
+//   if (!selectedRequestIds || selectedRequestIds.length === 0) {
+//       setPassengerRequests(prevState => ({ ...prevState, right: [] }));
+//       return;
+//   }
+
+//   try {
+//       const response = await axios.post(
+//           "http://localhost:8000/api/get_passenger_requests_details/",
+//           { request_ids: selectedRequestIds },
+//           {
+//               headers: {
+//                   Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+//                   "Content-Type": "application/json",
+//               },
+//           }
+//       );
+
+//       if (response.data.error) {
+//           alert("⛔ Тимчасовий список втратив актуальність.");
+//           return;
+//       }
+
+//       // Оновлення правої таблиці
+//       setPassengerRequests(prevState => ({
+//         ...prevState,
+//         right: enrichedRequests.sort((a, b) => a.sequence_number - b.sequence_number),
+//       }));
+      
+//       // 💥 Додати оце:
+//       setSelectedRequests(enrichedRequests.sort((a, b) => a.sequence_number - b.sequence_number));
+//   } catch (error) {
+//       console.error("❌ Помилка при отриманні даних заявок:", error);
+//   }
+// };
 
   
 
@@ -503,22 +680,36 @@ const deleteTemporaryList = async (sessionId) => {
 
   const handleDeselect = (id) => {
     setIsRouteCalculated(false);
+  
     const deselectedRequest = selectedRequests.find((r) => r.id === id);
-    if (deselectedRequest) {
-      setSelectedRequests(
-        selectedRequests
-          .filter((r) => r.id !== id)
-          .map((req, index) => ({
-            ...req,
-            sequence_number: index + 1,
-          }))
-      );
-      setUnselectedRequests([
-        ...unselectedRequests,
-        { ...deselectedRequest, is_selected: false, sequence_number: null },
-      ]);
-    }
+    if (!deselectedRequest) return;
+  
+    // 🔄 Формуємо новий масив заявок, які залишились
+    const updatedSelectedRequests = selectedRequests
+      .filter((r) => r.id !== id)
+      .map((req, index) => ({
+        ...req,
+        sequence_number: index + 1, // Перерахунок
+      }));
+  
+    // ✅ Оновлюємо праву таблицю (відображення)
+    setSelectedRequests(updatedSelectedRequests);
+  
+    // ✅ Додаємо назад у список "невідібраних"
+    setUnselectedRequests([
+      ...unselectedRequests,
+      {
+        ...deselectedRequest,
+        is_selected: false,
+        sequence_number: null,
+      },
+    ]);
+  
+    // ✅ Оновлюємо sessionStorage і зберігаємо на бекенді
+    updateRouteRequestsInStorage(updatedSelectedRequests);
   };
+  
+  
 
   const handleReorder = (id, direction) => {
     setIsRouteCalculated(false); // Маршрут тепер вимагає перерахунку
@@ -1049,9 +1240,10 @@ const handleCloseMap = () => {
         width: 50,
         cellRenderer: (params) => (
           <input
-            type="checkbox"
-            checked={selectedRequests.some(selected => selected.id === params.data.id)}
-            onChange={() => updateSelectedRequests(params.data.id)}
+          type="checkbox"
+          title="remove from the list"
+          checked={true} // бо у правій таблиці завжди лише відібрані
+          onChange={() => handleDeselect(params.data.id)} // ⬅ ось тут головне
           />
         ),
       },
@@ -1571,6 +1763,9 @@ const handleCloseMap = () => {
     setFilters={setFilters}
     passengerRequests={passengerRequests}
     setPassengerRequests={setPassengerRequests}
+    onCheckboxClick={handleCheckboxClick}
+    onUpdateRightTable={fetchUpdatedRequests}
+    updateRouteRequestsInStorage={updateRouteRequestsInStorage}
 />
         
 
