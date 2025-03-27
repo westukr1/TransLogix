@@ -127,9 +127,11 @@ useEffect(() => {
 const saveFiltersToBackend = useCallback(async (updatedFilters) => {
   console.log("📤 Відправка оновлених фільтрів на бекенд:", updatedFilters);
   // console.log("📤 Значення filter_params:", updatedFilters.filter_params);
+  
 
   try {
-    const formattedRequests = selectedRequests.map((request, index) => ({
+    const storedRequests = JSON.parse(sessionStorage.getItem("filters"))?.requests || [];
+    const formattedRequests = storedRequests.map((request, index) => ({
       id: request.id,
       sequence_number: index + 1,
       pickup_latitude: request.pickup_latitude || "0.000000",
@@ -262,7 +264,9 @@ const fetchPassengerRequests = useCallback(async () => {
   } else {
       directionQuery = currentFilters.direction || "";
   }
-
+// ⬇️ Збираємо ID вже відібраних заявок з localStorage
+const excludedIds = JSON.parse(sessionStorage.getItem("filters"))?.requests?.map(r => r.id) || [];
+console.log("📤 ID заявок для виключення (ids_exclude):", excludedIds);
   try {
       const response = await axios.get("http://localhost:8000/api/filtered-passenger-trip-requests/", {
           headers: { Authorization: `Bearer ${token}` },
@@ -272,7 +276,8 @@ const fetchPassengerRequests = useCallback(async () => {
             end_date: currentFilters.end_date ? formatDate(currentFilters.end_date) : '',
             direction: directionQuery,
             search: '',
-            is_active: onlyActive
+            is_active: onlyActive,
+            ids_exclude: excludedIds.join(",") // ⬅️ ось додано виключення
           }
       });
       if (response.status === 200) {
@@ -287,6 +292,7 @@ const fetchPassengerRequests = useCallback(async () => {
 useEffect(() => {
   fetchPassengerRequests();
 }, [filters]); // Викликаємо отримання заявок при зміні фільтрів
+
 
 
 
@@ -432,19 +438,45 @@ const getRowStyle = (params) => {
 // Блок збереження заявок у тимчасове сховище.
 
 
-const handleAddToListChange = (request) => {
-  setSelectedRequests((prevSelected) => {
-      const isSelected = prevSelected.some((r) => r.id === request.id);
-      const updatedSelections = isSelected
-          ? prevSelected.filter((r) => r.id !== request.id)
-          : [...prevSelected, request];
+const handleAddToListButtonClick = (request) => {
+  const sessionFilters = JSON.parse(sessionStorage.getItem("filters")) || {};
+  const currentRequests = sessionFilters.requests || [];
 
-      updateRequestsInStorage(updatedSelections);
-      // 🚀 Викликаємо оновлення правої таблиці
-      onUpdateRightTable();
-      return updatedSelections;
-  });
+  const isAlreadyInList = currentRequests.some((r) => r.id === request.id);
+  if (isAlreadyInList) return;
+
+  const updatedSelections = [...currentRequests, {
+    id: request.id,
+    pickup_latitude: request.pickup_latitude || "0.000000",
+    pickup_longitude: request.pickup_longitude || "0.000000",
+    sequence_number: currentRequests.length + 1
+  }];
+
+  console.log("✅ [handleAddToListButtonClick] Додаємо:", request.id);
+  console.log("📋 Оновлений список заявок:", updatedSelections);
+
+  updateRequestsInStorage(updatedSelections);
+  fetchPassengerRequests();
 };
+
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    const stored = JSON.parse(sessionStorage.getItem("filters"))?.requests || [];
+    const storedIds = stored.map(r => r.id).sort().join(",");
+
+    if (window.__lastRequestsIds !== storedIds) {
+      console.log("🔄 [LEFT TABLE] Змінився sessionStorage.filters.requests → оновлюємо таблицю");
+      console.log("📋 Новий список ID заявок:", storedIds);
+
+      window.__lastRequestsIds = storedIds;
+      fetchPassengerRequests();
+    }
+  }, 1000); // 🔁 перевірка кожну секунду
+
+  return () => clearInterval(interval); // 🧹 очищення
+}, []);
+
 
 
 
@@ -469,6 +501,7 @@ const updateRequestsInStorage = (updatedSelections) => {
   sessionStorage.setItem("filters", JSON.stringify(updatedFilters));
   setFilters(updatedFilters);
   saveFiltersToBackend(updatedFilters, updatedRequests);
+  setSelectedRequests(updatedSelections);
 };
 
 
@@ -478,17 +511,30 @@ const handleCheckboxChange = (event, requestId) => {
 
 const columnDefs = [
     { headerName: t("request_id"), field: "id", width: 60 },
+   
+    
     {
       headerName: t("Add to List"),
       field: "add_to_list",
       width: 70,
-      cellRenderer: (params) => (
-        <input
-          type="checkbox"
-          checked={selectedRequests.some((req) => req.id === params.data.id)}
-      onChange={() => handleAddToListChange(params.data)}
-        />
-      ),
+      cellRenderer: (params) => {
+        return (
+          <button
+            onClick={() => handleAddToListButtonClick(params.data)}
+            title={t("add_to_list")}
+            style={{
+              backgroundColor: "#28a745",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              padding: "4px 6px",
+              cursor: "pointer",
+            }}
+          >
+            +
+          </button>
+        );
+      },
     },
     
     {
@@ -675,7 +721,27 @@ const columnDefs = [
     },
     { headerName: t("comment"), field: "comment", width: 600 },
   ];
-
+  useEffect(() => {
+    const syncSelectedRequestsWithSession = () => {
+      const filters = JSON.parse(sessionStorage.getItem("filters")) || {};
+      const requestsFromStorage = filters.requests || [];
+  
+      console.log("🧠 [SYNC] Синхронізуємо selectedRequests з sessionStorage:", requestsFromStorage);
+      setSelectedRequests(requestsFromStorage);  // перезаписуємо локальний стан
+    };
+  
+    const onStorageChange = (e) => {
+      if (e.key === "filters") {
+        syncSelectedRequestsWithSession();
+      }
+    };
+  
+    window.addEventListener("storage", onStorageChange);
+    syncSelectedRequestsWithSession(); // одразу при монтажі
+  
+    return () => window.removeEventListener("storage", onStorageChange);
+  }, []);
+  
     return (
         <div className="gltr-template2s-left-column">
         <div className="requests-grouping">

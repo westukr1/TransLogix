@@ -69,8 +69,34 @@ const GroupingListToRoute = () => {
   const [passengerRequests, setPassengerRequests] = useState({ left: [], right: [] });
   const [filters, setFilters] = useState(JSON.parse(sessionStorage.getItem("filters")) || {});
 
-// 1️⃣ Отримання активного списку фільтрів
 
+  const syncSelectedRequests = (updatedRequests) => {
+    // Зберігаємо у sessionStorage окремо (для логів, якщо потрібно)
+    sessionStorage.setItem("selectedRequests", JSON.stringify(updatedRequests));
+  
+    // Отримуємо фільтри з sessionStorage
+    const storedFilters = JSON.parse(sessionStorage.getItem("filters")) || {};
+  
+    // Формуємо заявки у форматі з sequence_number
+    const formattedRequests = updatedRequests.map((request, index) => ({
+      id: request.id,
+      sequence_number: index + 1,
+      pickup_latitude: request.pickup_latitude || "0.000000",
+      pickup_longitude: request.pickup_longitude || "0.000000"
+    }));
+  
+    const updatedFilters = {
+      ...storedFilters,
+      requests: formattedRequests
+    };
+  
+    // Зберігаємо назад у sessionStorage
+    sessionStorage.setItem("filters", JSON.stringify(updatedFilters));
+  
+    // [Optional] - Виводимо в консоль для налагодження
+    console.log("🧩 Синхронізовано selectedRequests та filters.requests:", updatedFilters.requests);
+  };
+  
 
 // 2️⃣ Отримання заявок пасажирів (фільтрованих)
 // useEffect(() => {
@@ -364,7 +390,7 @@ const fetchUpdatedRequests = async () => {
 
     const enrichedRequests = storedRequestsFull.map(storedRequest => {
       const detailedRequest = requestDetailsResponse.data.find(req => req.id === storedRequest.id);
-      return detailedRequest ? { ...storedRequest, ...detailedRequest } : storedRequest;
+      return detailedRequest ? { ...detailedRequest, ...storedRequest } : storedRequest;
     });
 
     console.log("🔄 Об'єднані заявки:", enrichedRequests);
@@ -381,6 +407,25 @@ const fetchUpdatedRequests = async () => {
     console.error("❌ Помилка при оновленні заявок:", error);
   }
 };
+useEffect(() => {
+  const interval = setInterval(() => {
+    const filters = JSON.parse(sessionStorage.getItem("filters")) || {};
+    const storedRequests = filters.requests || [];
+    const storedIds = storedRequests.map((r) => r.id).sort().join(",");
+
+    if (window.__lastSyncedRightIds !== storedIds) {
+      console.log("🔁 [Right Table] Заявки у sessionStorage змінились → оновлюємо selectedRequests");
+      console.log("📋 Новий список selectedRequests:", storedRequests);
+
+      window.__lastSyncedRightIds = storedIds;
+      setSelectedRequests(storedRequests); // ⬅️ оновлюємо локальний state
+      fetchUpdatedRequests(); // ⬅️ оновлюємо праву таблицю (з повними даними)
+    }
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, []);
+
 
 const updateRouteRequestsInStorage = (updatedSelections) => {
   const stored = sessionStorage.getItem("filters");
@@ -706,7 +751,7 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
     ]);
   
     // ✅ Оновлюємо sessionStorage і зберігаємо на бекенді
-    updateRouteRequestsInStorage(updatedSelectedRequests);
+    syncSelectedRequests(updatedSelectedRequests);
   };
   
   
@@ -714,29 +759,35 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
   const handleReorder = (id, direction) => {
     setIsRouteCalculated(false); // Маршрут тепер вимагає перерахунку
     setSelectedRequests((prevRequests) => {
-        const index = prevRequests.findIndex((r) => r.id === id);
-        if (
-            index === -1 ||
-            (direction === "up" && index === 0) ||
-            (direction === "down" && index === prevRequests.length - 1)
-        ) {
-            return prevRequests;
-        }
-
-        const newRequests = [...prevRequests];
-        const [movedItem] = newRequests.splice(index, 1);
-        newRequests.splice(
-            direction === "up" ? index - 1 : index + 1,
-            0,
-            movedItem
-        );
-
-        return newRequests.map((req, idx) => ({
-            ...req,
-            sequence_number: idx + 1,
-        }));
+      const index = prevRequests.findIndex((r) => r.id === id);
+      if (
+        index === -1 ||
+        (direction === "up" && index === 0) ||
+        (direction === "down" && index === prevRequests.length - 1)
+      ) {
+        return prevRequests;
+      }
+  
+      const newRequests = [...prevRequests];
+      const [movedItem] = newRequests.splice(index, 1);
+      newRequests.splice(
+        direction === "up" ? index - 1 : index + 1,
+        0,
+        movedItem
+      );
+  
+      const reordered = newRequests.map((req, idx) => ({
+        ...req,
+        sequence_number: idx + 1,
+      }));
+  
+      // ✅ Зберігаємо оновлений порядок у sessionStorage
+      syncSelectedRequests(reordered);
+  
+      return reordered;
     });
-};
+  };
+  
 const handleFilterChange = (e) => {
   const { name, value } = e.target;
   let updatedFilters = { ...filters };
@@ -1264,20 +1315,19 @@ const handleCloseMap = () => {
       {
         headerName: t("sequence_number"),
         field: "sequence_number",
-        cellRenderer: (params) =>
-          params.data.sequence_number && !isLeft ? (
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <button onClick={() => handleReorder(params.data.id, "up")}>
-                ⬆️
-              </button>
-              <span style={{ margin: "0 10px" }}>
-                {params.data.sequence_number}
-              </span>
-              <button onClick={() => handleReorder(params.data.id, "down")}>
-                ⬇️
-              </button>
-            </div>
-          ) : null,
+        cellRenderer: (params) => (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <button onClick={() => handleReorder(params.data.id, "up")}>
+              ⬆️
+            </button>
+            <span style={{ margin: "0 10px" }}>
+              {params.data.sequence_number || "-"}
+            </span>
+            <button onClick={() => handleReorder(params.data.id, "down")}>
+              ⬇️
+            </button>
+          </div>
+        ),
         width: 120,
       },
       { headerName: t("request_id"), field: "id", width: 60 },
@@ -1765,7 +1815,7 @@ const handleCloseMap = () => {
     setPassengerRequests={setPassengerRequests}
     onCheckboxClick={handleCheckboxClick}
     onUpdateRightTable={fetchUpdatedRequests}
-    updateRouteRequestsInStorage={updateRouteRequestsInStorage}
+    syncSelectedRequests={syncSelectedRequests}
 />
         
 
