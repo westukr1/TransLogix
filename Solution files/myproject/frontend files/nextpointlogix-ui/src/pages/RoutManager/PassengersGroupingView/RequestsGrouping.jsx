@@ -22,7 +22,7 @@ import "react-toastify/dist/ReactToastify.css";
     onlyActive: true,
   };
 
-function RequestsGrouping({ onCheckboxClick, onUpdateRightTable }) {
+function RequestsGrouping({ onCheckboxClick, onUpdateRightTable , onRefreshRequests}) {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [filters, setFilters] = useState(() => {
@@ -51,7 +51,13 @@ function RequestsGrouping({ onCheckboxClick, onUpdateRightTable }) {
     const sessionId = localStorage.getItem("session_id") || "bd1e7f30-12d3-4b56-92a3-bc46e2c84cda";
     localStorage.setItem("session_id", sessionId);
 
-
+    useEffect(() => {
+      if (sessionStorage.getItem("update_left_table_flag") === null) {
+        sessionStorage.setItem("update_left_table_flag", "0");
+        console.log("🟢 Флаг 'update_left_table_flag' створено та встановлено у 0");
+      }
+    }, []);
+    
     const checkSavedFilters = useCallback(async () => {
       console.log("📤 Перевірка збережених фільтрів...");
       const savedFilters = JSON.parse(sessionStorage.getItem("filters"));
@@ -462,19 +468,37 @@ const handleAddToListButtonClick = (request) => {
 
 useEffect(() => {
   const interval = setInterval(() => {
-    const stored = JSON.parse(sessionStorage.getItem("filters"))?.requests || [];
-    const storedIds = stored.map(r => r.id).sort().join(",");
+    const updateFlag = sessionStorage.getItem("update_left_table_flag");
+    
+   
 
-    if (window.__lastRequestsIds !== storedIds) {
-      console.log("🔄 [LEFT TABLE] Змінився sessionStorage.filters.requests → оновлюємо таблицю");
-      console.log("📋 Новий список ID заявок:", storedIds);
-
-      window.__lastRequestsIds = storedIds;
+    // Існуюча логіка перевірки ID (залишити або вдосконалити, якщо потрібно)
+    const stored = JSON.stringify(JSON.parse(sessionStorage.getItem("filters"))?.requests || []);
+    if (window.__lastRequests !== stored) {
+      window.__lastRequests = stored;
       fetchPassengerRequests();
     }
-  }, 1000); // 🔁 перевірка кожну секунду
 
-  return () => clearInterval(interval); // 🧹 очищення
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, []);
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    const updateFlag = sessionStorage.getItem("update_left_table_flag");
+    
+    if (updateFlag === "1") {
+      console.log("🔄 [LEFT TABLE] Отримано сигнал на оновлення з GroupingListToRoute → Оновлюємо таблицю");
+      
+      fetchPassengerRequests();
+
+      // Скидаємо флаг назад у "0"
+      sessionStorage.setItem("update_left_table_flag", "0");
+    }
+  }, 1000);
+
+  return () => clearInterval(interval);
 }, []);
 
 

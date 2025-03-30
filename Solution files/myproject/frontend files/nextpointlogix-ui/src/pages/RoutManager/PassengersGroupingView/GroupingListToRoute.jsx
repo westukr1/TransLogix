@@ -19,7 +19,7 @@ import RequestsGrouping from './RequestsGrouping';
 
 dayjs.extend(utc);
 
-const GroupingListToRoute = () => {
+const GroupingListToRoute = (onRefreshRequests) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -38,7 +38,7 @@ const GroupingListToRoute = () => {
   const [endDate, setEndDate] = useState(dayjs().add(2, "day").startOf("day"));
 
   const userLanguage = localStorage.getItem("i18nextLng") || "en"; // Задайте за замовчуванням "en"
-
+  
   const [passengerData, setPassengerData] = useState([]);
   const [requests, setRequests] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,8 +68,14 @@ const GroupingListToRoute = () => {
   const token = localStorage.getItem('access_token'); 
   const [passengerRequests, setPassengerRequests] = useState({ left: [], right: [] });
   const [filters, setFilters] = useState(JSON.parse(sessionStorage.getItem("filters")) || {});
-
-
+  const [availableRequests, setAvailableRequests] = useState([]);
+  const [selectedRequests, setSelectedRequests] = useState([]);
+  const sessionId = localStorage.getItem("session_id") || "bd1e7f30-12d3-4b56-92a3-bc46e2c84cda";
+  localStorage.setItem("session_id", sessionId);
+ 
+  
+  
+  
   const syncSelectedRequests = (updatedRequests) => {
     // Зберігаємо у sessionStorage окремо (для логів, якщо потрібно)
     sessionStorage.setItem("selectedRequests", JSON.stringify(updatedRequests));
@@ -121,39 +127,39 @@ const fetchPassengerRequests = async () => {
 
 
 // 3️⃣ Отримання повної інформації про заявки із тимчасового списку
-const fetchSelectedRequests = useCallback(async (selectedRequestIds) => {
-  if (!selectedRequestIds || selectedRequestIds.length === 0) {
-      console.log("⚠️ Тимчасовий список порожній.");
-      return;
-  }
+// const fetchSelectedRequests = useCallback(async (selectedRequestIds) => {
+//   if (!selectedRequestIds || selectedRequestIds.length === 0) {
+//       console.log("⚠️ Тимчасовий список порожній.");
+//       return;
+//   }
 
-  console.log("📤 Запит на отримання повної інформації про заявки:", selectedRequestIds);
+//   console.log("📤 Запит на отримання повної інформації про заявки:", selectedRequestIds);
 
-  try {
-      const response = await axios.post(
-          "http://localhost:8000/api/get_passenger_requests_details/",
-          { request_ids: selectedRequestIds },
-          {
-              headers: {
-                  Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-                  "Content-Type": "application/json",
-              },
-          }
-      );
+//   try {
+//       const response = await axios.post(
+//           "http://localhost:8000/api/get_passenger_requests_details/",
+//           { request_ids: selectedRequestIds },
+//           {
+//               headers: {
+//                   Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+//                   "Content-Type": "application/json",
+//               },
+//           }
+//       );
 
-      if (response.data.error) {
-          console.error("❌ Список неактуальний:", response.data.error);
-          alert("⛔ Тимчасовий список втратив актуальність.");
-          await deleteTemporaryList();
-          return;
-      }
+//       if (response.data.error) {
+//           console.error("❌ Список неактуальний:", response.data.error);
+//           alert("⛔ Тимчасовий список втратив актуальність.");
+//           await deleteTemporaryList();
+//           return;
+//       }
 
-      console.log("✅ Отримані заявки у правильному порядку:", response.data);
-      setPassengerRequests(prevState => ({ ...prevState, right: response.data }));
-  } catch (error) {
-      console.error("❌ Помилка при отриманні повної інформації про заявки:", error);
-  }
-}, [token]);
+//       console.log("✅ Отримані заявки у правильному порядку:", response.data);
+//       setPassengerRequests(prevState => ({ ...prevState, right: response.data }));
+//   } catch (error) {
+//       console.error("❌ Помилка при отриманні повної інформації про заявки:", error);
+//   }
+// }, [token]);
 
 // 4️⃣ Отримання фільтрів при завантаженні сторінки
 
@@ -186,22 +192,21 @@ const fetchSelectedRequests = useCallback(async (selectedRequestIds) => {
 
 
 
-const [availableRequests, setAvailableRequests] = useState([]);
-const [selectedRequests, setSelectedRequests] = useState([]);
+
 
 // 4️⃣ Видалення тимчасового списку
-const deleteTemporaryList = async (sessionId) => {
-  try {
-      console.log(`🗑️ Видаляємо тимчасовий список: ${sessionId}`);
-      await axios.delete(`http://localhost:8000/api/temp-lists/delete/`, {
-          params: { session_id: sessionId },
-          headers: { Authorization: `Bearer ${token}` }
-      });
-      console.log("✅ Тимчасовий список успішно видалено.");
-  } catch (error) {
-      console.error("❌ Помилка при видаленні тимчасового списку:", error);
-  }
-};
+// const deleteTemporaryList = async (sessionId) => {
+//   try {
+//       console.log(`🗑️ Видаляємо тимчасовий список: ${sessionId}`);
+//       await axios.delete(`http://localhost:8000/api/temp-lists/delete/`, {
+//           params: { session_id: sessionId },
+//           headers: { Authorization: `Bearer ${token}` }
+//       });
+//       console.log("✅ Тимчасовий список успішно видалено.");
+//   } catch (error) {
+//       console.error("❌ Помилка при видаленні тимчасового списку:", error);
+//   }
+// };
 
 // 5️⃣ Збереження дефолтних фільтрів
 
@@ -579,14 +584,14 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
           ? dayjs(filters.end_date).format("YYYY-MM-DDTHH:mm:ss")
           : null;
   
-      console.log("📤 Відправка фільтрів:", {
-        estimated_start_time__gte: formattedStartDate,
-        estimated_end_time__lte: formattedEndDate,
-        direction: filters.direction || null,
-        is_active: filters.is_active ?? null,
-        start_city__icontains: filters.start_city || null,
-        search: filters.search_query || null,
-      });
+      // console.log("📤 Відправка фільтрів:", {
+      //   estimated_start_time__gte: formattedStartDate,
+      //   estimated_end_time__lte: formattedEndDate,
+      //   direction: filters.direction || null,
+      //   is_active: filters.is_active ?? null,
+      //   start_city__icontains: filters.start_city || null,
+      //   search: filters.search_query || null,
+      // });
   
       const response = await axios.get(
         "http://127.0.0.1:8000/api/ordered-passenger-list/",
@@ -606,7 +611,7 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
         }
       );
   
-      console.log("📥 Отримані дані:", response.data);
+      // console.log("📥 Отримані дані:", response.data);
       setPassengerLists(response.data);
     } catch (error) {
       console.error(
@@ -619,20 +624,32 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
 
   // Запуск при зміні фільтрів
   useEffect(() => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      start_date: dayjs(startDate).format("YYYY-MM-DDTHH:mm:ss"),
-      end_date: dayjs(endDate).format("YYYY-MM-DDTHH:mm:ss"),
-    }));
+    const formattedStart = dayjs(startDate).format("YYYY-MM-DDTHH:mm:ss");
+    const formattedEnd = dayjs(endDate).format("YYYY-MM-DDTHH:mm:ss");
+  
+    if (
+      filters?.start_date !== formattedStart ||
+      filters?.end_date !== formattedEnd
+    ) {
+      setFilters((prev) => ({
+        ...prev,
+        start_date: formattedStart,
+        end_date: formattedEnd,
+      }));
+      console.log("✅ Оновлено filters!");
+    } else {
+      console.log("⏸️ Filters не змінені — оновлення не потрібне.");
+    }
   }, [startDate, endDate]);
-
+  
+  
   useEffect(() => {
-    console.log(
-      "📌 Виклик fetchPassengerLists із оновленими фільтрами:",
-      filters
-    );
-    fetchPassengerLists();
+    console.log("📌 Виклик fetchPassengerLists із sessionStorage фільтрами:", filters);
+    if (filters?.start_date && filters?.end_date) {
+      fetchPassengerLists();
+    }
   }, [filters]);
+  
 
   const fetchListDetails = async (listId) => {
     try {
@@ -707,21 +724,7 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
   };
 
 
-  const handleSelect = (id) => {
-    setIsRouteCalculated(false);
-    const selectedRequest = unselectedRequests.find((r) => r.id === id);
-    if (selectedRequest) {
-      setUnselectedRequests(unselectedRequests.filter((r) => r.id !== id));
-      setSelectedRequests((prev) => [
-        ...prev,
-        {
-          ...selectedRequest,
-          is_selected: true,
-          sequence_number: prev.length + 1,
-        },
-      ]);
-    }
-  };
+  
 
   const handleDeselect = (id) => {
     setIsRouteCalculated(false);
@@ -827,15 +830,22 @@ const handleFilterChange = (e) => {
 };
 
   
-  // Оновлення фільтрів для обох таблиць згідно з верхнім фільтром часу
-  useEffect(() => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      start_date: dayjs(startDate).format("YYYY-MM-DD HH:mm:ss"),
-      end_date: dayjs(endDate).format("YYYY-MM-DD HH:mm:ss"),
-    }));
-    fetchPassengerLists(); // Додаємо оновлення таблиці після зміни фільтру
-  }, [startDate, endDate]);
+  // Оновлення фільтрів для нижньої таблиці згідно з верхнім фільтром часу
+  const handleSyncWithStorage = () => {
+    const savedFilters = JSON.parse(sessionStorage.getItem("filters"));
+    if (savedFilters && savedFilters.start_date && savedFilters.end_date) {
+      setStartDate(dayjs(savedFilters.start_date));
+      setEndDate(dayjs(savedFilters.end_date));
+      setFilters((prev) => ({
+        ...prev,
+        start_date: savedFilters.start_date,
+        end_date: savedFilters.end_date,
+      }));
+    }
+  };
+  
+ 
+  
 
   // Форматування часу у всіх таблицях
   const formatDateTime = (params) =>
@@ -1136,6 +1146,30 @@ const clearSessionStorage = () => {
   sessionStorage.removeItem("directionFilter");
   sessionStorage.removeItem("filters");
 };
+const clearTemporaryPassengerRequests = () => {
+  const filters = JSON.parse(sessionStorage.getItem("filters")) || {};
+  filters.requests = [];
+  sessionStorage.setItem("filters", JSON.stringify(filters));
+  console.log("🧼 Тимчасовий список заявок очищено");
+
+  // Очистити також на бекенді
+  axios.post(
+    "http://127.0.0.1:8000/api/temp-lists/save_list/",
+    {
+      session_id: sessionId,
+      filter_params: filters,
+      requests: [],
+      expires_at: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  ).then(() => {
+    console.log("🧼 Тимчасовий список очищено і на бекенді");
+  }).catch((err) => {
+    console.error("❌ Помилка при очищенні тимчасового списку:", err);
+  });
+};
 
   // Очищення sessionStorage тільки при виході на інші сторінки, окрім RouteMapModal
   useEffect(() => {
@@ -1247,12 +1281,24 @@ const handleCloseMap = () => {
 
       // Очищуємо список після збереження
       setSelectedRequests([]);
+      clearTemporaryPassengerRequests();
+      setRouteDetails({
+        distance: null,
+        duration: null,
+        stops: null,
+        passengers: null,
+        startAddress: null,
+        endAddress: null,
+      });
+      
       fetchPassengerLists(); // Оновлення нижньої лівої таблиці
+
     } catch (error) {
       console.error("❌ Помилка при збереженні списку:", error);
       alert(t("error_saving_list"));
     }
   };
+
   const deleteList = async (listId) => {
     if (!window.confirm(`Видалити список ID ${listId}?`)) return;
 
@@ -1268,11 +1314,20 @@ const handleCloseMap = () => {
       );
 
       console.log(`✅ Список ID ${listId} успішно видалено`);
+      sessionStorage.setItem("update_left_table_flag", "1"); // ⬅️ Додай це
+      console.log("🔄 update_left_table_flag змінено на 1 після видалення списку");
 
+      
       fetchPassengerLists(); // Оновлення списку
       setSelectedListDetails(null); // Очистка інформації про список
       setSelectedListPassengers([]); // Очистка таблиці "Відомості про список пасажирів"
       // fetchPassengerRequests(filters); // Оновлення таблиці "Запити пасажирів"
+      
+      
+      if (typeof onRefreshRequests === "function") {
+        onRefreshRequests(); // 🔄 Оновлюємо таблицю після видалення
+      }
+      
     } catch (error) {
       console.error(
         `❌ Помилка при видаленні списку ID ${listId}:`,
@@ -1816,6 +1871,7 @@ const handleCloseMap = () => {
     onCheckboxClick={handleCheckboxClick}
     onUpdateRightTable={fetchUpdatedRequests}
     syncSelectedRequests={syncSelectedRequests}
+    onRefreshRequests={fetchPassengerRequests}
 />
         
 
@@ -1852,6 +1908,22 @@ const handleCloseMap = () => {
               />
               <div style={{ marginTop: "20px" }}> </div>
             </label> */}
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+  <label>Start Date:</label>
+  <input
+    type="datetime-local"
+    value={dayjs(startDate).format("YYYY-MM-DDTHH:mm")}
+    onChange={(e) => setStartDate(dayjs(e.target.value))}
+  />
+  <label>End Date:</label>
+  <input
+    type="datetime-local"
+    value={dayjs(endDate).format("YYYY-MM-DDTHH:mm")}
+    onChange={(e) => setEndDate(dayjs(e.target.value))}
+  />
+  <button onClick={handleSyncWithStorage}>Синхронізувати</button>
+</div>
+
             <label>
               {t("direction")}:
               <select name="direction" onChange={handleFilterChange}>
