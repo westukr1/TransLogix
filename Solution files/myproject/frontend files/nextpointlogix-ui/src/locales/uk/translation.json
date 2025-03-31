@@ -630,5 +630,6 @@
   "start_address": "Початкова адреса",
   "end_address": "Кінцева адреса",
   "clear_filters": "Очитити фільтри",
-  "expanded_view": "Розгорнутий вигляд"
+  "expanded_view": "Розгорнутий вигляд",
+  "clear_list": "Очистити список"
 }

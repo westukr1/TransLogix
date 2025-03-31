@@ -645,6 +645,7 @@
   "start_address": "Start Address",
   "end_address": "End Address",
   "clear_filters": "Clear filters",
-  "expanded_view": "Expanded view"
+  "expanded_view": "Expanded view",
+  "clear_list": "Clear list"
   
 }

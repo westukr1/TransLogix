@@ -74,7 +74,21 @@ const GroupingListToRoute = (onRefreshRequests) => {
   localStorage.setItem("session_id", sessionId);
  
   
+  useEffect(() => {
+    const storedFilters = JSON.parse(sessionStorage.getItem("filters"));
+    if (storedFilters?.requests?.length > 0) {
+      const restoredRequests = storedFilters.requests;
+      setSelectedRequests(restoredRequests);
   
+      // Якщо треба оновити праву частину таблиці:
+      setPassengerRequests(prev => ({
+        ...prev,
+        right: restoredRequests,
+      }));
+  
+      console.log("🔁 Відновлено заявки з sessionStorage:", restoredRequests);
+    }
+  }, []);
   
   const syncSelectedRequests = (updatedRequests) => {
     // Зберігаємо у sessionStorage окремо (для логів, якщо потрібно)
@@ -1081,19 +1095,8 @@ useEffect(() => {
 
 // Функція відкриття модального вікна карти
 const handleShowMap = () => {
-  sessionStorage.setItem("selectedRequests", JSON.stringify(selectedRequests));
-  sessionStorage.setItem("filters", JSON.stringify(filters)); // Зберігаємо фільтри
-  // sessionStorage.setItem("filters", JSON.stringify({
-  //   searchQuery,
-  //   startDate: startDate.toISOString(),
-  //   endDate: endDate.toISOString(),
-  //   directionFilter,
-  //   showIncludedInList,
-  //   showIncludedInRoute
-  // }));
-  navigate("/route-map", {
-    state: { selectedRequests }
-  });
+  
+  navigate("/route-map");
 };
 //Тимчасово закоментимо щоб виявити помилку
 useEffect(() => {
@@ -1146,6 +1149,23 @@ const clearSessionStorage = () => {
   sessionStorage.removeItem("directionFilter");
   sessionStorage.removeItem("filters");
 };
+const handleClearList = () => {
+  clearTemporaryPassengerRequests(); // ✅ очищення sessionStorage + бекенд
+
+  // 🧹 Очистити дані маршруту
+  setRouteDetails({
+    distance: null,
+    duration: null,
+    stops: null,
+    passengers: null,
+    startAddress: null,
+    endAddress: null,
+  });
+
+  
+};
+
+
 const clearTemporaryPassengerRequests = () => {
   const filters = JSON.parse(sessionStorage.getItem("filters")) || {};
   filters.requests = [];
@@ -1171,15 +1191,15 @@ const clearTemporaryPassengerRequests = () => {
   });
 };
 
-  // Очищення sessionStorage тільки при виході на інші сторінки, окрім RouteMapModal
-  useEffect(() => {
-    return () => {
-      if (!location.pathname.includes("/route-map")) {
-        sessionStorage.removeItem("selectedRequests");
-        // sessionStorage.removeItem("filters");
-      }
-    };
-  }, [location]);
+  // // Очищення sessionStorage тільки при виході на інші сторінки, окрім RouteMapModal
+  // useEffect(() => {
+  //   return () => {
+  //     if (!location.pathname.includes("/route-map")) {
+  //       sessionStorage.removeItem("selectedRequests");
+  //       // sessionStorage.removeItem("filters");
+  //     }
+  //   };
+  // }, [location]);
 
 
 const filteredRequests = allRequests.filter(
@@ -1830,7 +1850,14 @@ const handleCloseMap = () => {
     setSelectedRequests(sortedRequests);
     setModalData({ show: false }); // Закриваємо вікно
   };
-  
+  const handleBackClick = () => {
+    handleClearList(); // очищує sessionStorage та стан
+    navigate(-1); // повертає назад
+  };
+  const handleMainScreenClick = () => {
+    handleClearList(); // очищення sessionStorage та станів
+    navigate("/");     // перехід на головний екран
+  };
   
 
   return (
@@ -1846,10 +1873,10 @@ const handleCloseMap = () => {
         <h1 className="header-title">{t("grouping_list_to_route")}</h1>
 
         <div className="nav-buttons">
-          <button className="nav-button" onClick={() => navigate("/")}>
+          <button className="nav-button" onClick={handleMainScreenClick}>
             {t("nav.main_screen")}
           </button>
-          <button className="nav-button" onClick={() => navigate(-1)}>
+          <button className="nav-button" onClick={handleBackClick}>
             {t("nav.back")}
           </button>
         </div>
@@ -2034,6 +2061,11 @@ const handleCloseMap = () => {
             </div>
           </div>
           <div className="button-container">
+          <button className="nav-button"
+               onClick={handleClearList}>
+              {t("clear_list")}
+            </button>
+
           <button
                   className="nav-button"
                   onClick={() => navigate("/user-routes-settings")}

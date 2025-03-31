@@ -3,10 +3,20 @@ import { Route, useLocation, useNavigate } from "react-router-dom";
 import { GoogleMap, Marker, Polyline, useJsApiLoader } from "@react-google-maps/api";
 import { useTranslation } from "react-i18next";
 import "./RouteMapModal.css";
+import { Button } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 const libraries = ["places"];
+const containerStyle = {
+  width: "100%",
+  height: "400px",
+};
 
-const RouteMapModal = () => {
+const center = {
+  lat: 49.8397,
+  lng: 24.0297,
+};
+const RouteMapModal = ({ onClose }) => {
     const { t } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
@@ -24,45 +34,45 @@ const RouteMapModal = () => {
     const stopDetails = location.state?.stopDetails || [];
     const tripType = location.state?.direction || "N/A";
     
-    const extractCoordinates = (route) => {
-        if (!route || typeof route !== "object") return [];
-        if (route.stops && Array.isArray(route.stops)) {
-          return route.stops.map((stop) => ({
-            lat: parseFloat(stop.latitude),
-            lng: parseFloat(stop.longitude),
-          }));
-        }
-        if (route.start_address && route.end_address) {
-          console.warn("⚠️ Маршрут отримано у форматі об'єкта, конвертуємо...");
-          return [
-            { lat: parseFloat(route.start_lat) || 50.4501, lng: parseFloat(route.start_lng) || 30.5234 },
-            { lat: parseFloat(route.end_lat) || 50.4501, lng: parseFloat(route.end_lng) || 30.5234 },
-          ];
-        }
-        return [];
-      };
+    // const extractCoordinates = (route) => {
+    //     if (!route || typeof route !== "object") return [];
+    //     if (route.stops && Array.isArray(route.stops)) {
+    //       return route.stops.map((stop) => ({
+    //         lat: parseFloat(stop.latitude),
+    //         lng: parseFloat(stop.longitude),
+    //       }));
+    //     }
+    //     if (route.start_address && route.end_address) {
+    //       console.warn("⚠️ Маршрут отримано у форматі об'єкта, конвертуємо...");
+    //       return [
+    //         { lat: parseFloat(route.start_lat) || 50.4501, lng: parseFloat(route.start_lng) || 30.5234 },
+    //         { lat: parseFloat(route.end_lat) || 50.4501, lng: parseFloat(route.end_lng) || 30.5234 },
+    //       ];
+    //     }
+    //     return [];
+    //   };
     
       const [standardRoute, setStandardRoute] = useState([]);
       const [optimizedRoute, setOptimizedRoute] = useState([]);
     
-      useEffect(() => {
-        if (location.state) {
-          console.log("\ud83d\udccc Отримані дані в RouteMapModal:", location.state);
+      // useEffect(() => {
+      //   if (location.state) {
+      //     console.log("\ud83d\udccc Отримані дані в RouteMapModal:", location.state);
     
-          const newStandardRoute = extractCoordinates(location.state?.standardRoute);
-          const newOptimizedRoute = extractCoordinates(location.state?.optimizedRoute);
+      //     const newStandardRoute = extractCoordinates(location.state?.standardRoute);
+      //     const newOptimizedRoute = extractCoordinates(location.state?.optimizedRoute);
     
-          console.log("📌 Конвертований стандартний маршрут:", newStandardRoute);
-          console.log("📌 Конвертований оптимізований маршрут:", newOptimizedRoute);
+      //     console.log("📌 Конвертований стандартний маршрут:", newStandardRoute);
+      //     console.log("📌 Конвертований оптимізований маршрут:", newOptimizedRoute);
     
-          if (newStandardRoute.length > 0) {
-            setStandardRoute(newStandardRoute);
-          }
-          if (newOptimizedRoute.length > 0) {
-            setOptimizedRoute(newOptimizedRoute);
-          }
-        }
-      }, [location.state]);
+      //     if (newStandardRoute.length > 0) {
+      //       setStandardRoute(newStandardRoute);
+      //     }
+      //     if (newOptimizedRoute.length > 0) {
+      //       setOptimizedRoute(newOptimizedRoute);
+      //     }
+      //   }
+      // }, [location.state]);
     
       console.log("📌 Отримані дані після оновлення:", { standardRoute, optimizedRoute });
   
@@ -102,11 +112,35 @@ const RouteMapModal = () => {
       placeMarker();
     }
   }, [isLoaded, mapRef]);
+  
+   // Зчитуємо точки маршруту із sessionStorage
+  useEffect(() => {
+    const filters = JSON.parse(sessionStorage.getItem("filters"));
+    const storedRequests = filters?.requests || [];
+  
+    const coordinates = storedRequests
+      .map((req) => {
+        const lat = parseFloat(req.pickup_latitude);
+        const lng = parseFloat(req.pickup_longitude);
+        return !isNaN(lat) && !isNaN(lng) ? { lat, lng } : null;
+      })
+      .filter(Boolean);
+  
+    setStandardRoute(coordinates);
+  }, []);
+  
 
   const handleExit = () => {
-    navigate(-1);
+    const filters = JSON.parse(sessionStorage.getItem("filters"));
+    const selectedRequests = filters?.requests || [];
+  
+    navigate("/passengers-grouping-view/grouping-list-to-route", {
+      state: {
+        from: "RouteMapModal",
+        savedRequests: selectedRequests,
+      },
+    });
   };
-
   const handleSaveCoordinates = async () => {
     if (!coordinatePointId) {
       console.error(t("no_coordinate_point_id"));
@@ -183,6 +217,7 @@ const RouteMapModal = () => {
   if (!apiKey || !isLoaded) {
     return <p>{t("loading_google_maps")}</p>;
   }
+
 
   return (
     <div className="rmm-two-column-template">
