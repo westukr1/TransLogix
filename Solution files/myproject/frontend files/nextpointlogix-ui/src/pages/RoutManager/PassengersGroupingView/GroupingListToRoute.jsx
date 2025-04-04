@@ -89,6 +89,20 @@ const GroupingListToRoute = (onRefreshRequests) => {
       console.log("🔁 Відновлено заявки з sessionStorage:", restoredRequests);
     }
   }, []);
+  useEffect(() => {
+    const stored = sessionStorage.getItem("savedPassengerListFilters");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed.start_date) {
+        setStartDate(dayjs(parsed.start_date));
+      }
+      if (parsed.end_date) {
+        setEndDate(dayjs(parsed.end_date));
+      }
+      setFilters(parsed);
+      console.log("🔁 Відновлено фільтри для списків з sessionStorage:", parsed);
+    }
+  }, []);
   
   const syncSelectedRequests = (updatedRequests) => {
     // Зберігаємо у sessionStorage окремо (для логів, якщо потрібно)
@@ -636,7 +650,6 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
   };
   
 
-  // Запуск при зміні фільтрів
   useEffect(() => {
     const formattedStart = dayjs(startDate).format("YYYY-MM-DDTHH:mm:ss");
     const formattedEnd = dayjs(endDate).format("YYYY-MM-DDTHH:mm:ss");
@@ -645,16 +658,21 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
       filters?.start_date !== formattedStart ||
       filters?.end_date !== formattedEnd
     ) {
-      setFilters((prev) => ({
-        ...prev,
+      const updatedFilters = {
+        ...filters,
         start_date: formattedStart,
         end_date: formattedEnd,
-      }));
-      console.log("✅ Оновлено filters!");
+      };
+  
+      setFilters(updatedFilters); // ✅ оновлюємо state
+      sessionStorage.setItem("savedPassengerListFilters", JSON.stringify(updatedFilters)); // ✅ зберігаємо
+  
+      console.log("✅ Оновлено filters та sessionStorage!");
     } else {
       console.log("⏸️ Filters не змінені — оновлення не потрібне.");
     }
   }, [startDate, endDate]);
+  
   
   
   useEffect(() => {
@@ -1126,7 +1144,7 @@ useEffect(() => {
     //   console.log("📌 Викликаємо fetchPassengerRequests(filters) із фільтром:", filters);
     //   fetchPassengerRequests(filters);
     // }
-
+    
     if (parsedStandardRoute) {
       setStandardRoute(parsedStandardRoute);
     }
@@ -1134,6 +1152,7 @@ useEffect(() => {
     if (parsedOptimizedRoute) {
       setOptimizedRoute(parsedOptimizedRoute);
     }
+    fetchUpdatedRequests();
   } catch (error) {
     console.error("❌ Помилка парсингу даних із sessionStorage:", error);
     setSelectedRequests([]);

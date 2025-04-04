@@ -141,6 +141,7 @@ const RouteMapModal = ({ onClose }) => {
       },
     });
   };
+  
   const handleSaveCoordinates = async () => {
     if (!coordinatePointId) {
       console.error(t("no_coordinate_point_id"));
