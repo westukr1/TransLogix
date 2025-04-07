@@ -77,18 +77,25 @@ const GroupingListToRoute = (onRefreshRequests) => {
   useEffect(() => {
     const storedFilters = JSON.parse(sessionStorage.getItem("filters"));
     if (storedFilters?.requests?.length > 0) {
-      const restoredRequests = storedFilters.requests;
-      setSelectedRequests(restoredRequests);
-  
-      // Якщо треба оновити праву частину таблиці:
+      setSelectedRequests(storedFilters.requests);
       setPassengerRequests(prev => ({
         ...prev,
-        right: restoredRequests,
+        right: storedFilters.requests,
       }));
+      console.log("🔁 Відновлено заявки з sessionStorage:", storedFilters.requests);
+    }
   
-      console.log("🔁 Відновлено заявки з sessionStorage:", restoredRequests);
+    const stored = sessionStorage.getItem("savedPassengerListFilters");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed.start_date) setStartDate(dayjs(parsed.start_date));
+      if (parsed.end_date) setEndDate(dayjs(parsed.end_date));
+      setFilters(parsed);
+      console.log("🔁 Відновлено фільтри для списків з sessionStorage:", parsed);
     }
   }, []);
+  
+  
   useEffect(() => {
     const stored = sessionStorage.getItem("savedPassengerListFilters");
     if (stored) {
@@ -432,7 +439,19 @@ const fetchUpdatedRequests = async () => {
       ...prevState,
       right: enrichedRequests.sort((a, b) => a.sequence_number - b.sequence_number),
     }));
+    const sortedRequests = enrichedRequests.sort((a, b) => a.sequence_number - b.sequence_number);
 
+console.log("📦 Запис у таблицю праворуч (setPassengerRequests.right):", sortedRequests);
+setPassengerRequests(prevState => ({
+  ...prevState,
+  right: sortedRequests,
+}));
+
+console.log("📌 Запис у selectedRequests:", sortedRequests);
+// 💥 ОНОВЛЮЄМО ПРАВУ ТАБЛИЦЮ!
+setSelectedRequests(sortedRequests);
+
+    console.log("📦 Запис у таблицю праворуч (setPassengerRequests.right):", sortedRequests);
     // 💥 ОНОВЛЮЄМО ПРАВУ ТАБЛИЦЮ!
     setSelectedRequests(enrichedRequests.sort((a, b) => a.sequence_number - b.sequence_number));
 
@@ -1138,6 +1157,8 @@ useEffect(() => {
     } else {
       console.log("🔄 Відновлюємо selectedRequests із sessionStorage");
       setSelectedRequests(parsedRequests);
+      syncSelectedRequests(parsedRequests);
+
     }
 
     // if (parsedRequestIds.length > 0) {
@@ -1210,15 +1231,18 @@ const clearTemporaryPassengerRequests = () => {
   });
 };
 
-  // // Очищення sessionStorage тільки при виході на інші сторінки, окрім RouteMapModal
+  // Очищення sessionStorage тільки при виході на інші сторінки, окрім RouteMapModal
   // useEffect(() => {
   //   return () => {
-  //     if (!location.pathname.includes("/route-map")) {
+  //     const allowedRoutes = ["/grouping-list-to-route", "/route-map"];
+  //     if (!allowedRoutes.includes(location.pathname)) {
+  //       console.log("🗑 Очистка при виході на інші сторінки:", location.pathname);
   //       sessionStorage.removeItem("selectedRequests");
-  //       // sessionStorage.removeItem("filters");
+  //       sessionStorage.removeItem("selectedRequestIds");
   //     }
   //   };
-  // }, [location]);
+  // }, [location.pathname]);
+  
 
 
 const filteredRequests = allRequests.filter(
@@ -1871,8 +1895,9 @@ const handleCloseMap = () => {
   };
   const handleBackClick = () => {
     handleClearList(); // очищує sessionStorage та стан
-    navigate(-1); // повертає назад
-  };
+    navigate("/rout-manager"); // перемикає на маршрут /rout-manager
+};
+
   const handleMainScreenClick = () => {
     handleClearList(); // очищення sessionStorage та станів
     navigate("/");     // перехід на головний екран

@@ -59,9 +59,10 @@ const TopNavBar = () => {
         <Link to="/driver-vehicle-management" className="nav-button">
           {t("driver_vehicle_management")}
         </Link>
-        <button className="nav-button" onClick={() => window.history.back()}>
+        <Link to="/" className="nav-button">
           {t("nav.back")}
-        </button>
+        </Link>
+       
       </div>
     </div>
   );
