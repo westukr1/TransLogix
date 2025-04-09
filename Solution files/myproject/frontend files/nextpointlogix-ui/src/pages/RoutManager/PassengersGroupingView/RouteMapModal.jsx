@@ -5,6 +5,8 @@ import { useTranslation } from "react-i18next";
 import "./RouteMapModal.css";
 import { Button } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import axios from 'axios';
+import { useSelector } from 'react-redux';
 
 const libraries = ["places"];
 const containerStyle = {
@@ -33,6 +35,19 @@ const RouteMapModal = ({ onClose }) => {
     const [mapRef, setMapRef] = useState(null);
     const stopDetails = location.state?.stopDetails || [];
     const tripType = location.state?.direction || "N/A";
+
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+  
+    // const token = useSelector((state) => state.auth.token);
+    // const sessionId = useSelector((state) => state.auth.sessionId);
+    const [standardRoute, setStandardRoute] = useState([]);
+    const [optimizedRoute, setOptimizedRoute] = useState([]);
+  
+    const token = localStorage.getItem('access_token');
+    const sessionId = localStorage.getItem("session_id") || "bd1e7f30-12d3-4b56-92a3-bc46e2c84cda";
+    localStorage.setItem("session_id", sessionId);
+  
     
     // const extractCoordinates = (route) => {
     //     if (!route || typeof route !== "object") return [];
@@ -52,8 +67,7 @@ const RouteMapModal = ({ onClose }) => {
     //     return [];
     //   };
     
-      const [standardRoute, setStandardRoute] = useState([]);
-      const [optimizedRoute, setOptimizedRoute] = useState([]);
+
     
       // useEffect(() => {
       //   if (location.state) {
@@ -112,22 +126,69 @@ const RouteMapModal = ({ onClose }) => {
       placeMarker();
     }
   }, [isLoaded, mapRef]);
-  
-   // Зчитуємо точки маршруту із sessionStorage
   useEffect(() => {
-    const filters = JSON.parse(sessionStorage.getItem("filters"));
-    const storedRequests = filters?.requests || [];
+    const fetchPassengerRequests = async () => {
+      try {
+        // 1. Запит до тимчасового списку заявок
+        const tempResponse = await axios.get("http://localhost:8000/api/temp-lists/get_active_list/", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Session-ID": sessionId,
+          },
+        });
+
+        console.log("📨 Відповідь з бекенду (повна):", tempResponse.data);
+
+        const requestIds = tempResponse.data?.requests?.map((r) => r.id) || [];
+
+        console.log("🗃️ ID заявок з тимчасового списку:", requestIds);
+
+        if (requestIds.length === 0) {
+          console.warn("⚠️ Тимчасовий список заявок порожній або відсутній.");
+          setLoading(false);
+          return;
+        }
+
+        // 2. Запит на отримання повних даних заявок
+      const fullResponse = await axios.get("http://localhost:8000/api/filtered-passenger-trip-requests/", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          ids_include: requestIds.join(","),
+        },
+      });
+
+        if (fullResponse.status === 200) {
+          console.log("📦 Повні дані заявок за цим списком:", fullResponse.data);
+          setRequests(fullResponse.data);
+        }
+      } catch (error) {
+        console.error("❌ Помилка отримання заявок:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPassengerRequests();
+  }, [token, sessionId]);
+
+  if (loading) return <div>Loading...</div>;
+  //  // Зчитуємо точки маршруту із sessionStorage
+  // useEffect(() => {
+  //   const filters = JSON.parse(sessionStorage.getItem("filters"));
+  //   const storedRequests = filters?.requests || [];
   
-    const coordinates = storedRequests
-      .map((req) => {
-        const lat = parseFloat(req.pickup_latitude);
-        const lng = parseFloat(req.pickup_longitude);
-        return !isNaN(lat) && !isNaN(lng) ? { lat, lng } : null;
-      })
-      .filter(Boolean);
+  //   const coordinates = storedRequests
+  //     .map((req) => {
+  //       const lat = parseFloat(req.pickup_latitude);
+  //       const lng = parseFloat(req.pickup_longitude);
+  //       return !isNaN(lat) && !isNaN(lng) ? { lat, lng } : null;
+  //     })
+  //     .filter(Boolean);
   
-    setStandardRoute(coordinates);
-  }, []);
+  //   setStandardRoute(coordinates);
+  // }, []);
   
 
   const handleExit = () => {

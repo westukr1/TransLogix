@@ -3,7 +3,8 @@
     "@mui/icons-material": "^7.0.1",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
-    "react-datepicker": "^7.6.0"
+    "react-datepicker": "^7.6.0",
+    "react-redux": "^9.2.0"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
