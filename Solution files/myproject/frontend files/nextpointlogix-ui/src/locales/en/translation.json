@@ -646,6 +646,11 @@
   "end_address": "End Address",
   "clear_filters": "Clear filters",
   "expanded_view": "Expanded view",
-  "clear_list": "Clear list"
+  "clear_list": "Clear list",
+  "sequence_number": "Sequence Number",
+"departure_information": "Departure Information",
+  "arrival_information": "Arrival Information",
+  "violated_constraints": "Violated Constraints"
+  
   
 }

@@ -612,7 +612,69 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
     fetchRouteSettings();
   }, []);
 
-
+  function checkRouteRestrictions(routeSettings, selectedRequests) {
+    const violations = [];
+  
+    // 1. Кількість пасажирів
+    const passengerCount = selectedRequests.length;
+    if (routeSettings.min_passengers && passengerCount < routeSettings.min_passengers) {
+      violations.push("min_passengers");
+    }
+    if (routeSettings.max_passengers && passengerCount > routeSettings.max_passengers) {
+      violations.push("max_passengers");
+    }
+  
+    // 2. Змішані напрямки (to_work vs to_home)
+    const directions = new Set(selectedRequests.map(r => r.request_type));
+    if (!routeSettings.allow_mixed_directions && directions.size > 1) {
+      violations.push("allow_mixed_directions");
+    }
+  
+    // 3. Робочі адреси (одна чи кілька)
+    const workAddresses = new Set(
+      selectedRequests
+        .filter(r => r.request_type === "to_work")
+        .map(r => `${r.dropoff_latitude},${r.dropoff_longitude}`)
+    );
+    if (!routeSettings.allow_multiple_work_addresses && workAddresses.size > 1) {
+      violations.push("allow_multiple_work_addresses");
+    }
+  
+    // 4. Дата (припускаємо, що поле date є у форматі YYYY-MM-DD)
+    const uniqueDates = new Set(selectedRequests.map(r => r.date));
+    if (routeSettings.date_interval === 0 && uniqueDates.size > 1) {
+      violations.push("date_interval");
+    }
+  
+    // 5. Час прибуття в межах допуску (arrival_time ± tolerance)
+    if (routeSettings.arrival_time_tolerance && selectedRequests[0].arrival_time) {
+      const firstTime = new Date(`1970-01-01T${selectedRequests[0].arrival_time}`);
+      const tolerance = routeSettings.arrival_time_tolerance;
+      for (let r of selectedRequests) {
+        const time = new Date(`1970-01-01T${r.arrival_time}`);
+        const diff = Math.abs((time - firstTime) / 60000);
+        if (diff > tolerance) {
+          violations.push("arrival_time_tolerance");
+          break;
+        }
+      }
+    }
+  
+    // 6. Кількість зупинок (припускаємо, що кожна заявка — окрема зупинка)
+    const uniqueStops = new Set(selectedRequests.map(r => `${r.pickup_latitude},${r.pickup_longitude}`));
+    if (routeSettings.max_stops && uniqueStops.size > routeSettings.max_stops) {
+      violations.push("max_stops");
+    }
+  
+    // 7. max_route_duration / max_route_distance — не можемо перевірити до бекенду,
+    // тому їх потрібно перевірити після calculateRoute.
+  
+    return {
+      isValid: violations.length === 0,
+      violated: violations
+    };
+  }
+  
   const fetchPassengerLists = async () => {
     try {
       if (!filters) {
@@ -936,7 +998,12 @@ const handleFilterChange = (e) => {
       alert(t("minimum_points_required"));
       return;
     }
-  
+  // 🔍 Перевірка обмежень перед розрахунком
+  const restrictionsCheck = checkRouteRestrictions(routeSettings, selectedRequests);
+  if (!restrictionsCheck.isValid) {
+    alert(t("violated_constraints") + ":\n" + restrictionsCheck.violated.map(v => "• " + t(v)).join("\n"));
+    return;
+  }
     const origin = `${selectedRequests[0].pickup_latitude},${selectedRequests[0].pickup_longitude}`;
     const destination = `${selectedRequests[selectedRequests.length - 1].dropoff_latitude},${selectedRequests[selectedRequests.length - 1].dropoff_longitude}`;
     const waypoints = selectedRequests

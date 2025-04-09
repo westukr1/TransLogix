@@ -631,5 +631,11 @@
   "end_address": "Кінцева адреса",
   "clear_filters": "Очитити фільтри",
   "expanded_view": "Розгорнутий вигляд",
-  "clear_list": "Очистити список"
+  "clear_list": "Очистити список",
+  "departure_time": "Час відправлення",
+  "arrival_time": "Час прибуття",
+  "departure_info": "Інформація про відправлення",
+  "arrival_info": "Інформація про прибуття",
+  "sequence_number": "Номер послідовності",
+  "violated_constraints": "Violated Constraints"
 }
