@@ -3,7 +3,8 @@ import "./OrderedPassengerList.css";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-import axios from "axios";
+import axios from "../../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../../config/apiConfig";
 import dayjs from "dayjs";
 
 import { AgGridReact } from "ag-grid-react";
@@ -52,20 +53,16 @@ const OrderedPassengerList = () => {
     }
     console.log("Форматовані фільтри перед запитом:", formattedFilters);
     axios
-      .get("http://127.0.0.1:8000/api/ordered-passenger-list/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        params: formattedFilters,
-      })
-      .then((response) => {
-        console.log("Отримані дані:", response.data);
-        setPassengerLists(response.data);
-      })
-      .catch((error) => {
-        console.error("Помилка при отриманні списків пасажирів:", error);
-      });
+    .get(API_ENDPOINTS.getOrderedPassengerLists, {
+      params: formattedFilters,
+    })
+    .then((response) => {
+      console.log("Отримані дані:", response.data);
+      setPassengerLists(response.data);
+    })
+    .catch((error) => {
+      console.error("Помилка при отриманні списків пасажирів:", error);
+    });
   }, [filters]);
   const handleFilterChange = (e) => {
     const { name, value } = e.target;

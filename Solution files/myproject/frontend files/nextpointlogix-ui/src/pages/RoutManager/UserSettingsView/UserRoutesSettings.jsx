@@ -3,7 +3,8 @@ import "./UserRoutesSettings.css";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-import axios from "axios";
+import { API_ENDPOINTS } from "../../../config/apiConfig";
+import axios from "../../../utils/axiosInstance";
 import dayjs from "dayjs";
 
 const UserRoutesSettings = () => {
@@ -26,14 +27,7 @@ const UserRoutesSettings = () => {
   // Функція для отримання налаштувань
   const fetchSettings = async () => {
     try {
-      const response = await axios.get(
-        "http://127.0.0.1:8000/api/get-settings/",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
-      );
+      const response = await axios.get(API_ENDPOINTS.getSettings);
       setSettings(response.data);
     } catch (error) {
       console.error("Error fetching settings:", error);
@@ -42,12 +36,7 @@ const UserRoutesSettings = () => {
   };
   const updateSettings = async () => {
     try {
-      await axios.post("http://127.0.0.1:8000/api/update-settings/", settings, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          "Content-Type": "application/json",
-        },
-      });
+      await axios.post(API_ENDPOINTS.updateSettings, settings);
       alert(t("settings_updated"));
     } catch (error) {
       console.error("Error updating settings:", error);

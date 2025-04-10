@@ -650,7 +650,9 @@
   "sequence_number": "Sequence Number",
 "departure_information": "Departure Information",
   "arrival_information": "Arrival Information",
-  "violated_constraints": "Violated Constraints"
-  
-  
+  "violated_constraints": "Violated Constraints",
+"no_optimized_route_found": "No better optimized route found.",
+"accept_non_optimized":"Accept non-optimized route",
+"accept_optimized":"Accept optimized route"
+
 }

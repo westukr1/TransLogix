@@ -7,7 +7,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import axios from "axios";
+import axios from "../../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../../config/apiConfig";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import OrderedPassengerList from "../OrderedPassengerListView/OrderedPassengerList";
@@ -145,12 +146,7 @@ const GroupingListToRoute = (onRefreshRequests) => {
 // }, [filters]);
 const fetchPassengerRequests = async () => {
   try {
-      const response = await fetch(`http://localhost:8000/api/filtered-passenger-trip-requests/`, {
-          method: "GET",
-          headers: {
-              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          }
-      });
+    const response = await axios.get(API_ENDPOINTS.getFilteredTripRequests);
       if (response.ok) {
           const data = await response.json();
           setPassengerRequests(data);
@@ -416,18 +412,11 @@ const fetchUpdatedRequests = async () => {
       return;
     }
 
-    const requestDetailsResponse = await axios.get(
-      "http://localhost:8000/api/filtered-passenger-trip-requests/",
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-        params: {
-          ids_include: storedRequestIds.join(","),
-        },
-      }
-    );
-
+    const requestDetailsResponse = await axios.get(API_ENDPOINTS.getFilteredTripRequests, {
+      params: {
+        ids_include: storedRequestIds.join(","),
+      },
+    });
     const enrichedRequests = storedRequestsFull.map(storedRequest => {
       const detailedRequest = requestDetailsResponse.data.find(req => req.id === storedRequest.id);
       return detailedRequest ? { ...detailedRequest, ...storedRequest } : storedRequest;
@@ -529,22 +518,10 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
   }
 
   try {
-    const payload = {
+    await axios.post(API_ENDPOINTS.saveTempList, {
       ...filtersToSave,
       requests: requestsToSave,
-    };
-
-    await axios.post(
-      "http://localhost:8000/api/temp-lists/save_list/",
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
+    });
     console.log("✅ Фільтри та заявки маршруту збережено.");
   } catch (error) {
     console.error("❌ Помилка при збереженні маршрутного списку:", error);
@@ -702,23 +679,16 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
       //   search: filters.search_query || null,
       // });
   
-      const response = await axios.get(
-        "http://127.0.0.1:8000/api/ordered-passenger-list/",
-        {
-          params: {
-            estimated_start_time__gte: formattedStartDate,
-            estimated_end_time__lte: formattedEndDate,
-            direction: filters.direction || null,
-            is_active: filters.is_active ?? null,
-            start_city__icontains: filters.start_city || null,
-            search: filters.search_query || null,
-          },
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.get(API_ENDPOINTS.getOrderedPassengerLists, {
+        params: {
+          estimated_start_time__gte: formattedStartDate,
+          estimated_end_time__lte: formattedEndDate,
+          direction: filters.direction || null,
+          is_active: filters.is_active ?? null,
+          start_city__icontains: filters.start_city || null,
+          search: filters.search_query || null,
+        },
+      });
   
       // console.log("📥 Отримані дані:", response.data);
       setPassengerLists(response.data);
@@ -766,16 +736,7 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
 
   const fetchListDetails = async (listId) => {
     try {
-      const response = await axios.get(
-        `http://127.0.0.1:8000/api/ordered-passenger-list/${listId}/`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      console.log("✅ List details received:", response.data);
+      const response = await axios.get(API_ENDPOINTS.getOrderedPassengerListDetails(listId));
       setSelectedListDetails(response.data);
       setSelectedListPassengers(response.data.passenger_requests || []);
     } catch (error) {
@@ -786,30 +747,19 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
   const handleListDoubleClick = async (listId) => {
     try {
       console.log(`🔵 Details button clicked for list ID: ${listId}`);
-
-      const response = await axios.get(
-        `http://127.0.0.1:8000/api/ordered-passenger-list/${listId}/`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
+  
+      const response = await axios.get(API_ENDPOINTS.getOrderedPassengerListDetails(listId));
+  
       console.log("✅ List details received:", response.data);
-
-      // Оновлюємо вибрані деталі списку
+  
       setSelectedListDetails(response.data);
-
-      // Оновлюємо таблицю пасажирських заявок
-      setSelectedListPassengers(response.data.trip_requests || []); // Переконайся, що не `undefined`
-
+      setSelectedListPassengers(response.data.trip_requests || []);
       console.log("✅ Passenger trip requests:", response.data.trip_requests);
     } catch (error) {
       console.error("❌ Error fetching list details:", error);
     }
   };
+  
 
   const applyFilters = (data) => {
     const filteredData = data.filter((request) => {
@@ -868,6 +818,7 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
   
     // ✅ Оновлюємо sessionStorage і зберігаємо на бекенді
     syncSelectedRequests(updatedSelectedRequests);
+    // updateRouteRequestsInStorage();
   };
   
   
@@ -1015,14 +966,14 @@ const handleFilterChange = (e) => {
    console.log("📌 Кінцева точка:", destination);
    console.log("📌 Проміжні точки:", waypoints);
    console.log("📌 Вибрана мова:", userLanguage);
-    try {
-      const response = await axios.post("http://127.0.0.1:8000/api/calculate-route/", {
-        origin,
-        destination,
-        waypoints,
-        language: userLanguage,
-      });
-  
+   try {
+    const response = await axios.post(API_ENDPOINTS.calculateRoute, {
+      origin,
+      destination,
+      waypoints,
+      language: userLanguage,
+    });
+     
       console.log("✅ Отримано маршрут:", response.data);
   
       const formatAddress = (address) => {
@@ -1280,20 +1231,14 @@ const clearTemporaryPassengerRequests = () => {
   console.log("🧼 Тимчасовий список заявок очищено");
 
   // Очистити також на бекенді
-  axios.post(
-    "http://127.0.0.1:8000/api/temp-lists/save_list/",
-    {
-      session_id: sessionId,
-      filter_params: filters,
-      requests: [],
-      expires_at: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  ).then(() => {
+  axios.post(API_ENDPOINTS.saveTempList, {
+    session_id: sessionId,
+    filter_params: filters,
+    requests: [],
+    expires_at: new Date(Date.now() + 86400000).toISOString(),
+  }).then(() => {
     console.log("🧼 Тимчасовий список очищено і на бекенді");
-  }).catch((err) => {
+  }).catch(err => {
     console.error("❌ Помилка при очищенні тимчасового списку:", err);
   });
 };
@@ -1395,21 +1340,14 @@ const handleCloseMap = () => {
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/ordered-passenger-list/create_ordered_list/",
-        requestData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+        API_ENDPOINTS.createOrderedPassengerList,
+        requestData
       );
-
+    
       console.log("✅ Список успішно створено:", response.data);
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Затримка перед оновленням (щоб дати серверу час)
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Затримка перед оновленням
       alert(t("list_saved"));
-
-      // Очищуємо список після збереження
+    
       setSelectedRequests([]);
       clearTemporaryPassengerRequests();
       setRouteDetails({
@@ -1420,9 +1358,8 @@ const handleCloseMap = () => {
         startAddress: null,
         endAddress: null,
       });
-      
+    
       fetchPassengerLists(); // Оновлення нижньої лівої таблиці
-
     } catch (error) {
       console.error("❌ Помилка при збереженні списку:", error);
       alert(t("error_saving_list"));
@@ -1433,15 +1370,7 @@ const handleCloseMap = () => {
     if (!window.confirm(`Видалити список ID ${listId}?`)) return;
 
     try {
-      await axios.delete(
-        `http://127.0.0.1:8000/api/ordered-passenger-list/${listId}/delete/`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await axios.delete(API_ENDPOINTS.deleteOrderedPassengerList(listId));
 
       console.log(`✅ Список ID ${listId} успішно видалено`);
       sessionStorage.setItem("update_left_table_flag", "1"); // ⬅️ Додай це
@@ -1782,15 +1711,7 @@ const handleCloseMap = () => {
     try {
       console.log(`🔵 Details button clicked for list ID: ${listId}`);
 
-      const response = await axios.get(
-        `http://127.0.0.1:8000/api/ordered-passenger-list/${listId}/`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.get(API_ENDPOINTS.getOrderedPassengerListDetails(listId));
 
       console.log("✅ List details received:", response.data);
 

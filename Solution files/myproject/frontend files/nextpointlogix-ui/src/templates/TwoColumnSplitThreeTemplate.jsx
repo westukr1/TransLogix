@@ -2,6 +2,9 @@ import React from 'react';
 import './TwoColumnSplitThreeTemplate.css';
 import { Link } from 'react-router-dom';
 
+
+import { useNavigate } from 'react-router-dom';
+
 const TwoColumnSplitThreeTemplate = () => {
   return (
     <div className="two-column-template">

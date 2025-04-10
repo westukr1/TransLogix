@@ -1,44 +1,45 @@
-
 import React from 'react';
 import './RouteComparisonModal.css';
 import RouteMapModal from "./RouteMapModal"; // Переконайся, що шлях правильний
-
+import { useTranslation } from 'react-i18next';
 
 const RouteComparisonModal = ({ modalData, onClose, onAcceptOptimized, onAcceptStandard, onShowMap }) => {
+  const { t } = useTranslation();
+
   if (!modalData?.show) return null;
 
   return (
     <div className="modal-overlay">
       <div className="modal-content">
-      <h2>Розрахунок маршруту</h2>
+      <h2>{t("route_calculation")}</h2>
 
       <div className="route-info">
-        <h3>🚗 Маршрут, створений користувачем:</h3>
-        <p>🔹 Загальна дистанція: {modalData?.standardRoute?.distance} км</p>
-        <p>🔹 Загальний час у дорозі: {modalData?.standardRoute?.duration}</p>
-        <p>🔹 Адреса старту: {modalData?.standardRoute?.startAddress}</p>
-        <p>🔹 Адреса фінішу: {modalData?.standardRoute?.endAddress}</p>
+        <h3>🚗 {t("user_created_route")}:</h3>
+        <p>🔹 {t("total_distance")}: {modalData?.standardRoute?.distance} км</p>
+        <p>🔹 {t("total_duration")}: {modalData?.standardRoute?.duration}</p>
+        <p>🔹 {t("start_address")}: {modalData?.standardRoute?.startAddress}</p>
+        <p>🔹 {t("end_address")}: {modalData?.standardRoute?.endAddress}</p>
       </div>
 
       {modalData.optimizationApplied ? (
         <div className="route-info">
-        <h3>🚀 Оптимізований маршрут:</h3>
-        <p>🔹 Загальна дистанція: {modalData?.optimizedRoute?.distance} км</p>
-        <p>🔹 Загальний час у дорозі: {modalData?.optimizedRoute?.duration}</p>
-        <p>🔹 Адреса старту: {modalData?.optimizedRoute?.startAddress}</p>
-        <p>🔹 Адреса фінішу: {modalData?.optimizedRoute?.endAddress}</p>
+        <h3>🚀 {t("optimized_route")}:</h3>
+        <p>🔹 {t("total_distance")}: {modalData?.optimizedRoute?.distance} км</p>
+        <p>🔹 {t("total_duration")}: {modalData?.optimizedRoute?.duration}</p>
+        <p>🔹 {t("start_address")}: {modalData?.optimizedRoute?.startAddress}</p>
+        <p>🔹 {t("end_address")}: {modalData?.optimizedRoute?.endAddress}</p>
         </div>
       ) : (
-        <p className="no-optimization">🔹 Більш оптимального маршруту не знайдено.</p>
+        <p className="no-optimization">🔹 {t("no_optimized_route_found")}</p>
       )}
 
       <div className="modal-buttons">
-        <button onClick={onAcceptStandard}>🛣 Прийняти дані без оптимізації</button>
+        <button onClick={onAcceptStandard}>🛣 {t("accept_non_optimized")}</button>
         {modalData.optimizationApplied && (
-        <button onClick={onAcceptOptimized}>✅ Прийняти оптимізований маршрут</button>
+        <button onClick={onAcceptOptimized}>✅ {t("accept_optimized")}</button>
         )}
-        <button onClick={onShowMap}>🗺 Показати на карті</button>
-        <button onClick={onClose}>❌ Закрити</button>
+        <button onClick={onShowMap}>🗺 {t("show_on_map")}</button>
+        <button onClick={onClose}>❌ {t("close")}</button>
       </div>
       </div>
     </div>

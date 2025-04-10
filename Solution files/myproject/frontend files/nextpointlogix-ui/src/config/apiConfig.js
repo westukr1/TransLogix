@@ -29,4 +29,14 @@ export const API_ENDPOINTS = {
   updatePassengerAddresses: (id) => `${BASE_URL}/api/passenger/${id}/addresses/update/`,
   getPassengerAddresses: (id) => `${BASE_URL}/api/passenger/${id}/addresses/`,
   updateCoordinates: (id) => `${BASE_URL}/api/coordinate-points/${id}/update-coordinates/`,
+  getOrderedPassengerListDetails: (id) => `${BASE_URL}/api/ordered-passenger-list/${id}/`,
+  getOrderedPassengerLists: `${BASE_URL}/api/ordered-passenger-list/`,
+  getOrderedPassengerListDetails: (id) => `${BASE_URL}/api/ordered-passenger-list/${id}/`,
+  calculateRoute: `${BASE_URL}/api/calculate-route/`,
+  createOrderedPassengerList: `${BASE_URL}/api/ordered-passenger-list/create_ordered_list/`,
+  deleteOrderedPassengerList: (id) => `${BASE_URL}/api/ordered-passenger-list/${id}/delete/`,
+  getOrderedPassengerListDetails: (id) => `${BASE_URL}/api/ordered-passenger-list/${id}/`,
+  getOrderedPassengerLists: `${BASE_URL}/api/ordered-passenger-list/`,
+  updateSettings: `${BASE_URL}/api/update-settings/`,
+  
 };

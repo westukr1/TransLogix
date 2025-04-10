@@ -637,5 +637,9 @@
   "departure_info": "Інформація про відправлення",
   "arrival_info": "Інформація про прибуття",
   "sequence_number": "Номер послідовності",
-  "violated_constraints": "Violated Constraints"
+  "violated_constraints": "Violated Constraints",
+  "no_optimized_route_found": "Більш оптимального маршруту не знайдено.",
+"accept_non_optimized":"Прийняти дані без оптимізації",
+"accept_optimized":"Прийняти оптимізований маршрут"
+
 }
