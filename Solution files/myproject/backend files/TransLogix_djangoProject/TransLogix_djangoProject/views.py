@@ -68,9 +68,9 @@ from datetime import timedelta
 
 
 # Включення логування SQL-запитів
-logger = logging.getLogger('django.db.backends')
-logger.setLevel(logging.DEBUG)
-logger.addHandler(logging.StreamHandler())
+#logger = logging.getLogger('django.db.backends')
+#logger.setLevel(logging.DEBUG)
+#logger.addHandler(logging.StreamHandler())
 
 
 class CustomLoginView(APIView):
@@ -442,7 +442,7 @@ class PassengerListView(ListAPIView):
     queryset = Passenger.objects.all() # Запит на отримання всіх пасажирів
     #print(f"Fetched passengers: {queryset}")
     serializer_class = PassengerListSerializer  # Додаємо клас серіалізатора для обробки даних
-    print(f"Serialized passengers data: {serializer_class.data}")
+    #  print(f"Serialized passengers data: {serializer_class.data}")
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['is_active']  # Додаємо поле для фільтрації
 
@@ -1466,7 +1466,7 @@ class FilteredPassengerTripRequestView(ListAPIView):
     serializer_class = PassengerTripRequestSerializer
 
     def get_queryset(self):
-        logger.info("Method 'get_queryset' was called")
+        #logger.info("Method 'get_queryset' was called")
         queryset = super().get_queryset()
         
         # Отримуємо параметри

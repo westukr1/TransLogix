@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import axios from '../../../utils/axiosInstance'; // оновлений імпорт
 import './GroupingListToRoute.css';
 import { useTranslation } from 'react-i18next';
 import { useNavigate} from "react-router-dom";
@@ -9,6 +9,8 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import dayjs from "dayjs";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { API_ENDPOINTS } from '../../../config/apiConfig';
+
 
   // Додано 14.03.2025
   const defaultFilters = {
@@ -72,12 +74,12 @@ function RequestsGrouping({ onCheckboxClick, onUpdateRightTable , onRefreshReque
       }
     
       try {
-        const response = await axios.get(`http://localhost:8000/api/temp-lists/get_active_list/`, {
+        const response = await axios.get(API_ENDPOINTS.getActiveTempList, {
           headers: {
-            Authorization: `Bearer ${token}`,
             'Session-ID': sessionId,
           },
         });
+        
     
         if (response.status === 200 && response.data.filter_params) {
           const backendFilters = response.data.filter_params;
@@ -117,7 +119,7 @@ function RequestsGrouping({ onCheckboxClick, onUpdateRightTable , onRefreshReque
     
       const newDefaults = {
         ...defaultFilters,
-        expires_at: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString(),
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         requests: [],
       };
     
@@ -125,44 +127,24 @@ function RequestsGrouping({ onCheckboxClick, onUpdateRightTable , onRefreshReque
       sessionStorage.setItem("filters", JSON.stringify(newDefaults));
       setFilters(newDefaults);
     
-      // 2. Очищаємо фільтри на бекенді
-      axios.post("http://localhost:8000/api/temp-lists/save_list/", {
+      // 2. Очищаємо фільтри на бекенді через API_ENDPOINTS
+      axios.post(API_ENDPOINTS.saveTempList, {
         session_id: sessionId,
         filter_params: newDefaults,
         requests: [],
         expires_at: newDefaults.expires_at,
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
-      }).then(() => {
+      })
+      .then(() => {
         console.log("✅ Фільтри очищені також і на бекенді.");
-      }).catch((err) => {
+      })
+      .catch((err) => {
         console.error("❌ Помилка при очищенні фільтрів на бекенді:", err);
       });
     
-
-    
       console.log("✅ Фільтри очищено та оновлено:", newDefaults);
-    }, [defaultFilters, sessionId, token]);
-    
+    }, [defaultFilters, sessionId]);
 
 
-
-const deleteExpiredFilters = useCallback(async () => {
-  console.log("🗑️ Видаляємо застарілі фільтри з session storage і бекенду...");
-  try {
-      // Видаляємо фільтри з sessionStorage
-      sessionStorage.removeItem("filters");
-
-      // Видаляємо фільтри з бекенду
-      await axios.delete(`http://localhost:8000/api/temp-lists/delete_expired/`, {
-          headers: { Authorization: `Bearer ${token}` }
-      });
-
-      console.log("✅ Застарілі фільтри видалено з session storage і бекенду.");
-  } catch (error) {
-      console.error("❌ Помилка видалення застарілих фільтрів:", error);
-  }
-}, [token]);
 
 // Додано 14.03.2025
 useEffect(() => {
@@ -204,13 +186,11 @@ const saveFiltersToBackend = useCallback(async (updatedFilters) => {
 
     console.log("📤 Фільтри перед відправкою:", filtersWithExpiration);
 
-    const response = await axios.post(`http://localhost:8000/api/temp-lists/save_list/`, {
+    const response = await axios.post(API_ENDPOINTS.saveTempList, {
       session_id: sessionId,
       ...filtersWithExpiration // ✅ Розгортаємо в корінь, щоб відповідати структурі бекенду
-    }, {
-      headers: { Authorization: `Bearer ${token}` }
     });
-
+    
 
     console.log("✅ Фільтри оновлено у тимчасовій таблиці на бекенді.", response.data);
   } catch (error) {
@@ -246,9 +226,12 @@ const saveFiltersInSessionStorage = useCallback((updatedFilters, updatedRequests
 const fetchFilters = useCallback(async () => {
   console.log("📤 Оновлення списку фільтрів...");
   try {
-      const response = await axios.get(`http://localhost:8000/api/temp-lists/get_active_list/`, {
-          headers: { Authorization: `Bearer ${token}`, 'Session-ID': sessionId }
-      });
+    const response = await axios.get(API_ENDPOINTS.getActiveTempList, {
+      headers: {
+        'Session-ID': sessionId,
+      },
+    });
+    
       if (response.status === 200 && response.data.filter_params) {
           console.log("✅ Отримано фільтри з бекенду:", response.data.filter_params);
           sessionStorage.setItem("filters", JSON.stringify(response.data.filter_params));
@@ -291,12 +274,12 @@ const fetchPassengerRequests = useCallback(async () => {
   if (currentFilters && (!currentFilters.requests || currentFilters.requests.length === 0)) {
     console.log("📭 У sessionStorage немає заявок. Перевіряємо бекенд...");
     try {
-      const backendResponse = await axios.get("http://localhost:8000/api/temp-lists/get_active_list/", {
+      const backendResponse = await axios.get(API_ENDPOINTS.getActiveTempList, {
         headers: {
-          Authorization: `Bearer ${token}`,
-          "Session-ID": sessionId,
+          'Session-ID': sessionId,
         },
       });
+      
       console.log("🛰️ Відповідь з бекенду:", backendResponse.data);
       if (backendResponse.status === 200 && backendResponse.data.filter_params?.requests?.length > 0) {
         const updatedFilters = {
@@ -315,12 +298,12 @@ const fetchPassengerRequests = useCallback(async () => {
   if (!currentFilters) {
     console.log("📤 Немає фільтрів у Session Storage. Виконуємо запит на бекенд...");
     try {
-      const response = await axios.get("http://localhost:8000/api/temp-lists/get_active_list/", {
+      const response = await axios.get(API_ENDPOINTS.getActiveTempList, {
         headers: {
-          Authorization: `Bearer ${token}`,
-          "Session-ID": sessionId,
+          'Session-ID': sessionId,
         },
       });
+      
 
       if (response.status === 200 && response.data.filter_params) {
         console.log("✅ Отримано фільтри з бекенду:", response.data.filter_params);
@@ -457,29 +440,21 @@ const handleOnlyActiveChange = () => {
     );
 
     const handleIsActiveChange = (id, value) => {
-        const status = value ? t("activated") : t("deactivated");
+      const status = value ? t("activated") : t("deactivated");
     
-        axios
-          .patch(
-            `http://localhost:8000/api/passenger-trip-requests/${id}/update-status/`,
-            { is_active: value },
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-                "Content-Type": "application/json",
-              },
-            }
-          )
-          .then((response) => {
-            console.log("Updated is_active status:", response.data);
-            fetchPassengerRequests(); // Оновлюємо список після зміни
-            toast.success(t("Request {{status}} successfully.", { status }));
-          })
-          .catch((error) => {
-            console.error("Error updating is_active status:", error);
-            toast.error(t("Error during {{status}} of the request.", { status }));
-          });
-      };
+      axios
+        .patch(API_ENDPOINTS.updateTripRequestStatus(id), { is_active: value })
+        .then((response) => {
+          console.log("Updated is_active status:", response.data);
+          fetchPassengerRequests();
+          toast.success(t("Request {{status}} successfully.", { status }));
+        })
+        .catch((error) => {
+          console.error("Error updating is_active status:", error);
+          toast.error(t("Error during {{status}} of the request.", { status }));
+        });
+    };
+    
       const handleShowInRouteChange = () => {
         setFilters((prevFilters) => {
             const updatedFilters = { ...prevFilters, show_in_route: !prevFilters.show_in_route };

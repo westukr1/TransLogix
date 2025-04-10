@@ -5,8 +5,11 @@ import { useTranslation } from "react-i18next";
 import "./RouteMapModal.css";
 import { Button } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import axios from 'axios';
+import axios from '../../../utils/axiosInstance'; // правильний шлях
+
 import { useSelector } from 'react-redux';
+import { API_ENDPOINTS } from '../../../config/apiConfig';
+
 
 const libraries = ["places"];
 const containerStyle = {
@@ -94,27 +97,22 @@ const RouteMapModal = ({ onClose }) => {
       ? { lat: standardRoute[0].lat, lng: standardRoute[0].lng }
       : { lat: 50.4501, lng: 30.5234 }; // Default Kyiv
 
-  useEffect(() => {
-    if (!apiKey) {
-      const fetchGoogleMapsKey = async () => {
-        try {
-          const token = localStorage.getItem("access_token");
-          const response = await fetch(
-            "http://localhost:8000/api/google-maps-key/",
-            {
-              headers: { Authorization: `Bearer ${token}` },
+      useEffect(() => {
+        if (!apiKey) {
+          const fetchGoogleMapsKey = async () => {
+            try {
+              const response = await axios.get(API_ENDPOINTS.googleMapsKey);
+              const data = response.data;
+              setApiKey(data.google_maps_api_key);
+              localStorage.setItem("google_maps_api_key", data.google_maps_api_key);
+            } catch (error) {
+              console.error(t("error_fetching_key"), error);
             }
-          );
-          const data = await response.json();
-          setApiKey(data.google_maps_api_key);
-          localStorage.setItem("google_maps_api_key", data.google_maps_api_key);
-        } catch (error) {
-          console.error(t("error_fetching_key"), error);
+          };
+          fetchGoogleMapsKey();
         }
-      };
-      fetchGoogleMapsKey();
-    }
-  }, [apiKey, t]);
+      }, [apiKey, t]);
+      
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: apiKey,
@@ -130,11 +128,11 @@ const RouteMapModal = ({ onClose }) => {
     const fetchPassengerRequests = async () => {
       try {
         // 1. Запит до тимчасового списку заявок
-        const tempResponse = await axios.get("http://localhost:8000/api/temp-lists/get_active_list/", {
+        const tempResponse = await axios.get(API_ENDPOINTS.getActiveTempList, {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Session-ID": sessionId,
-          },
+          }
+          
         });
 
         console.log("📨 Відповідь з бекенду (повна):", tempResponse.data);
@@ -150,9 +148,9 @@ const RouteMapModal = ({ onClose }) => {
         }
 
         // 2. Запит на отримання повних даних заявок
-      const fullResponse = await axios.get("http://localhost:8000/api/filtered-passenger-trip-requests/", {
+      const fullResponse = await axios.get(API_ENDPOINTS.getFilteredTripRequests, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          
         },
         params: {
           ids_include: requestIds.join(","),
@@ -217,7 +215,8 @@ const RouteMapModal = ({ onClose }) => {
       };
 
       await fetch(
-        `http://localhost:8000/api/coordinate-points/${coordinatePointId}/update-coordinates/`,
+        API_ENDPOINTS.updateCoordinates(coordinatePointId),
+        updatedCoordinates,
         {
           method: "PUT",
           headers: {
