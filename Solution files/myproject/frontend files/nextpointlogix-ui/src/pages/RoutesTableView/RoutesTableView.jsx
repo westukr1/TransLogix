@@ -4,6 +4,8 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import './RoutesTableView.css';
 import { useTranslation } from 'react-i18next';
+import axios from '../../utils/axiosInstance';
+import { API_ENDPOINTS } from '../../config/apiConfig';
 
 const RoutesTableView = () => {
   const { t, i18n } = useTranslation(); // Підключаємо функцію перекладу та i18n
@@ -64,22 +66,11 @@ const RoutesTableView = () => {
 
   // Завантаження даних з бекенду
   useEffect(() => {
-    const token = localStorage.getItem('access_token'); // Отримуємо токен з localStorage
-
-    fetch('http://localhost:8000/api/routes/', {
-      headers: {
-        'Authorization': `Bearer ${token}` // Додаємо заголовок авторизації
-      }
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (Array.isArray(data)) {
-          const formattedData = data.map(route => ({
+    const fetchRoutes = async () => {
+      try {
+        const response = await axios.get(API_ENDPOINTS.getRoutes);
+        if (Array.isArray(response.data)) {
+          const formattedData = response.data.map(route => ({
             route_number: route.route_number,
             origin: route.start_point.city,
             destination: route.end_point.city,
@@ -92,16 +83,17 @@ const RoutesTableView = () => {
             end_house: route.end_point.house_number,
             distance: route.distance,
             estimated_time: route.estimated_time
-
           }));
           setRowData(formattedData);
         } else {
-          console.error('Data format is not an array:', data);
+          console.error('Data format is not an array:', response.data);
         }
-      })
-      .catch(error => {
+      } catch (error) {
         console.error('Error fetching routes:', error);
-      });
+      }
+    };
+
+    fetchRoutes();
   }, []);
 
   return (

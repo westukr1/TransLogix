@@ -7,7 +7,9 @@ import "react-datepicker/dist/react-datepicker.css";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import axios from "axios";
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
+
 import dayjs from "dayjs";
 
 import "./PassengerList.css";
@@ -45,6 +47,19 @@ const PassengerList = ({ passengers }) => {
     startAddress: null,
     endAddress: null,
   });
+// 🔄 Отримання налаштувань маршруту
+useEffect(() => {
+  const fetchRouteSettings = async () => {
+    try {
+      const response = await axios.get(API_ENDPOINTS.getSettings);
+      setRouteSettings(response.data);
+    } catch (error) {
+      console.error("Error fetching route settings:", error);
+    }
+  };
+
+  fetchRouteSettings();
+}, []);
 
   const fetchRequests = () => {
     const start = dayjs(startDate).format("YYYY-MM-DD HH:mm:ss");
@@ -55,50 +70,27 @@ const PassengerList = ({ passengers }) => {
       end_date: end,
     });
     axios
-      .get("http://localhost:8000/api/filtered-passenger-trip-requests/", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          "Content-Type": "application/json",
-        },
-        params: {
-          start_date: start,
-          end_date: end,
-          search: searchQuery,
-        },
-      })
-      .then((response) => {
-        const data = response.data.map((item) => ({
-          ...item,
-          is_selected: false,
-        }));
-        setAllRequests(data);
-        setUnselectedRequests(data);
-        setSelectedRequests([]); // Clear selected requests
-        applyFilters(data);
-      })
-      .catch((error) => console.error("Error fetching requests data:", error));
-  };
-  // Функція для отримання налаштувань
-  const fetchRouteSettings = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:8000/api/get-settings/",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
-      );
-      setRouteSettings(response.data);
-    } catch (error) {
-      console.error("Error fetching route settings:", error);
-    }
-  };
+    .get(API_ENDPOINTS.getFilteredTripRequests, {
+      params: {
+        start_date: start,
+        end_date: end,
+        search: searchQuery,
+      },
+    })
+    .then((response) => {
+      const data = response.data.map((item) => ({
+        ...item,
+        is_selected: false,
+      }));
+      setAllRequests(data);
+      setUnselectedRequests(data);
+      setSelectedRequests([]);
+      applyFilters(data);
+    })
+    .catch((error) => console.error("Error fetching requests data:", error));
+};
 
-  useEffect(() => {
-    fetchRouteSettings();
-  }, []);
-
+ 
   const applyFilters = (data) => {
     const filteredData = data.filter((request) => {
       if (directionFilter === "ALL") {
@@ -200,10 +192,8 @@ const PassengerList = ({ passengers }) => {
         (request) => `${request.pickup_latitude},${request.pickup_longitude}`
       );
 
-    try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/calculate-route/",
-        {
+      try {
+        const response = await axios.post(API_ENDPOINTS.calculateRoute, {
           origin,
           destination,
           waypoints,

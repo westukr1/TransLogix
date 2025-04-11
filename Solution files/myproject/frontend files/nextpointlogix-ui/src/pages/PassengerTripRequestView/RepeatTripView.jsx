@@ -5,11 +5,12 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./RepeatTripView.css";
 import { useTranslation } from "react-i18next";
-import axios from "axios";
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import dayjs from "dayjs";
-import { API_ENDPOINTS } from '../../config/apiConfig';
+
 
 
 
@@ -39,17 +40,9 @@ const RepeatTripView = () => {
         return;
       }
 
-      const token = localStorage.getItem("access_token");
       try {
-        const response = await fetch(
-          `http://localhost:8000/api/passengers/${passengerId}/`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const data = await response.json();
-        console.log("Fetched passenger data:", data);
-        setPassengerData(data);
+        const response = await axios.get(API_ENDPOINTS.getPassengerDetails(passengerId));
+        setPassengerData(response.data);
       } catch (error) {
         console.error("Error fetching passenger data:", error);
       }
@@ -59,29 +52,12 @@ const RepeatTripView = () => {
   }, [passengerId]);
 
   const fetchPointData = async (pointId) => {
-    const token = localStorage.getItem("access_token");
-
-    // 🔍 Логування ID точки перед запитом
     console.log(`Запит на отримання даних для точки ID: ${pointId}`);
-
     try {
-      const response = await axios.get(
-        `http://localhost:8000/api/coordinate-points/${pointId}/`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      // 🔍 Логування відповіді сервера
-      console.log(`Відповідь сервера для точки ID ${pointId}:`, response.data);
-
+      const response = await axios.get(API_ENDPOINTS.getCoordinatePoint(pointId));
       return response.data;
     } catch (error) {
-      // ❗ Логування помилки
-      console.error(
-        `Помилка при отриманні даних для точки ID ${pointId}:`,
-        error.response?.data || error.message
-      );
+      console.error(`Error fetching point data for ID ${pointId}:`, error);
       throw error;
     }
   };
@@ -336,13 +312,7 @@ const RepeatTripView = () => {
 
       console.log("📦 Дані для повторних заявок:", payload);
 
-      await axios.post(
-        "http://localhost:8000/api/passenger-trip-requests/repeat/",
-        payload,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await axios.post(API_ENDPOINTS.repeatTripRequests, payload);
 
       alert(t("trip_requests.repeated_successfully"));
     } catch (error) {

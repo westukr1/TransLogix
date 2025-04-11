@@ -5,6 +5,9 @@ import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./DriverList.css";
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
+
 
 const DriverList = () => {
   const { t } = useTranslation();
@@ -13,24 +16,18 @@ const DriverList = () => {
   const [driverRowData, setDriverRowData] = useState([]);
 
   useEffect(() => {
-    // Fetch drivers data from backend
-    fetch("http://localhost:8000/api/drivers/", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setDriverRowData(Array.isArray(data) ? data : []);
-      })
-      .catch((error) => console.error("Error fetching drivers:", error));
+    const fetchDrivers = async () => {
+      try {
+        const response = await axios.get(API_ENDPOINTS.getDrivers);
+        console.log("Список водіїв:", response.data);
+        // setDriverRowData(response.data); // якщо потрібно
+      } catch (error) {
+        console.error("❌ Помилка отримання списку водіїв:", error);
+      }
+    };
+    fetchDrivers();
   }, []);
+  
 
   const driverColumnDefs = [
     {
@@ -72,26 +69,15 @@ const DriverList = () => {
     navigate(`/driver-edit/${driverId}`);
   };
 
-  const saveDriversBulk = () => {
-    fetch("http://localhost:8000/api/drivers/bulk-update/", {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(driverRowData),
+// 🔄 Масове збереження водіїв
+const saveDriversBulk = () => {
+  axios.put(API_ENDPOINTS.bulkUpdateDrivers, driverRowData)
+    .then((response) => {
+      alert(t("drivers_updated_successfully"));
     })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        alert(t("drivers_updated_successfully"));
-      })
-      .catch((error) => console.error("Error updating drivers:", error));
-  };
+    .catch((error) => console.error("Error updating drivers:", error));
+};
+
 
   return (
     <div className="driver-list">

@@ -5,6 +5,8 @@ import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
 
 const VehicleList = () => {
   const { t } = useTranslation();
@@ -15,69 +17,42 @@ const VehicleList = () => {
 
   useEffect(() => {
     // Fetch vehicles data from backend
-    fetch("http://localhost:8000/api/vehicles/", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Vehicles Data:", data);
-        setVehicleRowData(Array.isArray(data) ? data : []);
-      })
-      .catch((error) => console.error("Error fetching vehicles:", error));
+    const fetchVehicles = async () => {
+      try {
+        const response = await axios.get(API_ENDPOINTS.getVehicles);
+        setVehicleRowData(Array.isArray(response.data) ? response.data : [])
+      } catch (error) {
+        console.error("Error fetching vehicles:", error);
+      }
+    };
+  
+    const fetchFuelTypes = async () => {
+      try {
+        const response = await axios.get(API_ENDPOINTS.getFuelTypes);
+        setFuelTypes(response.data);
+      } catch (error) {
+        console.error("Error fetching fuel types:", error);
+      }
+    };
 
-    // Fetch fuel types from backend
-    fetch("http://localhost:8000/api/fuel-types/", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Fuel Types:", data);
-        setFuelTypes(Array.isArray(data) ? data : []);
-      })
-      .catch((error) => console.error("Error fetching fuel types:", error));
+    fetchVehicles();
+    fetchFuelTypes();
   }, []);
 
-  const updateFuelType = (vehicleId, fuelTypeId) => {
-    fetch("http://localhost:8000/api/vehicles/update-fuel-type/", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+  const updateFuelType = async (vehicleId, fuelTypeId) => {
+    try {
+      await axios.post(API_ENDPOINTS.updateFuelType, {
         vehicle_id: vehicleId,
         fuel_type_id: fuelTypeId,
-      }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to update fuel type");
-        }
-        return response.json();
-      })
-      .then(() => {
-        // Refresh the table data after successful update
-        fetch("http://localhost:8000/api/vehicles/", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            setVehicleRowData(Array.isArray(data) ? data : []);
-          })
-          .catch((error) => console.error("Error refreshing vehicles:", error));
-      })
-      .catch((error) => console.error("Error updating fuel type:", error));
-  };
+      });
 
+      const refresh = await axios.get(API_ENDPOINTS.getVehicles);
+      setVehicleRowData(Array.isArray(refresh.data) ? refresh.data : []);
+    } catch (error) {
+      console.error("Error updating fuel type:", error);
+    }
+  };
+  // setVehicleRowData(Array.isArray(data) ? data : []);
   const vehicleColumnDefs = [
     {
       headerName: t("vehicle_id"),
@@ -171,7 +146,8 @@ const VehicleList = () => {
     navigate(`/vehicle-edit/${vehicleId}`);
   };
 
-  const saveVehiclesBulk = () => {
+  const saveVehiclesBulk = async (vehicleId, fuelTypeId) => {
+    
     const payload = vehicleRowData.map((vehicle) => ({
       vehicle_id: vehicle.vehicle_id,
       license_plate: vehicle.license_plate,
@@ -192,24 +168,12 @@ const VehicleList = () => {
 
     console.log("Sending vehicles payload:", payload);
 
-    fetch("http://localhost:8000/api/vehicles/bulk-update/", {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to update vehicles");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        alert(t("vehicles_updated_successfully"));
-      })
-      .catch((error) => console.error("Network error:", error));
+    try {
+      await axios.put(API_ENDPOINTS.bulkUpdateVehicles, payload);
+      alert(t("vehicles_updated_successfully"));
+    } catch (error) {
+      console.error("❌ Network error while updating vehicles:", error);
+    }
   };
 
   return (

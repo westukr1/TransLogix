@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
 import "./DriverRegistration.css";
 
 const VehicleRegistration = () => {
@@ -32,20 +34,17 @@ const VehicleRegistration = () => {
   const [previewImageUrl, setPreviewImageUrl] = useState("");
 
   useEffect(() => {
-    // Fetch fuel types from backend
-    fetch("http://localhost:8000/api/fuel-types/", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Fuel Types:", data);
-        setFuelTypes(Array.isArray(data) ? data : []);
-      })
-      .catch((error) => console.error("Error fetching fuel types:", error));
+    const fetchFuelTypes = async () => {
+      try {
+        const response = await axios.get(API_ENDPOINTS.getFuelTypes);
+        setFuelTypes(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        console.error("Error fetching fuel types:", error);
+      }
+    };
+    fetchFuelTypes();
   }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setVehicleData({
@@ -57,9 +56,7 @@ const VehicleRegistration = () => {
   const handleImagePreview = () => {
     const googleDriveBase = "https://drive.google.com/uc?export=view&id=";
     const match = vehicleData.image_url.match(/d\/([a-zA-Z0-9_-]+)\/view/);
-    const formattedUrl = match
-      ? `${googleDriveBase}${match[1]}`
-      : vehicleData.image_url;
+    const formattedUrl = match ? `${googleDriveBase}${match[1]}` : vehicleData.image_url;
     setPreviewImageUrl(formattedUrl);
     setShowModal(true);
   };
@@ -92,21 +89,12 @@ const VehicleRegistration = () => {
     };
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/vehicles/", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formattedData),
-      });
-
-      if (response.ok) {
+      const response = await axios.post(API_ENDPOINTS.createVehicle, formattedData);
+      if (response.status === 200 || response.status === 201) {
         alert(t("success_vehicle_saved"));
         navigate(-1);
       } else {
-        const errorData = await response.json();
-        alert(t("error_saving_failed") + ": " + JSON.stringify(errorData));
+        alert(t("error_saving_failed") + ": " + JSON.stringify(response.data));
       }
     } catch (error) {
       alert(t("error.network") + ": " + error.message);

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
 import "./DriverRegistration.css";
 
 const DriverRegistration = () => {
@@ -78,33 +80,15 @@ const DriverRegistration = () => {
     const handleImagePreview = () => {
       const googleDriveBase = "https://drive.google.com/uc?export=view&id=";
       const match = driverData.image_url.match(/d\/([a-zA-Z0-9_-]+)\/view/);
-      const formattedUrl = match
-        ? `${googleDriveBase}${match[1]}`
-        : driverData.image_url;
+      const formattedUrl = match ? `${googleDriveBase}${match[1]}` : driverData.image_url;
       setPreviewImageUrl(formattedUrl);
       setShowModal(true);
     };
+    
     console.log("Sending driver data:", formattedData);
 
     try {
-      const response = await fetch("http://localhost:8000/drivers/create/", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formattedData),
-      });
-
-      if (!response.ok) {
-        const errorResponse = await response.json();
-        throw new Error(
-          `Server Error: ${errorResponse.detail || response.statusText}`
-        );
-      }
-
-      const result = await response.json();
-      console.log("Server response:", result);
+      const response = await axios.post(API_ENDPOINTS.createDriver, formattedData);
       alert(t("messages.save_success"));
       navigate(-1);
     } catch (error) {

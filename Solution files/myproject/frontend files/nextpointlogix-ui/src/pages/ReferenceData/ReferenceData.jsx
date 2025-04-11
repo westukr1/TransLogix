@@ -6,6 +6,8 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import './ReferenceData.css';
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
 
 const ReferenceData = () => {
   const { t } = useTranslation();
@@ -17,20 +19,8 @@ const ReferenceData = () => {
   useEffect(() => {
     const fetchFuelTypes = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/fuel-types/', {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch fuel types');
-        }
-        const data = await response.json();
-        console.log('Data received from server:', data);
-        setFuelTypes(data);
+        const response = await axios.get(API_ENDPOINTS.getFuelTypes);
+        setFuelTypes(response.data);
       } catch (error) {
         console.error('Error fetching fuel types:', error);
       }
