@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./PassengerTripRequestView.css";
-import axios from "axios";
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 
@@ -35,13 +36,13 @@ const PassengerTripRequestView = () => {
     fetchRequests();
   }, [startDate, endDate, searchQuery, directionFilter, onlyActive]);
 
-  const fetchRequests = () => {
+  const fetchRequests = async () => {
     const start = dayjs(startDate).format("YYYY-MM-DD HH:mm:ss");
     const end = dayjs(endDate).format("YYYY-MM-DD HH:mm:ss");
     const directions = [];
     if (directionFilter.toWork) directions.push("HOME_TO_WORK");
     if (directionFilter.toHome) directions.push("WORK_TO_HOME");
-
+  
     console.log("Відправка запиту на бекенд:", {
       start_date: start,
       end_date: end,
@@ -49,12 +50,9 @@ const PassengerTripRequestView = () => {
       direction: directions.join(","),
       is_active: onlyActive,
     });
-    axios
-      .get("http://localhost:8000/api/filtered-passenger-trip-requests/", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          "Content-Type": "application/json",
-        },
+  
+    try {
+      const response = await axios.get(API_ENDPOINTS.getFilteredTripRequests, {
         params: {
           start_date: start,
           end_date: end,
@@ -62,29 +60,32 @@ const PassengerTripRequestView = () => {
           direction: directions.join(","),
           is_active: onlyActive,
         },
-      })
-      .then((response) => {
-        const data = response.data.map((request) => {
-          const sameDayRequests = response.data.filter(
-            (r) =>
-              r.passenger === request.passenger &&
-              r.direction === request.direction &&
-              r.is_active === true &&
-              ((r.direction === "WORK_TO_HOME" && r.departure_time && request.departure_time &&
-                dayjs(r.departure_time).format("YYYY-MM-DD") === dayjs(request.departure_time).format("YYYY-MM-DD")) ||
+      });
+  
+      const data = response.data.map((request) => {
+        const sameDayRequests = response.data.filter(
+          (r) =>
+            r.passenger === request.passenger &&
+            r.direction === request.direction &&
+            r.is_active === true &&
+            ((r.direction === "WORK_TO_HOME" && r.departure_time && request.departure_time &&
+              dayjs(r.departure_time).format("YYYY-MM-DD") ===
+                dayjs(request.departure_time).format("YYYY-MM-DD")) ||
               (r.direction === "HOME_TO_WORK" && r.arrival_time && request.arrival_time &&
-                dayjs(r.arrival_time).format("YYYY-MM-DD") === dayjs(request.arrival_time).format("YYYY-MM-DD")))
-          );
-        
-          return {
-            ...request,
-            isConflict: sameDayRequests.length > 1,
-          };
-        });
-        setRequests(data);
-        console.log("Processed Passenger Trip Requests Data:", data);
-      })
-      .catch((error) => console.error("Error fetching requests data:", error));
+                dayjs(r.arrival_time).format("YYYY-MM-DD") ===
+                  dayjs(request.arrival_time).format("YYYY-MM-DD")))
+        );
+  
+        return {
+          ...request,
+          isConflict: sameDayRequests.length > 1,
+        };
+      });
+      setRequests(data);
+      console.log("Processed Passenger Trip Requests Data:", data);
+    } catch (error) {
+      console.error("Error fetching requests data:", error);
+    }
   };
 
   // const handleViewModeChange = (mode) => {
@@ -124,21 +125,15 @@ const PassengerTripRequestView = () => {
   };
   const handleIsActiveChange = (id, value) => {
     const status = value ? t("activated") : t("deactivated");
-
+  
     axios
       .patch(
-        `http://localhost:8000/api/passenger-trip-requests/${id}/update-status/`,
-        { is_active: value },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-        }
+        API_ENDPOINTS.updateTripRequestStatus(id),
+        { is_active: value }
       )
       .then((response) => {
         console.log("Updated is_active status:", response.data);
-        fetchRequests(); // Оновлюємо список після зміни
+        fetchRequests();
         toast.success(t("Request {{status}} successfully.", { status }));
       })
       .catch((error) => {
@@ -146,7 +141,6 @@ const PassengerTripRequestView = () => {
         toast.error(t("Error during {{status}} of the request.", { status }));
       });
   };
-
   useEffect(() => {
     // Виклик функції для завантаження даних із фільтром
     fetchRequests();

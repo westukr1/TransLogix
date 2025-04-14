@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./PassengerTripRequestView.css";
-import axios from "axios";
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
 import { useTranslation } from "react-i18next";
 
 const PassengerSelectView = () => {
@@ -21,23 +22,16 @@ const PassengerSelectView = () => {
   }, []);
 
   const fetchPassengers = async (isActive = true) => {
-    setLoading(true); // ✅ Показуємо завантаження
-    const token = localStorage.getItem("access_token");
-    const url = `http://localhost:8000/api/passengers/?is_active=${isActive}`;
+    setLoading(true);
     try {
-      const response = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch passengers");
-      }
-      const data = await response.json();
+      const response = await axios.get(`${API_ENDPOINTS.getPassengers}?is_active=${isActive}`);
+      const data = response.data;
       console.log("Fetched passengers:", data);
       setPassengers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching passengers:", error);
     } finally {
-      setLoading(false); // ✅ Приховуємо завантаження
+      setLoading(false);
     }
   };
 

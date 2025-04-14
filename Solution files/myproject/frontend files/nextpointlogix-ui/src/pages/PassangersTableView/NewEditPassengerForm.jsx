@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
 import i18n from 'i18next'; 
 import { useLocation } from 'react-router-dom';
 
@@ -42,7 +43,8 @@ const NewEditPassengerForm = ({ onClose, onSave }) => {
 
   useEffect(() => {
     if (passengerId) {
-      axios.get(`http://localhost:8000/api/passengers/${passengerId}`)
+      axios.get(API_ENDPOINTS.getPassengerDetails(passengerId))
+
         .then(response => {
           const data = response.data;
           setPassengerData(prevData => ({
@@ -76,23 +78,18 @@ useEffect(() => {
   useEffect(() => {
     const fetchGoogleMapsKey = async () => {
       try {
-          const token = localStorage.getItem('access_token'); // Отримайте токен з localStorage
-          const response = await axios.get('http://localhost:8000/api/google-maps-key/',{
-            headers: {
-              'Authorization': `Bearer ${token}` // Додаємо заголовок авторизації
-            }
-          });
-          setApiKey(response.data.google_maps_api_key);
-          
-          // Використовуйте ключ для ініціалізації Google Maps або інших запитів
-        } catch (error) {
-          console.error('Помилка при отриманні ключа Google Maps:', error);
-        }
-      };
+        const response = await axios.get(API_ENDPOINTS.getGoogleMapsKey);
+        const data = response.data;
+        setApiKey(data.google_maps_api_key);
+        localStorage.setItem("google_maps_api_key", data.google_maps_api_key);
+      } catch (error) {
+        console.error(t("error_fetching_key"), error);
+      }
+    };
+    fetchGoogleMapsKey();
     // Завантажуємо Google Maps API скрипт
     const loadGoogleMapsScript = (apiKey) => {
       if (!window.google && apiKey) {
-          
         const script = document.createElement('script');
         script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&async=1&defer=1`;
         script.async = true;
@@ -103,9 +100,8 @@ useEffect(() => {
         };
         script.onload = () => {
           console.log('Google Maps API завантажений');
-                // Тепер ви можете використовувати Google Maps API
         };
-      }    
+      }
     };
     // Викликаємо функцію для отримання ключа та завантаження скрипта
     const initializeGoogleMaps = async () => {
@@ -115,91 +111,60 @@ useEffect(() => {
     initializeGoogleMaps();
   }, [apiKey]); // Викликається при кожній зміні API ключаx
     
-  useEffect(() => {  
-     // Завантажуємо список країн з бекенду
-     const fetchCountries = async () => {
-      const token = localStorage.getItem('access_token');
+  useEffect(() => {
+    const fetchCountries = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/countries/', {
-        headers: {
-          'Authorization': `Bearer ${token}` // Додаємо заголовок авторизації
-        }
-      });
-      
-    setCountries(response.data); // Оновлюємо список країн
-        // Якщо є хоча б одна країна, автоматично викликаємо fetchRegions для першої країни
-      if (response.data.length > 0) {
-          const firstCountryId = response.data[0].id;
-          const type = 'pickupAddresses'; // Використайте потрібний тип адреси, для якої ви хочете автоматично завантажувати області
-          const index = 0; // Використовуємо перший елемент у масиві адрес
+        const response = await axios.get(API_ENDPOINTS.getCountries);
+        setCountries(response.data);
 
-            // Викликаємо функцію для отримання областей для першої країни
+        if (response.data.length > 0) {
+          const firstCountryId = response.data[0].id;
+          const type = 'pickupAddresses';
+          const index = 0;
           fetchRegions(firstCountryId, index, type);
         }
-        
-      } catch(error) {
+      } catch (error) {
         console.error('Error fetching countries:', error);
       }
     };
-    fetchCountries(); // Завантажуємо список кра��н з бекенду
-  }, [apiKey]); // Виконується один раз після завантаження компонента
+
+    fetchCountries();
+  }, [apiKey]);
 
     // Fetch regions when a country is selected
     const fetchRegions = (countryId, index, type) => {
-        const token = localStorage.getItem('access_token'); // Отримуємо токен
-        console.log(`Запит на отримання регіонів для країни з ID: ${countryId}`);
-        if (countryId) {
-          axios.get(`http://localhost:8000/api/regions/${countryId}/`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          })
-            .then(response => {
-                // Логування отриманої відповіді
-                console.log(`Отримана відповідь для регіонів країни з ID: ${countryId}`, response.data);
-                
-                // const updatedAddresses = [...passengerData[type]]; // Копіюємо поточні адреси
-                // updatedAddresses[index].regions = response.data; // Оновлюємо регіони для вибраної адреси
-                // updatedAddresses[index].isRegionEnabled = true; // Доступ до регіонів відкрито
-                setPassengerData(prevState => {
-                    const updatedAddresses = [...prevState[type]]; // Копіюємо масив адрес
-                    
-                    // Оновлюємо дані для конкретної адреси
-                    updatedAddresses[index] = {
-                      ...updatedAddresses[index],
-                      regions: response.data, // Додаємо регіони
-                      isRegionEnabled: true // Вмикаємо поле регіонів
-                    };
-                    // Лог для перевірки оновлення стану
-                console.log(`Оновлені адреси для ${type}:`, updatedAddresses);
-                    // Оновлюємо стан
-                    return {
-                        ...prevState,
-                        [type]: updatedAddresses // Оновлюємо стан для відповідного типу адрес
-                    };
-                });
-            })
-            .catch(error => {
-              console.error('Error fetching regions:', error);
+      if (countryId) {
+        axios.get(API_ENDPOINTS.getRegions(countryId))
+          .then(response => {
+            setPassengerData(prevState => {
+              const updatedAddresses = [...prevState[type]];
+              updatedAddresses[index] = {
+                ...updatedAddresses[index],
+                regions: response.data,
+                isRegionEnabled: true
+              };
+              return {
+                ...prevState,
+                [type]: updatedAddresses
+              };
             });
-        }
-      };
+          })
+          .catch(error => {
+            console.error('Error fetching regions:', error);
+          });
+      }
+    };
     
       // Fetch districts when a region is selected
       const fetchDistricts = (regionId, index, type) => {
-        const token = localStorage.getItem('access_token');
         if (regionId) {
-          axios.get(`http://localhost:8000/api/districts/${regionId}/`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          })
+          axios.get(API_ENDPOINTS.getDistricts(regionId))
             .then(response => {
-                const updatedAddresses = [...passengerData[type]]; // Копіюємо поточні адреси
-                updatedAddresses[index].districts = response.data; // Оновлюємо райони для вибраної адреси
-                updatedAddresses[index].isDistrictEnabled = true; // Доступ до районів відкрито
-                updatedAddresses[index].isCityEnabled = true; // Доступ до міст відкрито
-                setPassengerData({ ...passengerData, [type]: updatedAddresses }); // Оновлюємо стан
+              const updatedAddresses = [...passengerData[type]];
+              updatedAddresses[index].districts = response.data;
+              updatedAddresses[index].isDistrictEnabled = true;
+              updatedAddresses[index].isCityEnabled = true;
+              setPassengerData({ ...passengerData, [type]: updatedAddresses });
             })
             .catch(error => {
               console.error('Error fetching districts:', error);
@@ -208,7 +173,6 @@ useEffect(() => {
       };
 
 
-    
       // handleChange для кожної адреси
       const handleChange = (e, index, type, field) => {
         const { name, value } = e.target;
@@ -293,17 +257,15 @@ useEffect(() => {
   };
   // Відправка даних для створення точок координат
   const checkHasPickupAddress = async () => {
-    const token = localStorage.getItem('access_token');
     try {
-        const response = await axios.get(`http://localhost:8000/api/passengers/${passengerId}/has-pickup-address/`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        return response.data.hasPickupAddress;
+      const response = await axios.get(API_ENDPOINTS.checkHasPickupAddress(passengerId));
+      return response.data.hasPickupAddress;
     } catch (error) {
-        console.error("Error checking pickup address:", error);
-        return false; // Якщо сталася помилка, повертаємо false
+      console.error("Error checking pickup address:", error);
+      return false;
     }
   };
+
 
   const saveCoordinatePoints = async (addresses, type) => {
     if (!addresses || addresses.length === 0) {
@@ -347,16 +309,10 @@ useEffect(() => {
   
     const token = localStorage.getItem('access_token');
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/coordinate/create/', dataToSend, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await axios.post(API_ENDPOINTS.createCoordinatePoint, dataToSend);
       console.log("Response from server:", response.data);
-  
-      // Перевіряємо, чи відповідь є масивом
       return Array.isArray(response.data) ? response.data : [response.data];
+
     } catch (error) {
       // Уникнення багаторазового alert, використовуємо console.error для виводу помилки
       console.error('Помилка при збереженні точок координат:', error.response?.data || error.message);
@@ -431,52 +387,49 @@ useEffect(() => {
       const handleClose = () => {
         navigate(-1);
       };
-      const verifyAddress = async (address, index, type) => {
-        
-        const apiKey = 'AIzaSyCEryINvh8xazxGl6X_FXix5aUP17-9gsI'; // Ваш API-ключ Google
-        const fullAddress = `${address.street} ${address.house_number}, ${address.city}, ${address.region}, ${address.country}`;
-        const languageCode = i18n.language;  // Отримуємо поточну мову з i18n
+     const verifyAddress = async (address, index, type) => {
+    const fullAddress = `${address.street} ${address.house_number}, ${address.city}, ${address.region}, ${address.country}`;
+    const languageCode = i18n.language;
 
-        try {
-          const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
-            params: {
-              address: fullAddress,
-              key: apiKey,
-              language: languageCode // Додаємо параметр для вибору мови
-            }
-          });
-      
-          const data = response.data;
-          if (data.status === 'OK'&& data.results.length > 0) {
-            const result = data.results[0];
-            const location = result.geometry.location; // Отримуємо координати
-      
-            // Оновлюємо адресу з отриманими даними
-            setPassengerData(prevState => {
-              const updatedAddresses = [...prevState[type]];
-              updatedAddresses[index] = {
-                ...updatedAddresses[index],
-                latitude: location.lat,  // Оновлюємо широту
-                longitude: location.lng, // Оновлюємо довготу
-                city: result.address_components.find(comp => comp.types.includes('locality'))?.long_name || updatedAddresses[index].city,
-                street: result.address_components.find(comp => comp.types.includes('route'))?.long_name || updatedAddresses[index].street,
-                house_number: result.address_components.find(comp => comp.types.includes('street_number'))?.long_name || updatedAddresses[index].house_number,
-              };
-              return {
-                ...prevState,
-                [type]: updatedAddresses
-              };
-            });
-      
-            console.log("Адреса перевірена успішно!");
-          } else {
-            alert('Адреса не знайдена. Перевірте правильність введених даних.');
-          }
-        } catch (error) {
-          console.error('Помилка при перевірці адреси:', error);
-          alert('Помилка при перевірці адреси. Спробуйте ще раз.');
+    try {
+      const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
+        params: {
+          address: fullAddress,
+          key: apiKey,
+          language: languageCode
         }
-      };
+      });
+
+      const data = response.data;
+      if (data.status === 'OK' && data.results.length > 0) {
+        const result = data.results[0];
+        const location = result.geometry.location;
+
+        setPassengerData(prevState => {
+          const updatedAddresses = [...prevState[type]];
+          updatedAddresses[index] = {
+            ...updatedAddresses[index],
+            latitude: location.lat,
+            longitude: location.lng,
+            city: result.address_components.find(comp => comp.types.includes('locality'))?.long_name || updatedAddresses[index].city,
+            street: result.address_components.find(comp => comp.types.includes('route'))?.long_name || updatedAddresses[index].street,
+            house_number: result.address_components.find(comp => comp.types.includes('street_number'))?.long_name || updatedAddresses[index].house_number,
+          };
+          return {
+            ...prevState,
+            [type]: updatedAddresses
+          };
+        });
+
+        console.log("Адреса перевірена успішно!");
+      } else {
+        alert('Адреса не знайдена. Перевірте правильність введених даних.');
+      }
+    } catch (error) {
+      console.error('Помилка при перевірці адреси:', error);
+      alert('Помилка при перевірці адреси. Спробуйте ще раз.');
+    }
+  };
       
   
   return (

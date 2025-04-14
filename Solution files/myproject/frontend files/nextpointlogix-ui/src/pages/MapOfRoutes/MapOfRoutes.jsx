@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './MapOfRoutes.css';
+import axios from '../../utils/axiosInstance';
+import { API_ENDPOINTS } from '../../config/apiConfig';
 
 function MapOfRoutes() {
   const [selectedRoute, setSelectedRoute] = useState(null);
@@ -8,37 +10,53 @@ function MapOfRoutes() {
   const navigate = useNavigate();
 
   // Завантажуємо Google Maps API
-  const loadGoogleMapsAPI = (callback) => {
+  const loadGoogleMapsAPI = (apiKey, callback) => {
     const existingScript = document.getElementById('googleMaps');
     if (!existingScript) {
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCEryINvh8xazxGl6X_FXix5aUP17-9gsI`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
       script.id = 'googleMaps';
       document.body.appendChild(script);
       script.onload = () => {
         if (callback) callback();
       };
-    } else if (callback) callback();
+      script.onerror = () => {
+        console.error("❌ Помилка при завантаженні Google Maps API");
+      };
+    } else if (callback) {
+      callback();
+    }
   };
+  
 
   useEffect(() => {
-    loadGoogleMapsAPI(() => {
-      // Ініціалізуємо карту після завантаження API
-      if (mapRef.current) {
-        const map = new window.google.maps.Map(mapRef.current, {
-          center: { lat: 49.8397, lng: 24.0297 }, // Центр карти (Львів)
-          zoom: 10,
+    const fetchAndLoadGoogleMaps = async () => {
+      try {
+        const response = await axios.get(API_ENDPOINTS.getGoogleMapsKey);
+        const apiKey = response.data.google_maps_api_key;
+  
+        loadGoogleMapsAPI(apiKey, () => {
+          if (mapRef.current) {
+            const map = new window.google.maps.Map(mapRef.current, {
+              center: { lat: 49.8397, lng: 24.0297 },
+              zoom: 10,
+            });
+  
+            new window.google.maps.Marker({
+              position: { lat: 49.8397, lng: 24.0297 },
+              map: map,
+              title: "Львів",
+            });
+          }
         });
-
-        // Ви можете додати маркери чи інші елементи на карту тут
-        new window.google.maps.Marker({
-          position: { lat: 50.4501, lng: 30.5234 },
-          map: map,
-          title: "Київ",
-        });
+      } catch (error) {
+        console.error("❌ Не вдалося отримати Google Maps ключ:", error);
       }
-    });
+    };
+  
+    fetchAndLoadGoogleMaps();
   }, []);
+  
 
   const routes = [
     {

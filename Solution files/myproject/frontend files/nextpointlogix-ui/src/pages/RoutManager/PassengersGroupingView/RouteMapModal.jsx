@@ -27,8 +27,8 @@ const RouteMapModal = ({ onClose }) => {
     const navigate = useNavigate();
   
     const coordinatePointId = location.state?.coordinatePointId || null;
-    const initialLatitude = parseFloat(location.state?.latitude || 50.4501); // Default: Kyiv
-    const initialLongitude = parseFloat(location.state?.longitude || 30.5234); // Default: Kyiv
+    const initialLatitude = parseFloat(location.state?.latitude || 49.8397); // Default: Lviv
+    const initialLongitude = parseFloat(location.state?.longitude || 24.0297); // Default: Lviv
     const [latitude, setLatitude] = useState(initialLatitude);
     const [longitude, setLongitude] = useState(initialLongitude);
     const [markerPosition, setMarkerPosition] = useState(null);

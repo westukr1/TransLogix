@@ -426,13 +426,7 @@ const RepeatTripView = () => {
         };
         console.log(typeof passengerId); // має вивести "number"
 
-        await axios.post(
-          "http://localhost:8000/api/passenger-trip-requests/create/",
-          payload,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        await axios.post(API_ENDPOINTS.createTripRequest, payload);
       }
 
       alert(t("trip_requests.saved_successfully"));

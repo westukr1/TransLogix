@@ -5,6 +5,8 @@ import { useTranslation} from 'react-i18next';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
+import axios from '../../utils/axiosInstance';
+import { API_ENDPOINTS } from '../../config/apiConfig';
 
 const DriverVehicleManagement = () => {
   const { t } = useTranslation(); // Translation hook
@@ -15,82 +17,38 @@ const DriverVehicleManagement = () => {
   const [fuelTypes, setFuelTypes] = useState([]); // Список типів палива
 
   useEffect(() => {
-    // Fetch vehicles data from backend
-    fetch('http://localhost:8000/api/vehicles/', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Vehicles Data:', data);
-        setVehicleRowData(Array.isArray(data) ? data : []);
-      })
-      .catch(error => console.error('Error fetching vehicles:', error));
+    const fetchData = async () => {
+      try {
+        const [vehiclesRes, driversRes, fuelTypesRes] = await Promise.all([
+          axios.get(API_ENDPOINTS.getVehicles),
+          axios.get(API_ENDPOINTS.getDrivers),
+          axios.get(API_ENDPOINTS.getFuelTypes)
+        ]);
 
-    // Fetch fuel types from backend
-    fetch('http://localhost:8000/api/fuel-types/', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Fuel Types:', data);
-        setFuelTypes(Array.isArray(data) ? data : []);
-      })
-      .catch(error => console.error('Error fetching fuel types:', error));
-
-    // Fetch drivers data from backend
-    fetch('http://localhost:8000/api/drivers/', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Drivers Data:', data);
-        setDriverRowData(Array.isArray(data) ? data : []);
-      })
-      .catch(error => console.error('Error fetching drivers:', error));
+        setVehicleRowData(Array.isArray(vehiclesRes.data) ? vehiclesRes.data : []);
+        setDriverRowData(Array.isArray(driversRes.data) ? driversRes.data : []);
+        setFuelTypes(Array.isArray(fuelTypesRes.data) ? fuelTypesRes.data : []);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    };
+    fetchData();
   }, []);
 
   const updateFuelType = (vehicleId, fuelTypeId) => {
-    fetch('http://localhost:8000/api/vehicles/update-fuel-type/', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        vehicle_id: vehicleId,
-        fuel_type_id: fuelTypeId,
-      }),
+    axios.post(API_ENDPOINTS.updateVehicleFuelType, {
+      vehicle_id: vehicleId,
+      fuel_type_id: fuelTypeId,
     })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to update fuel type');
-        }
-        return response.json();
-      })
-      .then(() => {
-        // Refresh the table data after successful update
-        fetch('http://localhost:8000/api/vehicles/', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            'Content-Type': 'application/json',
-          },
-        })
-          .then(response => response.json())
-          .then(data => {
-            setVehicleRowData(Array.isArray(data) ? data : []);
-          })
-          .catch(error => console.error('Error refreshing vehicles:', error));
-      })
-      .catch(error => console.error('Error updating fuel type:', error));
+    .then(() => {
+      return axios.get(API_ENDPOINTS.getVehicles);
+    })
+    .then(response => {
+      setVehicleRowData(Array.isArray(response.data) ? response.data : []);
+    })
+    .catch(error => {
+      console.error('Error updating fuel type:', error);
+    });
   };
 
   const vehicleColumnDefs = [
@@ -156,35 +114,35 @@ const DriverVehicleManagement = () => {
     const driverId = event.data.driver_id;
     navigate(`/driver-edit/${driverId}`);
   };
-  useEffect(() => {
-    // Fetch vehicles data from backend
-    fetch('http://localhost:8000/api/vehicles/', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Vehicles Data:', data);
-        setVehicleRowData(Array.isArray(data) ? data : []);
-      })
-      .catch(error => console.error('Error fetching vehicles:', error));
+  // useEffect(() => {
+  //   // Fetch vehicles data from backend
+  //   fetch('http://localhost:8000/api/vehicles/', {
+  //     headers: {
+  //       Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+  //       'Content-Type': 'application/json',
+  //     },
+  //   })
+  //     .then(response => response.json())
+  //     .then(data => {
+  //       console.log('Vehicles Data:', data);
+  //       setVehicleRowData(Array.isArray(data) ? data : []);
+  //     })
+  //     .catch(error => console.error('Error fetching vehicles:', error));
 
-    // Fetch drivers data from backend
-    fetch('http://localhost:8000/api/drivers/', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Drivers Data:', data);
-        setDriverRowData(Array.isArray(data) ? data : []);
-      })
-      .catch(error => console.error('Error fetching drivers:', error));
-  }, []);
+  //   // Fetch drivers data from backend
+  //   fetch('http://localhost:8000/api/drivers/', {
+  //     headers: {
+  //       Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+  //       'Content-Type': 'application/json',
+  //     },
+  //   })
+  //     .then(response => response.json())
+  //     .then(data => {
+  //       console.log('Drivers Data:', data);
+  //       setDriverRowData(Array.isArray(data) ? data : []);
+  //     })
+  //     .catch(error => console.error('Error fetching drivers:', error));
+  // }, []);
 
   const saveVehiclesBulk = () => {
     const payload = vehicleRowData.map(vehicle => ({
@@ -194,8 +152,7 @@ const DriverVehicleManagement = () => {
       model: vehicle.model,
       year: vehicle.year,
       capacity: vehicle.capacity,
-      fuel_type_id: vehicle.fuel_type?.fuel_type_id || null, // Використовуємо fuel_type_id
-      
+      fuel_type_id: vehicle.fuel_type?.fuel_type_id || null,
       chassis_number: vehicle.chassis_number,
       city_fuel_consumption: vehicle.city_fuel_consumption,
       highway_fuel_consumption: vehicle.highway_fuel_consumption,
@@ -205,22 +162,11 @@ const DriverVehicleManagement = () => {
       active: vehicle.active,
       image_url: vehicle.image_url,
     }));
-    
 
-    console.log('Sending vehicles payload:', payload);
-
-    fetch('http://localhost:8000/api/vehicles/bulk-update/', {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.errors) {
-          console.error('Errors updating vehicles:', data.errors);
+    axios.put(API_ENDPOINTS.bulkUpdateVehicles, payload)
+      .then(response => {
+        if (response.data.errors) {
+          console.error('Errors updating vehicles:', response.data.errors);
         } else {
           alert('Vehicles updated successfully');
         }
@@ -229,26 +175,17 @@ const DriverVehicleManagement = () => {
   };
   
   const saveDriversBulk = () => {
-    console.log('Sending drivers payload:', driverRowData);
-
-    fetch('http://localhost:8000/api/drivers/bulk-update/', {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(driverRowData), // Масив водіїв
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.errors) {
-          console.error('Errors updating drivers:', data.errors);
+    axios.put(API_ENDPOINTS.bulkUpdateDrivers, driverRowData)
+      .then(response => {
+        if (response.data.errors) {
+          console.error('Errors updating drivers:', response.data.errors);
         } else {
           alert('Drivers updated successfully');
         }
       })
       .catch(error => console.error('Network error:', error));
   };
+
   
 
   return (

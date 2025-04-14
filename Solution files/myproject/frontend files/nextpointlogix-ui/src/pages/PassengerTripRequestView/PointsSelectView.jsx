@@ -5,7 +5,8 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./PassengerTripRequestView.css";
 import { useTranslation } from "react-i18next";
-import axios from "axios";
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
 
 const PointsSelectView = () => {
   const { t } = useTranslation();
@@ -34,44 +35,25 @@ const PointsSelectView = () => {
   }, [passengerId]);
 
   const fetchPassengerData = async () => {
-    const token = localStorage.getItem("access_token");
     try {
-      const response = await fetch(
-        `http://localhost:8000/api/passengers/${passengerId}/`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch passenger data");
-      }
-      const data = await response.json();
-      setPassengerData(data);
+      const response = await axios.get(API_ENDPOINTS.getPassengerDetails(passengerId));
+      setPassengerData(response.data);
     } catch (error) {
       console.error("Error fetching passenger data:", error);
     }
   };
 
   const fetchCoordinatePoints = async () => {
-    const token = localStorage.getItem("access_token");
     try {
-      const response = await fetch(
-        `http://localhost:8000/api/passenger/${passengerId}/addresses/`,
-
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch coordinate points");
-      }
-      const data = await response.json();
+      const response = await axios.get(API_ENDPOINTS.getPassengerAddresses(passengerId));
+      const data = response.data;
       console.log("Received addresses:", data);
       setCoordinatePoints(data.filter((point) => point.is_active));
     } catch (error) {
       console.error("Error fetching coordinate points:", error);
     }
   };
+  
   const handleCheckboxChange = (category, pointId) => {
     setSelectedPoints((prev) => ({
       ...prev,

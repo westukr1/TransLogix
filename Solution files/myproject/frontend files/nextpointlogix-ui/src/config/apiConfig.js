@@ -24,7 +24,7 @@ export const API_ENDPOINTS = {
   createPassenger: `${BASE_URL}/api/passengers/create/`,
   updatePassenger: (id) => `${BASE_URL}/api/passengers/${id}/update/`,
   toggleActivePassenger: (id) => `${BASE_URL}/api/passengers/${id}/toggle-active/`,
-  toggleSelectPassenger: (id) => `${BASE_URL}/api/passengers/${id}/toggle-select/`,
+
   toggleSelectAllPassengers: `${BASE_URL}/api/passengers/toggle-select-all/`,
   updatePassengerAddresses: (id) => `${BASE_URL}/api/passenger/${id}/addresses/update/`,
   getPassengerAddresses: (id) => `${BASE_URL}/api/passenger/${id}/addresses/`,
@@ -42,7 +42,7 @@ export const API_ENDPOINTS = {
   bulkUpdateDrivers: `${BASE_URL}/api/drivers/bulk-update/`,
   getSettings: `${BASE_URL}/api/get-settings/`,
   calculateRoute: `${BASE_URL}/api/calculate-route/`,
-  getFuelTypes: `${BASE_URL}/api/fuel-types/`,
+
   updateFuelType: `${BASE_URL}/api/vehicles/update-fuel-type/`,
   bulkUpdateVehicles: `${BASE_URL}/api/vehicles/bulk-update/`,
   createDriver: `${BASE_URL}/drivers/create/`,
@@ -60,8 +60,46 @@ export const API_ENDPOINTS = {
   updateRoute: (id) => `${BASE_URL}/api/routes/${id}/update/`,
   getPassengerDetails: (id) => `${BASE_URL}/api/passengers/${id}/`,
   getCoordinatePoint: (id) => `${BASE_URL}/api/coordinate-points/${id}/`,
-  createTripRequest: `${BASE_URL}/api/passenger-trip-requests/create/`,
-  repeatTripRequests: `${BASE_URL}/api/passenger-trip-requests/repeat/`,
 
+  repeatTripRequests: `${BASE_URL}/api/passenger-trip-requests/repeat/`,
+  
+ 
+  updateTripRequestStatus: (id) => `${BASE_URL}/api/passenger-trip-requests/${id}/update-status/`,
+  createTripRequest: `${BASE_URL}/api/passenger-trip-requests/create/`,
+  createPassenger: `${BASE_URL}/api/passengers/create/`,
+  updatePassenger: (id) => `${BASE_URL}/api/passengers/${id}/update/`,
+  getGoogleMapsKey: `${BASE_URL}/api/google-maps-key/`,
+  getPassengerAddresses: (id) => `${BASE_URL}/api/passenger/${id}/addresses/`,
+  getHouseNumber: (id) => `${BASE_URL}/api/coordinate-point/${id}/house-number/`,
+
+  updatePassengerAddresses: (id) => `${BASE_URL}/api/passenger/${id}/addresses/update/`,
+  updateCoordinates: (id) => `${BASE_URL}/api/coordinate-points/${id}/update-coordinates/`,
+
+  getCountries: `${BASE_URL}/api/countries/`,
+  getRegions: (countryId) => `${BASE_URL}/api/regions/${countryId}/`,
+  getDistricts: (regionId) => `${BASE_URL}/api/districts/${regionId}/`,
+  checkHasPickupAddress: (id) => `${BASE_URL}/api/passengers/${id}/has-pickup-address/`,
+  createCoordinatePoint: `${BASE_URL}/api/coordinate/create/`,
+  togglePassengerActive: (id) => `${BASE_URL}/api/passengers/${id}/toggle-active/`,
+  togglePassengerSelect: (id) => `${BASE_URL}/api/passengers/${id}/toggle-select/`,
+  toggleSelectAll: `${BASE_URL}/api/passengers/toggle-select-all/`,
+  toggleCoordinateActive: (id) => `${BASE_URL}/api/coordinate-points/${id}/toggle-active/`,
+  getFilteredRoutes: `${BASE_URL}/api/filtered-routes/`,
+  filteredCoordinates: () => `${BASE_URL}/api/filtered-coordinates/`,
+  getPassengers: (isActive) => `${BASE_URL}/api/passengers/?is_active=${isActive}`,
+  getFilteredRoutes: `${BASE_URL}/api/filtered-routes/`,
+  getAllRoutes: `${BASE_URL}/api/routes/`,
+  getGoogleMapsKey: `${BASE_URL}/api/google-maps-key/`,
+  getDrivers: `${BASE_URL}/api/drivers`,
+  getVehicles: `${BASE_URL}/api/vehicles`,
+  createAssignment: `${BASE_URL}/api/assignments`,
+  getVehicles: `${BASE_URL}/api/vehicles/`,
+  
+  getFuelTypes: `${BASE_URL}/api/fuel-types/`,
+  updateVehicleFuelType: `${BASE_URL}/api/vehicles/update-fuel-type/`,
+  bulkUpdateVehicles: `${BASE_URL}/api/vehicles/bulk-update/`,
+  bulkUpdateDrivers: `${BASE_URL}/api/drivers/bulk-update/`,
+
+  
 
 };

@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./PassengerTripRequestView.css";
-import axios from "axios";
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
 import { useTranslation } from "react-i18next";
 
 const NewPassengersTripRequest = () => {
@@ -34,22 +35,14 @@ const NewPassengersTripRequest = () => {
 
   const handleSubmit = () => {
     axios
-      .post(
-        "http://localhost:8000/api/passenger-trip-requests/create/",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      )
+      .post(API_ENDPOINTS.createTripRequest, formData)
       .then((response) => {
         console.log("Request created successfully:", response.data);
         navigate("/passenger-requests");
       })
       .catch((error) => console.error("Error creating request:", error));
   };
+  
 
   return (
     <div className="two-column-template">

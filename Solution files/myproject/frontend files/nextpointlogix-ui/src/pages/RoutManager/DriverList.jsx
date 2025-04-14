@@ -20,7 +20,7 @@ const DriverList = () => {
       try {
         const response = await axios.get(API_ENDPOINTS.getDrivers);
         console.log("Список водіїв:", response.data);
-        // setDriverRowData(response.data); // якщо потрібно
+        setDriverRowData(response.data); // якщо потрібно
       } catch (error) {
         console.error("❌ Помилка отримання списку водіїв:", error);
       }

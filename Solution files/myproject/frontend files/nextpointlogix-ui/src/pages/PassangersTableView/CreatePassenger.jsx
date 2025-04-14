@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
 
 const NewEditPassengerForm = ({ onClose, onSave }) => {
   const { t } = useTranslation(); // Підключаємо переклад
@@ -48,41 +49,33 @@ const NewEditPassengerForm = ({ onClose, onSave }) => {
       alert('Цей пасажир вже створений.');
       return false;
     }
-
+  
     const dataToSend = {
       first_name: passengerData.firstName,
       last_name: passengerData.lastName,
       department: passengerData.department,
       phone_number: passengerData.phoneNumber,
       email: passengerData.email,
-      pickup_addresses: [],  // Порожні масиви для адрес
-      dropoff_addresses: [], 
-      work_addresses: [], 
+      pickup_addresses: [],
+      dropoff_addresses: [],
+      work_addresses: [],
     };
-
+  
     try {
-      const token = localStorage.getItem('access_token'); // Отримуємо токен
-      const response = await axios.post('http://127.0.0.1:8000/api/passengers/create/', dataToSend, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // Додаємо заголовок авторизації
-        },
-      });
-    //   console.log('Response:', response);  // Логування повної відповіді
-      console.log('Response data:', response.data);  // Логування тільки даних з відповіді
-    //   console.log('Response status:', response.status);  // Логування статусу відповіді
+      const response = await axios.post(API_ENDPOINTS.createPassenger, dataToSend);
+      console.log('Response data:', response.data);
+  
       if (response.status === 200 || response.status === 201) {
-        setIsPassengerCreated(true); // Встановлюємо прапорець, що пасажир створений
-        setPassengerId(response.data.id); // Зберігаємо ID пасажира
-        
-        
-        return true; // Успішне збереження
+        setIsPassengerCreated(true);
+        setPassengerId(response.data.id);
+        return true;
       }
     } catch (error) {
       console.error('Помилка при збереженні даних:', error);
-      return false; // Помилка збереження
+      return false;
     }
   };
+  
 
   // Обробка кнопки "Зберегти і закрити"
   const handleSaveAndClose = async () => {

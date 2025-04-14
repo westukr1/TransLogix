@@ -10,6 +10,8 @@ import { useTranslation } from "react-i18next";
 import ToggleSwitch from "../../components/ToggleSwitch";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
 
 // Форма для додавання пасажира
 const PassengerForm = ({ onClose, onSave }) => {
@@ -88,55 +90,38 @@ const PassengersTableView = () => {
   const [endDate, setEndDate] = useState(
     new Date(new Date().setDate(new Date().getDate() + 15))
   );
+  const [selectAllChecked, setSelectAllChecked] = useState(false);
   // const [startDate, setStartDate] = useState(new Date(Date.now() - 15 * 24 * 60 * 60 * 1000));
   // const [endDate, setEndDate] = useState(new Date(Date.now() + 15 * 24 * 60 * 60 * 1000));
   // const [filteredRoutesRowData, setFilteredRoutesRowData] = useState([]);
   const [showActiveOnly, setShowActiveOnly] = useState(true);
 
   const handleToggleActive = async (passengerId, currentValue) => {
-    // Використовуємо локалізоване повідомлення для підтвердження
     const confirmation = window.confirm(
-      currentValue
-        ? t("are_you_sure_deactivate") // Локалізоване повідомлення для деактивації
-        : t("are_you_sure_activate") // Локалізоване повідомлення для активації
+      currentValue ? t("are_you_sure_deactivate") : t("are_you_sure_activate")
     );
-
-    // Якщо користувач натиснув "Cancel", зупиняємо функцію
     if (!confirmation) return;
-    // Спершу оновлюємо стан, щоб відобразити зміну миттєво
-    setPassengersRowData((prevData) =>
-      prevData.map((row) =>
+
+    setPassengersRowData(prevData =>
+      prevData.map(row =>
         row.id === passengerId ? { ...row, is_active: !currentValue } : row
       )
     );
 
     try {
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(
-        `http://localhost:8000/api/passengers/${passengerId}/toggle-active/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ is_active: !currentValue }),
-        }
+      const response = await axios.post(
+        API_ENDPOINTS.togglePassengerActive(passengerId),
+        { is_active: !currentValue }
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to update active status");
-      }
-      const data = await response.json();
-      setPassengersRowData((prevData) =>
-        prevData.map((row) =>
-          row.id === passengerId ? { ...row, is_active: data.is_active } : row
+      setPassengersRowData(prevData =>
+        prevData.map(row =>
+          row.id === passengerId ? { ...row, is_active: response.data.is_active } : row
         )
       );
     } catch (error) {
       console.error("Error updating active status:", error);
-      setPassengersRowData((prevData) =>
-        prevData.map((row) =>
+      setPassengersRowData(prevData =>
+        prevData.map(row =>
           row.id === passengerId ? { ...row, is_active: currentValue } : row
         )
       );
@@ -145,35 +130,19 @@ const PassengersTableView = () => {
 
   const handleCheckboxChange = async (passengerId, currentValue) => {
     try {
-      // Надсилаємо запит на бекенд для оновлення стану is_selected
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(
-        `http://localhost:8000/api/passengers/${passengerId}/toggle-select/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ is_selected: !currentValue }),
-        }
+      const response = await axios.post(
+        API_ENDPOINTS.togglePassengerSelect(passengerId),
+        { is_selected: !currentValue }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to update selection status");
-      }
-
-      const data = await response.json();
-
-      // Оновлюємо лише потрібний рядок у `passengersRowData`
-      setPassengersRowData((prevData) =>
-        prevData.map((row) =>
+      setPassengersRowData(prevData =>
+        prevData.map(row =>
           row.id === passengerId
-            ? { ...row, is_selected: data.is_selected }
+            ? { ...row, is_selected: response.data.is_selected }
             : row
         )
       );
-      // Якщо "Фільтрувати за обраним" активний, оновлюємо таблиці
+
       if (filterBySelected) {
         filterBySelectedPassengers();
       }
@@ -181,12 +150,11 @@ const PassengersTableView = () => {
       console.error("Error updating selection status:", error);
     }
   };
-  const [selectAllChecked, setSelectAllChecked] = useState(false);
+ 
 
   const handleSelectAll = async (checked) => {
     setSelectAllChecked(checked);
 
-    // Оновлюємо стан на фронтенді
     const updatedData = passengersRowData.map((row) => ({
       ...row,
       is_selected: checked,
@@ -194,27 +162,18 @@ const PassengersTableView = () => {
     setPassengersRowData(updatedData);
 
     try {
-      const token = localStorage.getItem("access_token");
-
-      // Запит на бекенд для оновлення стану всіх рядків
-      const response = await fetch(
-        "http://localhost:8000/api/passengers/toggle-select-all/",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ is_selected: checked }),
-        }
+      const response = await axios.post(
+        API_ENDPOINTS.toggleSelectAll,
+        { is_selected: checked }
       );
+
       if (filterBySelected) {
         filterBySelectedPassengers();
       }
-      if (response.ok) {
+
+      if (response.status === 200) {
         console.log("toggle SelectAll selected");
-      }
-      if (!response.ok) {
+      } else {
         throw new Error("Failed to update selection status for all passengers");
       }
     } catch (error) {
@@ -222,7 +181,6 @@ const PassengersTableView = () => {
         "Error updating selection status for all passengers:",
         error
       );
-      // Якщо запит не вдався, повертаємо попередній стан
       setPassengersRowData((prevData) =>
         prevData.map((row) => ({
           ...row,
@@ -231,6 +189,7 @@ const PassengersTableView = () => {
       );
     }
   };
+
 
   // Функція для форматування адреси пасажира
   const formatAddress = (passenger) => {
@@ -288,32 +247,22 @@ const PassengersTableView = () => {
   };
 
   const fetchCoordinates = async () => {
-    const token = localStorage.getItem("access_token");
     const isActiveParam = showActiveOnly ? "true" : "";
-
     const endpoint = filterBySelected
-      ? `http://localhost:8000/api/filtered-coordinates/?is_active=${isActiveParam}`
-      : `http://localhost:8000/api/coordinate-points/?is_active=${isActiveParam}`;
-    console.log("Fetching from endpoint:", endpoint);
+      ? API_ENDPOINTS.filteredCoordinates(isActiveParam)
+      : API_ENDPOINTS.allCoordinates(isActiveParam);
 
     console.log("showActiveOnly:", showActiveOnly);
     console.log("filterBySelected:", filterBySelected);
-    console.log("Fetching from endpoint:", endpoint); // Додаємо лог для вибраного endpoint
+    console.log("Fetching from endpoint:", endpoint);
 
     try {
-      const response = await fetch(endpoint, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      let data = await response.json();
+      const response = await axios.get(endpoint);
+      let data = response.data;
 
       if (!Array.isArray(data)) {
         console.error("Data format is not an array:", data);
-        data = []; // Set data to an empty array if it’s not an array
+        data = [];
       }
 
       const formattedData = data.map((point) => ({
@@ -332,75 +281,44 @@ const PassengersTableView = () => {
         owner_first_name: point.owner_first_name || "",
         owner_last_name: point.owner_last_name || "",
         id: point.id || "",
-        is_active: point.is_active || false, // Ensure it's a boolean
+        is_active: point.is_active || false,
       }));
 
       setLocationsRowData(formattedData);
     } catch (error) {
       console.error("Error fetching coordinate points:", error);
-      setLocationsRowData([]); // Fallback to empty array in case of error
+      setLocationsRowData([]);
     }
   };
-  const handleToggleCoordinateActive = async (
-    coordinatePointId,
-    currentValue
-  ) => {
+  const handleToggleCoordinateActive = async (coordinatePointId, currentValue) => {
     const confirmation = window.confirm(
-      currentValue
-        ? t("are_you_sure_deactivate") // Локалізоване повідомлення для деактивації
-        : t("are_you_sure_activate") // Локалізоване повідомлення для активації
+      currentValue ? t("are_you_sure_deactivate") : t("are_you_sure_activate")
     );
-
-    // Якщо користувач натиснув "Cancel", зупиняємо функцію
     if (!confirmation) return;
-    console.log(
-      "Toggling active status for coordinatePointId:",
-      coordinatePointId
-    ); // Add this line
-    // Optimistically update the frontend state
-    setLocationsRowData((prevData) =>
-      prevData.map((row) =>
-        row.id === coordinatePointId
-          ? { ...row, is_active: !currentValue }
-          : row
+
+    console.log("Toggling active status for coordinatePointId:", coordinatePointId);
+    setLocationsRowData(prevData =>
+      prevData.map(row =>
+        row.id === coordinatePointId ? { ...row, is_active: !currentValue } : row
       )
     );
 
     try {
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(
-        `http://localhost:8000/api/coordinate-points/${coordinatePointId}/toggle-active/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ is_active: !currentValue }),
-        }
+      const response = await axios.post(
+        API_ENDPOINTS.toggleCoordinateActive(coordinatePointId),
+        { is_active: !currentValue }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to update active status");
-      }
-
-      // Update with the confirmed backend response if necessary
-      const data = await response.json();
-      setLocationsRowData((prevData) =>
-        prevData.map((row) =>
-          row.id === coordinatePointId
-            ? { ...row, is_active: data.is_active }
-            : row
+      setLocationsRowData(prevData =>
+        prevData.map(row =>
+          row.id === coordinatePointId ? { ...row, is_active: response.data.is_active } : row
         )
       );
     } catch (error) {
       console.error("Error updating active status:", error);
-      // Revert the optimistic update in case of error
-      setLocationsRowData((prevData) =>
-        prevData.map((row) =>
-          row.id === coordinatePointId
-            ? { ...row, is_active: currentValue }
-            : row
+      setLocationsRowData(prevData =>
+        prevData.map(row =>
+          row.id === coordinatePointId ? { ...row, is_active: currentValue } : row
         )
       );
     }
@@ -628,13 +546,14 @@ const PassengersTableView = () => {
   ]);
 
   const fetchRoutes = async () => {
-    const token = localStorage.getItem("access_token");
-    const response = await fetch("http://localhost:8000/api/filtered-routes/", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await response.json();
-    setRoutesRowData(data);
-    setFilteredRoutesRowData(data); // Встановлюємо фільтровані дані спочатку рівними всім даним
+    try {
+      const response = await axios.get(API_ENDPOINTS.getFilteredRoutes);
+      const data = response.data;
+      setRoutesRowData(data);
+      setFilteredRoutesRowData(data);
+    } catch (error) {
+      console.error("Error fetching routes:", error);
+    }
   };
   // Фільтрація маршрутів за діапазоном дат
   useEffect(() => {
@@ -646,30 +565,21 @@ const PassengersTableView = () => {
   }, [startDate, endDate, routesRowData]);
 
   const fetchLocations = async () => {
-    const token = localStorage.getItem("access_token");
-    const response = await fetch(
-      "http://localhost:8000/api/filtered-coordinates/",
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    const data = await response.json();
-    setLocationsRowData(data);
+    try {
+      const response = await axios.get(API_ENDPOINTS.filteredCoordinates());
+      const data = response.data;
+      setLocationsRowData(data);
+    } catch (error) {
+      console.error("Error fetching locations:", error);
+    }
   };
 
   // Оновлена функція fetchPassengers для завантаження з фільтром is_active
   const fetchPassengers = async (isActive = isActiveFilter) => {
-    const token = localStorage.getItem("access_token");
-    const url = `http://localhost:8000/api/passengers/?is_active=${isActive}`;
     try {
-      const response = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch passengers");
-      }
-      const data = await response.json();
-      console.log("Fetched passengers:", data); // Додайте логування тут
+      const response = await axios.get(API_ENDPOINTS.getPassengers(isActive));
+      const data = response.data;
+      console.log("Fetched passengers:", data);
       setPassengersRowData(data);
     } catch (error) {
       console.error("Error fetching passengers:", error);
@@ -688,27 +598,19 @@ const PassengersTableView = () => {
   // Завантаження даних маршрутів з урахуванням фільтрації
   useEffect(() => {
     const fetchRoutes = async () => {
-      const token = localStorage.getItem("access_token");
       const endpoint = filterBySelected
-        ? "http://localhost:8000/api/filtered-routes/"
-        : "http://localhost:8000/api/routes/";
-
+        ? API_ENDPOINTS.getFilteredRoutes
+        : API_ENDPOINTS.getAllRoutes;
+  
       try {
-        const response = await fetch(endpoint, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
+        const response = await axios.get(endpoint);
+        const data = response.data;
+  
         if (Array.isArray(data)) {
           const formattedData = data.map((route) => ({
             route_number: route.route_number,
-            origin: route.start_point?.city || "", // Назва міста початкової точки
-            destination: route.end_point?.city || "", // Назва міста кінцевої точки
+            origin: route.start_point?.city || "",
+            destination: route.end_point?.city || "",
             start_city: route.start_point?.city || "",
             start_street: route.start_point?.street || "",
             start_house: route.start_point?.house_number || "",
@@ -727,10 +629,10 @@ const PassengersTableView = () => {
         console.error("Error fetching routes:", error);
       }
     };
-
+  
     fetchRoutes();
   }, [filterBySelected, passengersRowData]);
-
+  
   useEffect(() => {
     console.log("useEffect triggered. Current values:", {
       showActiveOnly,
@@ -741,19 +643,7 @@ const PassengersTableView = () => {
     fetchCoordinates();
   }, [showActiveOnly, filterBySelected, passengersRowData]);
 
-  // useEffect(() => {
-  //   const selectAllCheckbox = document.querySelector('#selectAll');
-  //   if (selectAllCheckbox) {
-  //       selectAllCheckbox.addEventListener('click', (e) => {
-  //           handleSelectAll(e.target.checked);
-  //       });
-  //   }
-  //   return () => {
-  //       if (selectAllCheckbox) {
-  //           selectAllCheckbox.removeEventListener('click', handleSelectAll);
-  //       }
-  //   };
-  // }, []);
+  
   // Функція для оновлення імен вибраних пасажирів
   const updateSelectedPassengerNames = () => {
     const selectedNames = passengersRowData

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from '../../utils/axiosInstance';
+import { API_ENDPOINTS } from '../../config/apiConfig';
 import './NewAssignmentOrder.css';
 
 const NewAssignmentOrder = () => {
@@ -17,23 +19,19 @@ const NewAssignmentOrder = () => {
   const [vehicles, setVehicles] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/drivers', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        'Content-Type': 'application/json',
-      },
-    }) // Update with real endpoint
-      .then((res) => res.json())
-      .then((data) => setDrivers(data));
+    const fetchData = async () => {
+      try {
+        const driverResponse = await axios.get(API_ENDPOINTS.getDrivers);
+        setDrivers(driverResponse.data);
 
-    fetch('http://localhost:8000/api/vehicles', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        'Content-Type': 'application/json',
-      },
-    }) // Update with real endpoint
-      .then((res) => res.json())
-      .then((data) => setVehicles(data));
+        const vehicleResponse = await axios.get(API_ENDPOINTS.getVehicles);
+        setVehicles(vehicleResponse.data);
+      } catch (err) {
+        console.error('Error loading drivers or vehicles:', err);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const handleChange = (e) => {
@@ -41,21 +39,16 @@ const NewAssignmentOrder = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    fetch('http://localhost:8000/api/assignments', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData)
-    })
-      .then((res) => res.json())
-      .then(() => navigate('/'))
-      .catch((err) => console.error(err));
+    try {
+      await axios.post(API_ENDPOINTS.createAssignment, formData);
+      navigate('/');
+    } catch (err) {
+      console.error('Error creating assignment:', err);
+    }
   };
-  
+
   return (
     <div className="two-column-template">
       <div className="top-nav-bar">

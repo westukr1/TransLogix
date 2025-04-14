@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
 
 const EditPassenger = () => {
   const { t } = useTranslation();
@@ -47,38 +48,32 @@ const EditPassenger = () => {
 
   const handleSaveAndClose = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      
-      // Формування даних для оновлення
       const dataToUpdate = {
         department: passengerData.department,
         phone_number: passengerData.phoneNumber,
         email: passengerData.email,
       };
-      
+  
       console.log("Дані для відправки на оновлення:", dataToUpdate);
   
-      // Відправлення запиту PUT
-      const response = await axios.put(`http://localhost:8000/api/passengers/${passengerData.id}/update/`, dataToUpdate, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await axios.put(
+        API_ENDPOINTS.updatePassenger(passengerData.id),
+        dataToUpdate
+      );
   
-      if (response.status === 200 || response.status === 204) { 
+      if (response.status === 200 || response.status === 204) {
         alert(t('Passenger saved successfully!'));
-        navigate(-1); // Повернення на попередню сторінку після успішного збереження
+        navigate(-1);
       } else {
         console.warn("Відповідь сервера не успішна:", response);
         alert(t('Помилка при збереженні пасажира.'));
       }
-  
     } catch (error) {
       console.error('Error saving passenger:', error);
       alert(t('Помилка при збереженні пасажира. Перевірте правильність введених даних.'));
     }
   };
+  
   
 
   const handleRedirectToAddresses = () => {

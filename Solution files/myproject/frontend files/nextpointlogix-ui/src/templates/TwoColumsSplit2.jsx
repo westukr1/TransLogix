@@ -3,7 +3,8 @@ import "./TwoColumnsSplit2.css";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-import axios from "axios";
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
 import dayjs from "dayjs";
 
 const TwoColumnsSplit2 = () => {

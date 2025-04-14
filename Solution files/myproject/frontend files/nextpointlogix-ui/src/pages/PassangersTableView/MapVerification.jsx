@@ -3,7 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 import { useTranslation } from "react-i18next";
 import "./MapVerification.css";
-
+import axios from "../../utils/axiosInstance";
+import { API_ENDPOINTS } from "../../config/apiConfig";
 const libraries = ["places"];
 
 const MapVerification = () => {
@@ -26,14 +27,8 @@ const MapVerification = () => {
     if (!apiKey) {
       const fetchGoogleMapsKey = async () => {
         try {
-          const token = localStorage.getItem("access_token");
-          const response = await fetch(
-            "http://localhost:8000/api/google-maps-key/",
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-          const data = await response.json();
+          const response = await axios.get(API_ENDPOINTS.getGoogleMapsKey);
+          const data = response.data;
           setApiKey(data.google_maps_api_key);
           localStorage.setItem("google_maps_api_key", data.google_maps_api_key);
         } catch (error) {
@@ -43,6 +38,7 @@ const MapVerification = () => {
       fetchGoogleMapsKey();
     }
   }, [apiKey, t]);
+  
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: apiKey,
@@ -64,30 +60,20 @@ const MapVerification = () => {
       console.error(t("no_coordinate_point_id"));
       return;
     }
-
+  
     try {
-      const token = localStorage.getItem("access_token");
       const updatedCoordinates = {
         latitude: parseFloat(latitude.toFixed(6)),
         longitude: parseFloat(longitude.toFixed(6)),
       };
-
-      await fetch(
-        `http://localhost:8000/api/coordinate-points/${coordinatePointId}/update-coordinates/`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updatedCoordinates),
-        }
+  
+      await axios.put(
+        API_ENDPOINTS.updateCoordinates(coordinatePointId),
+        updatedCoordinates
       );
-
+  
       alert(
-        `${t("saved_coordinates")} - ${t("latitude")}: ${latitude}, ${t(
-          "longitude"
-        )}: ${longitude}`
+        `${t("saved_coordinates")} - ${t("latitude")}: ${latitude}, ${t("longitude")}: ${longitude}`
       );
       navigate(-1);
     } catch (error) {
@@ -95,7 +81,7 @@ const MapVerification = () => {
       alert(t("failed_save_coordinates"));
     }
   };
-
+  
   const onMarkerDragEnd = (event) => {
     const newLat = event.latLng.lat();
     const newLng = event.latLng.lng();
