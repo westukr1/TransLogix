@@ -7,13 +7,20 @@ const axiosInstance = axios.create({
   }
 });
 
-// Додаємо токен до кожного запиту (якщо він є)
+// Додаємо токен і session ID до кожного запиту (якщо є)
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
+    const sessionId = localStorage.getItem('session_id');
+
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
+
+    if (sessionId) {
+      config.headers['Session-ID'] = sessionId;
+    }
+
     return config;
   },
   (error) => {

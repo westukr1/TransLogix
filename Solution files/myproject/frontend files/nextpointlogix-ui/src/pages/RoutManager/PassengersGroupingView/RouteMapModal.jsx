@@ -11,6 +11,7 @@ import { useSelector } from 'react-redux';
 import { API_ENDPOINTS } from '../../../config/apiConfig';
 
 
+
 const libraries = ["places"];
 const containerStyle = {
   width: "100%",
@@ -46,7 +47,8 @@ const RouteMapModal = ({ onClose }) => {
     // const sessionId = useSelector((state) => state.auth.sessionId);
     const [standardRoute, setStandardRoute] = useState([]);
     const [optimizedRoute, setOptimizedRoute] = useState([]);
-  
+    const [selectedRequests, setSelectedRequests] = useState([]);
+
     const token = localStorage.getItem('access_token');
     const sessionId = localStorage.getItem("session_id") || "bd1e7f30-12d3-4b56-92a3-bc46e2c84cda";
     localStorage.setItem("session_id", sessionId);
@@ -91,11 +93,11 @@ const RouteMapModal = ({ onClose }) => {
       //   }
       // }, [location.state]);
     
-      console.log("📌 Отримані дані після оновлення:", { standardRoute, optimizedRoute });
+      // console.log("📌 Отримані дані після оновлення:", { standardRoute, optimizedRoute });
   
     const defaultCenter = standardRoute.length > 0 
       ? { lat: standardRoute[0].lat, lng: standardRoute[0].lng }
-      : { lat: 50.4501, lng: 30.5234 }; // Default Kyiv
+      : { lat: 49.8397, lng: 24.0297}; // Default Lviv
 
       useEffect(() => {
         if (!apiKey) {
@@ -118,7 +120,12 @@ const RouteMapModal = ({ onClose }) => {
     googleMapsApiKey: apiKey,
     libraries,
   });
-
+  useEffect(() => {
+    if (requests.length > 0) {
+      setSelectedRequests(requests);
+    }
+  }, [requests]);
+  
   useEffect(() => {
     if (isLoaded && mapRef) {
       placeMarker();
@@ -127,36 +134,43 @@ const RouteMapModal = ({ onClose }) => {
   useEffect(() => {
     const fetchPassengerRequests = async () => {
       try {
-        // 1. Запит до тимчасового списку заявок
+        // 🔍 1. Логування перед запитом до тимчасового списку
+        console.log("📡 Відправка запиту з Session-ID:", sessionId);
+        console.log("📡 Відправка запиту з token:", token);
+
+        // 2. Отримуємо тимчасовий список заявок
         const tempResponse = await axios.get(API_ENDPOINTS.getActiveTempList, {
           headers: {
-            "Session-ID": sessionId,
-          }
-          
+            'Session-ID': sessionId,
+            "Authorization": `Bearer ${token}`, // 🔥 додай це
+          },
         });
-
+       
         console.log("📨 Відповідь з бекенду (повна):", tempResponse.data);
-
+  
         const requestIds = tempResponse.data?.requests?.map((r) => r.id) || [];
-
+  
         console.log("🗃️ ID заявок з тимчасового списку:", requestIds);
-
+  
         if (requestIds.length === 0) {
           console.warn("⚠️ Тимчасовий список заявок порожній або відсутній.");
           setLoading(false);
           return;
         }
-
-        // 2. Запит на отримання повних даних заявок
-      const fullResponse = await axios.get(API_ENDPOINTS.getFilteredTripRequests, {
-        headers: {
-          
-        },
-        params: {
-          ids_include: requestIds.join(","),
-        },
-      });
-
+  
+        // 🔍 3. Логування перед другим запитом
+        console.log("📡 Отримуємо повні дані заявок з ids_include:", requestIds.join(","));
+  
+        // 4. Запит на отримання повних даних заявок
+        const fullResponse = await axios.get(API_ENDPOINTS.getFilteredTripRequests, {
+          headers: {
+            "Session-ID": sessionId,  // 🔥 Обов'язково передати знову, якщо потрібно (залежить від BE)
+          },
+          params: {
+            ids_include: requestIds.join(","),
+          },
+        });
+  
         if (fullResponse.status === 200) {
           console.log("📦 Повні дані заявок за цим списком:", fullResponse.data);
           setRequests(fullResponse.data);
@@ -167,10 +181,10 @@ const RouteMapModal = ({ onClose }) => {
         setLoading(false);
       }
     };
-
+  
     fetchPassengerRequests();
   }, [token, sessionId]);
-
+  
   if (loading) return <div>Loading...</div>;
   //  // Зчитуємо точки маршруту із sessionStorage
   // useEffect(() => {
@@ -340,11 +354,7 @@ const RouteMapModal = ({ onClose }) => {
     <p>{t("no_route_data")}</p>
   )}
 </ul>
-          
-            
            
-
-            
             <button className="rmm-nav-button" onClick={centerMap}>
               {t("center_map")}
             </button>
@@ -389,6 +399,30 @@ const RouteMapModal = ({ onClose }) => {
   ))}
   <Polyline path={standardRoute} options={{ strokeColor: "red" }} />
   <Polyline path={optimizedRoute} options={{ strokeColor: "blue" }} />
+  {selectedRequests.map((request, index) => (
+  <Marker
+    key={`pickup-${index}`}
+    position={{
+      lat: parseFloat(request.pickup_latitude),
+      lng: parseFloat(request.pickup_longitude),
+    }}
+    label={`${index + 1}`}
+  />
+))}
+{selectedRequests.map((request, index) => (
+  <Marker
+    key={`dropoff-${index}`}
+    position={{
+      lat: parseFloat(request.dropoff_latitude),
+      lng: parseFloat(request.dropoff_longitude),
+    }}
+    label={`D${index + 1}`}
+    icon={{
+      url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png", // інший колір
+    }}
+  />
+))}
+
 </GoogleMap>
           </div>
         </div>

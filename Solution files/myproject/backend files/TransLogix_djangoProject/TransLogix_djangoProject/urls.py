@@ -178,7 +178,7 @@ urlpatterns = [
 
     path('api/', include(router.urls)),  # <-- Включає API маршрути
     path('api/passenger-requests/details/', get_passenger_requests_details, name='get_passenger_requests_details'),
-path('api/temp-lists/get_active_list/', TemporaryPassengerListViewSet.as_view({'get': 'get_active_list'}), name='get_active_list'),
+    path('api/temp-lists/get_active_list/', TemporaryPassengerListViewSet.as_view({'get': 'get_active_list'}), name='get_active_list'),
 
 ]
 
