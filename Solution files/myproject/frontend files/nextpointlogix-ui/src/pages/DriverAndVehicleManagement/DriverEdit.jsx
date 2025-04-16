@@ -3,6 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { AgGridReact } from "ag-grid-react";
 import "../VehicleAndDriverRegistration/DriverRegistration.css";
+import { API_ENDPOINTS } from "../../config/apiConfig";
+import axios from "../../utils/axiosInstance";
 
 const DriverEdit = () => {
   const navigate = useNavigate();
@@ -25,61 +27,40 @@ const DriverEdit = () => {
   const [availableVehicles, setAvailableVehicles] = useState([]);
 
   useEffect(() => {
-    // Fetch driver data
-    fetch(`http://localhost:8000/api/drivers/${id}/`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Fetched driver data:", data);
-        setDriverData(data); // Установка стану
-      })
-      .catch((error) => console.error("Error fetching driver data:", error));
-
-    // Fetch fuel types
-    fetch("http://localhost:8000/api/fuel-types/", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Fetched fuel types:", data);
-        setFuelTypes(data);
-      })
-      .catch((error) => console.error("Error fetching fuel types:", error));
+    const fetchDriverAndFuelTypes = async () => {
+      try {
+        const [driverRes, fuelRes] = await Promise.all([
+          axios.get(API_ENDPOINTS.getDriverById(id)),
+          axios.get(API_ENDPOINTS.getFuelTypes)
+        ]);
+        setDriverData(driverRes.data);
+        setFuelTypes(fuelRes.data);
+      } catch (err) {
+        console.error("Error loading driver or fuel types:", err);
+      }
+    };
+    fetchDriverAndFuelTypes();
   }, [id]);
-  useEffect(() => {
-    // Fetch assigned vehicles
-    fetch(`http://localhost:8000/drivers/${id}/vehicles/`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setAssignedVehicles(data);
-      })
-      .catch((error) =>
-        console.error("Error fetching assigned vehicles:", error)
+
+  const fetchVehicles = async () => {
+    try {
+      const assignedRes = await axios.get(API_ENDPOINTS.getDriverVehicles(id));
+      const allRes = await axios.get(API_ENDPOINTS.getVehicles);
+  
+      setAssignedVehicles(assignedRes.data);
+      const nonAssigned = allRes.data.filter(
+        v => !assignedRes.data.some(av => av.vehicle_id === v.vehicle_id)
       );
-
-    // Fetch all vehicles
-    fetch("http://localhost:8000/api/vehicles/", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => setAvailableVehicles(data)) // Зберігаємо всі автомобілі
-      .catch((error) => console.error("Error fetching all vehicles:", error));
+      setAvailableVehicles(nonAssigned);
+      setAllVehicles(nonAssigned);
+    } catch (error) {
+      console.error("Error fetching vehicles:", error);
+    }
+  };
+  useEffect(() => {
+    fetchVehicles();
   }, [id]);
+  
 
   useEffect(() => {
     // Фільтруємо доступні автомобілі після оновлення assignedVehicles
@@ -93,47 +74,47 @@ const DriverEdit = () => {
       setAllVehicles(nonAssignedVehicles);
     }
   }, [assignedVehicles, availableVehicles]);
-  useEffect(() => {
-    const fetchVehicles = async () => {
-      try {
-        const assignedResponse = await fetch(
-          `http://localhost:8000/drivers/${id}/vehicles/`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const assignedData = await assignedResponse.json();
-        setAssignedVehicles(assignedData);
+  // useEffect(() => {
+  //   const fetchVehicles = async () => {
+  //     try {
+  //       const assignedResponse = await fetch(
+  //         `http://localhost:8000/drivers/${id}/vehicles/`,
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+  //             "Content-Type": "application/json",
+  //           },
+  //         }
+  //       );
+  //       const assignedData = await assignedResponse.json();
+  //       setAssignedVehicles(assignedData);
 
-        const availableResponse = await fetch(
-          "http://localhost:8000/api/vehicles/",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const availableData = await availableResponse.json();
-        setAvailableVehicles(availableData);
+  //       const availableResponse = await fetch(
+  //         "http://localhost:8000/api/vehicles/",
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+  //             "Content-Type": "application/json",
+  //           },
+  //         }
+  //       );
+  //       const availableData = await availableResponse.json();
+  //       setAvailableVehicles(availableData);
 
-        const nonAssignedVehicles = availableData.filter(
-          (vehicle) =>
-            !assignedData.some(
-              (assigned) => assigned.vehicle_id === vehicle.vehicle_id
-            )
-        );
-        setAllVehicles(nonAssignedVehicles);
-      } catch (error) {
-        console.error("Error fetching vehicles:", error);
-      }
-    };
+  //       const nonAssignedVehicles = availableData.filter(
+  //         (vehicle) =>
+  //           !assignedData.some(
+  //             (assigned) => assigned.vehicle_id === vehicle.vehicle_id
+  //           )
+  //       );
+  //       setAllVehicles(nonAssignedVehicles);
+  //     } catch (error) {
+  //       console.error("Error fetching vehicles:", error);
+  //     }
+  //   };
 
-    fetchVehicles();
-  }, [id]);
+  //   fetchVehicles();
+  // }, [id]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -156,177 +137,100 @@ const DriverEdit = () => {
 
   const saveDriverData = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:8000/drivers/update/${id}/`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(driverData),
-        }
-      );
-
-      if (response.ok) {
-        alert(t("driver_saved_successfully"));
-      } else {
-        const errorData = await response.json();
-        alert(t("error_saving_driver") + ": " + JSON.stringify(errorData));
-      }
+      await axios.put(API_ENDPOINTS.updateDriver(id), driverData);
+      alert(t("driver_saved_successfully"));
     } catch (error) {
       console.error("Error saving driver data:", error);
     }
   };
 
-  const fetchVehicles = async () => {
-    try {
-      // Отримуємо призначені транспортні засоби
-      const assignedResponse = await fetch(
-        `http://localhost:8000/drivers/${id}/vehicles/`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const assignedData = await assignedResponse.json();
-      setAssignedVehicles(assignedData);
+  // const fetchVehicles = async () => {
+  //   try {
+  //     // Отримуємо призначені транспортні засоби
+  //     const assignedResponse = await fetch(
+  //       `http://localhost:8000/drivers/${id}/vehicles/`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+  //     const assignedData = await assignedResponse.json();
+  //     setAssignedVehicles(assignedData);
 
-      // Отримуємо всі транспортні засоби
-      const availableResponse = await fetch(
-        "http://localhost:8000/api/vehicles/",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const availableData = await availableResponse.json();
+  //     // Отримуємо всі транспортні засоби
+  //     const availableResponse = await fetch(
+  //       "http://localhost:8000/api/vehicles/",
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+  //     const availableData = await availableResponse.json();
 
-      // Фільтруємо доступні транспортні засоби
-      const nonAssignedVehicles = availableData.filter(
-        (vehicle) =>
-          !assignedData.some(
-            (assigned) => assigned.vehicle_id === vehicle.vehicle_id
-          )
-      );
-      setAllVehicles(nonAssignedVehicles);
-      setAvailableVehicles(nonAssignedVehicles);
-    } catch (error) {
-      console.error("Error fetching vehicles:", error);
-    }
-  };
+  //     // Фільтруємо доступні транспортні засоби
+  //     const nonAssignedVehicles = availableData.filter(
+  //       (vehicle) =>
+  //         !assignedData.some(
+  //           (assigned) => assigned.vehicle_id === vehicle.vehicle_id
+  //         )
+  //     );
+  //     setAllVehicles(nonAssignedVehicles);
+  //     setAvailableVehicles(nonAssignedVehicles);
+  //   } catch (error) {
+  //     console.error("Error fetching vehicles:", error);
+  //   }
+  // };
 
   const removeVehicle = async (vehicleId, driverId) => {
     try {
-      console.log("Removing assignment:", { vehicleId, driverId });
-
-      const response = await fetch(
-        "http://localhost:8000/api/vehicles/remove-assignment/",
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            vehicle_id: vehicleId,
-            driver_id: driverId,
-          }),
-        }
-      );
-
-      if (response.ok) {
-        alert("Assignment removed successfully.");
-
-        // Оновлення таблиць
-        await fetchVehicles(); // Викликаємо функцію для оновлення даних таблиць
-      } else {
-        const errorData = await response.json();
-        console.error("Error details:", errorData);
-        alert(`Error: ${JSON.stringify(errorData)}`);
-      }
+      await axios.delete(API_ENDPOINTS.removeVehicleAssignment, {
+        data: { vehicle_id: vehicleId, driver_id: driverId }
+      });
+      alert("Assignment removed successfully.");
+      fetchVehicles();
     } catch (error) {
-      console.error("Network error:", error);
-      alert(`Network error: ${error.message}`);
+      console.error("Error removing assignment:", error);
     }
   };
 
+
   const addVehicle = async (vehicleId) => {
     try {
-      const response = await fetch(
-        `http://localhost:8000/driver/${id}/assign-vehicle/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            assignment_date: new Date().toISOString().split("T")[0],
-            order_number: "NPL-000000",
-            is_active: true,
-            driver_id: id, // ID водія
-            vehicle_id: vehicleId, // ID транспортного засобу
-          }),
-        }
-      );
-
-      if (response.ok) {
-        alert(t("vehicle_assigned_successfully"));
-        fetchVehicles(); // Оновлення таблиць
-      } else {
-        const errorData = await response.json();
-        alert(t("error_assigning_vehicle") + ": " + JSON.stringify(errorData));
-      }
+      await axios.post(API_ENDPOINTS.assignVehicle(id), {
+        assignment_date: new Date().toISOString().split("T")[0],
+        order_number: "NPL-000000",
+        is_active: true,
+        driver_id: id,
+        vehicle_id: vehicleId
+      });
+      alert(t("vehicle_assigned_successfully"));
+      fetchVehicles();
     } catch (error) {
-      console.error("Network Error:", error);
-      alert(t("error.network") + ": " + error.message);
+      console.error("Error assigning vehicle:", error);
     }
   };
 
   const updateDriversData = async () => {
     try {
-      // Оновлюємо список призначених водіїв
-      const assignedResponse = await fetch(
-        `http://localhost:8000/vehicles/${id}/assigned-drivers/`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const assignedData = await assignedResponse.json();
-      setAssignedDrivers(assignedData);
+      const [assignedRes, allDriversRes] = await Promise.all([
+        axios.get(API_ENDPOINTS.getAssignedDriversForVehicle(id)),
+        axios.get(API_ENDPOINTS.getDrivers)
+      ]);
 
-      // Оновлюємо список усіх водіїв
-      const allDriversResponse = await fetch(
-        "http://localhost:8000/api/drivers/",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const allDriversData = await allDriversResponse.json();
-
-      // Фільтруємо лише тих, хто не призначений
-      const nonAssignedDrivers = allDriversData.filter(
-        (driver) =>
-          !assignedData.some(
-            (assigned) => assigned.driver_id === driver.driver_id
-          )
+      setAssignedDrivers(assignedRes.data);
+      const nonAssignedDrivers = allDriversRes.data.filter(
+        driver => !assignedRes.data.some(assigned => assigned.driver_id === driver.driver_id)
       );
       setAllDrivers(nonAssignedDrivers);
     } catch (error) {
       console.error("Error refreshing drivers data:", error);
     }
   };
+
   const handleCellValueChange = (params) => {
     const updatedVehicle = params.data; // Оновлені дані
     console.log("Updated vehicle:", updatedVehicle);
@@ -345,10 +249,11 @@ const DriverEdit = () => {
   };
 
   const handleSaveWithConfirmation = () => {
-    if (window.confirm("Are you sure you want to save changes?")) {
-      saveChanges(); // Виклик існуючої функції `saveChanges`
+    if (window.confirm(t("confirm_save_changes"))) {
+      saveChanges();
     }
   };
+
   const saveChanges = async () => {
     if (updatedDrivers.length === 0) {
       alert(t("no_changes_to_save"));
@@ -356,67 +261,29 @@ const DriverEdit = () => {
     }
 
     try {
-      const response = await fetch(
-        "http://localhost:8000/api/drivers/bulk-update/",
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updatedDrivers),
-        }
-      );
-
-      if (response.ok) {
-        setUpdatedDrivers([]); // Очищуємо список змінених водіїв
-        updateDriversData(); // Оновлюємо таблиці
-      } else {
-        const errorData = await response.json();
-        console.error("Error saving changes:", errorData);
-        alert(t("error_saving_changes") + ": " + JSON.stringify(errorData));
-      }
+      await axios.put(API_ENDPOINTS.bulkUpdateDrivers, updatedDrivers);
+      setUpdatedDrivers([]);
+      updateDriversData();
     } catch (error) {
-      console.error("Network Error:", error);
-      alert(t("error.network") + ": " + error.message);
+      console.error("Error saving changes:", error);
+      alert(t("error_saving_changes") + ": " + error.response?.data || error.message);
     }
   };
 
-  const updateFuelType = (vehicleId, fuelTypeId) => {
-    fetch("http://localhost:8000/api/vehicles/update-fuel-type/", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+  const updateFuelType = async (vehicleId, fuelTypeId) => {
+    try {
+      await axios.post(API_ENDPOINTS.updateVehicleFuelType, {
         vehicle_id: vehicleId,
-        fuel_type_id: fuelTypeId,
-      }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to update fuel type");
-        }
-        return response.json();
-      })
-      .then(() => {
-        // Refresh the table data after successful update
-        fetch("http://localhost:8000/api/vehicles/", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json",
-          },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            setVehicleRowData(Array.isArray(data) ? data : []);
-          })
-          .catch((error) => console.error("Error refreshing vehicles:", error));
-      })
-      .catch((error) => console.error("Error updating fuel type:", error));
+        fuel_type_id: fuelTypeId
+      });
+      const res = await axios.get(API_ENDPOINTS.getVehicles);
+      setVehicleRowData(res.data);
+    } catch (error) {
+      console.error("Error updating fuel type:", error);
+    }
   };
-  const saveVehiclesBulk = () => {
+  
+  const saveVehiclesBulk = async () => {
     const payload = vehicleRowData.map((vehicle) => ({
       vehicle_id: vehicle.vehicle_id,
       license_plate: vehicle.license_plate,
@@ -437,31 +304,14 @@ const DriverEdit = () => {
 
     console.log("Sending vehicles payload:", payload);
 
-    fetch("http://localhost:8000/api/vehicles/bulk-update/", {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          return response.json().then((data) => {
-            throw new Error(JSON.stringify(data));
-          });
-        }
-        return response.json();
-      })
-      .then((data) => {
-        alert("Vehicles updated successfully");
-        fetchVehicles(); // Оновлюємо таблиці
-      })
-      .catch((error) => {
-        console.error("Error updating vehicles:", error);
-      });
+    try {
+      await axios.put(API_ENDPOINTS.bulkUpdateVehicles, vehicleRowData);
+      fetchVehicles();
+    } catch (error) {
+      console.error("Error updating vehicles:", error);
+    }
   };
-  const saveAssignedVehiclesBulk = () => {
+  const saveAssignedVehiclesBulk = async () => {
     const payload = assignedVehicles.map((vehicle) => ({
       vehicle_id: vehicle.vehicle_id,
       license_plate: vehicle.license_plate,
@@ -482,36 +332,19 @@ const DriverEdit = () => {
 
     console.log("Sending assigned vehicles payload:", payload);
 
-    fetch("http://localhost:8000/api/vehicles/bulk-update/", {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          return response.json().then((data) => {
-            throw new Error(JSON.stringify(data));
-          });
-        }
-        return response.json();
-      })
-      .then((data) => {
-        fetchVehicles(); // Оновлюємо таблиці
-      })
-      .catch((error) => {
-        console.error("Error updating assigned vehicles:", error);
-      });
+    try {
+      await axios.put(API_ENDPOINTS.bulkUpdateVehicles, assignedVehicles);
+      fetchVehicles();
+    } catch (error) {
+      console.error("Error updating assigned vehicles:", error);
+    }
   };
+
   const saveAllChanges = async () => {
     try {
-      saveAssignedVehiclesBulk();
-      saveVehiclesBulk();
-      // Повідомлення про успішне збереження
+      await Promise.all([saveAssignedVehiclesBulk(), saveVehiclesBulk()]);
     } catch (error) {
-      console.error("Error saving changes:", error);
+      console.error("Error saving all changes:", error);
     }
   };
 

@@ -8,6 +8,9 @@ import '../styles/OperatorUI.css';
 import i18n from '../i18n';  
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import axios from '../utils/axiosInstance';
+import { API_ENDPOINTS } from '../config/apiConfig';
+
 
 const OperatorUI = () => {
   const location = useLocation();
@@ -44,25 +47,14 @@ const OperatorUI = () => {
       try {
         const token = localStorage.getItem('access_token');
         if (token) {
-          const response = await fetch('http://localhost:8000/api/me/', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            localStorage.setItem('user_id', data.id);
-          } else {
-            throw new Error('Failed to fetch user ID');
-          }
+          const response = await axios.get(API_ENDPOINTS.getUserInfo); // <-- новий ендпоінт
+          localStorage.setItem('user_id', response.data.id);
         }
       } catch (error) {
         console.error('Error fetching user ID:', error);
       }
     };
+    
 
     fetchUserId();
   }, [location]);
@@ -70,33 +62,18 @@ const OperatorUI = () => {
 
   // Запит на отримання списку пасажирів з бекенду
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      fetch('http://localhost:8000/api/passengers/', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      })
-      .then(response => {
-        //console.log('запит на отримання пасажирів:');
-        if (!response.ok) {
-          throw new Error('Failed to fetch passengers');
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log('Отримані пасажири:', data);
-        setPassengers(data);  
-      })
-      .catch(error => {
-        console.error('Помилка отримання пасажирів:', error); 
-      });
-    } else {
-      console.error('Токен не знайдено. Будь ласка, увійдіть у систему.');
-    }
+    const fetchPassengers = async () => {
+      try {
+        const response = await axios.get(API_ENDPOINTS.getPassengers(true)); // is_active=true
+        setPassengers(response.data);
+      } catch (error) {
+        console.error('Помилка отримання пасажирів:', error);
+      }
+    };
+  
+    fetchPassengers();
   }, []);
+  
 
   // Функція для пошуку за будь-яким текстом
   const handleSearch = (event) => {
@@ -107,10 +84,10 @@ const OperatorUI = () => {
 
   const formatParsedAddress = (passenger) => {
       // Лог даних пасажира
-    console.log("Пасажир:", passenger);
+    // console.log("Пасажир:", passenger);
     // Якщо адреса є окремими полями
     if (passenger && passenger.city && passenger.street && passenger.house_number) {
-      console.log("Обробляємо адресу безпосередньо з об'єкта пасажира");
+      // console.log("Обробляємо адресу безпосередньо з об'єкта пасажира");
 
       const { region, city, street, house_number , district } = passenger;
 
@@ -122,14 +99,14 @@ const OperatorUI = () => {
         district,
       ].filter(Boolean).join(', ');
 
-      console.log("Сформована адреса:", formattedAddress);
+      // console.log("Сформована адреса:", formattedAddress);
       return formattedAddress || 'Адреса не вказана';
     }
       // Перевіряємо, чи є масив pickup_addresses і чи він не порожній
     if (passenger.pickup_addresses && passenger.pickup_addresses.length > 0) {
           // Отримуємо першу адресу посадки з масиву pickup_addresses
         const firstPickupAddress = passenger.pickup_addresses[0];
-        console.log("Перша адреса посадки:", firstPickupAddress);
+        // console.log("Перша адреса посадки:", firstPickupAddress);
   
           // Форматуємо адресу з полів адреси
         const { street, house_number, city, region, district} = firstPickupAddress;
@@ -144,7 +121,7 @@ const OperatorUI = () => {
 
         ].filter(Boolean).join(', ');
   
-        console.log("Сформована адреса:", formattedAddress);
+        // console.log("Сформована адреса:", formattedAddress);
   
           // Повертаємо відформатовану адресу або повідомлення, що адреса не вказана
         return formattedAddress || 'Адреса не вказана';

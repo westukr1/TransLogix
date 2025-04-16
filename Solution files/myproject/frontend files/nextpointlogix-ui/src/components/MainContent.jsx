@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import '../styles/MainContent.css';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import axios from '../utils/axiosInstance';
+import { API_ENDPOINTS } from '../config/apiConfig';
 
 function MainContent() {
   const { t } = useTranslation();
@@ -69,31 +71,27 @@ function MainContent() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      fetch('http://localhost:8000/api/routes/', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (Array.isArray(data)) {
-            setRoutes(data);
-          } else {
-            setRoutes([]);
-          }
-        })
-        .catch(error => {
-          console.error('Помилка отримання маршрутів:', error);
-        });
-    } else {
-      console.error('Токен не знайдено. Будь ласка, увійдіть у систему.');
-    }
+    const fetchRoutes = async () => {
+      try {
+        const response = await axios.get(API_ENDPOINTS.getRoutes);
+        if (Array.isArray(response.data)) {
+          setRoutes(response.data);
+        } else {
+          setRoutes([]);
+        }
+      } catch (error) {
+        console.error('Помилка отримання маршрутів:', error);
+      }
+    };
+    fetchRoutes();
   }, []);
 
+  useEffect(() => {
+    if (routes.length > 0) {
+      filterTodayRoutes();
+    }
+  }, [routes]);
+  
   useEffect(() => {
     if (routes.length > 0) {
       filterTodayRoutes();

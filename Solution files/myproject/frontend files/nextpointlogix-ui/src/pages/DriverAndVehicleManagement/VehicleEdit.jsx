@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AgGridReact } from 'ag-grid-react';
 import '../VehicleAndDriverRegistration/DriverRegistration.css';
+
+import "./VehicleEdit.css";
 import axios from '../../utils/axiosInstance';
 import { API_ENDPOINTS } from '../../config/apiConfig';
 
@@ -68,11 +70,21 @@ const VehicleEdit = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setVehicleData({
+      
+        if (name === "fuel_type") {
+          const selectedFuel = fuelTypes.find(fuel => fuel.fuel_type_id === parseInt(value));
+          setVehicleData({
+            ...vehicleData,
+            fuel_type: selectedFuel,
+          });
+        } else {
+          setVehicleData({
             ...vehicleData,
             [name]: value,
-        });
-    };
+          });
+        }
+      };
+      
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -185,7 +197,7 @@ const VehicleEdit = () => {
                 </div>
             </div>
 
-            <div className="template21-content">
+            <div className="ve-template21-content">
                 <div className="template21-left-column">
                     <div className="vehicle-image-box">
                         <img
@@ -197,7 +209,7 @@ const VehicleEdit = () => {
                     
                 </div>
 
-                <div className="template21-right-column">
+                <div className="template21-right-column" style={{width: '100%' }}>
                     <div className="tab-container">
                         <button 
                             className={`tab-button ${activeTab === 'info' ? 'active' : ''}`}
@@ -428,11 +440,11 @@ const VehicleEdit = () => {
                                         { headerName: t('active'), field: 'active', editable: true, width: 100 },
                                         { headerName: t('image_url'), field: 'image_url', editable: true, width: 100 },
                                     ]}
-                                />
-                            </div>
-                            <button className="nav-button"
+                                /><button className="nav-button"
                                 onClick={saveChanges}>{t('save_changes')}
                             </button>
+                            </div>
+                            
                         </div>
                     )}
                 </div>
