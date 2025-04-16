@@ -52,45 +52,45 @@
 .ve-template21-content {
   display: flex;
   flex: 1;
-  width: 100%; 
+  width: 100% !important; /* Встановлено ширину на 100% */
   padding: 0;
   margin: 0;
   box-sizing: border-box;
 }
 
-.template21-left-column {
-  flex: 0 0 30%; 
+.ve-template21-left-column {
+  flex: 0 0 30% !important; 
   padding: 20px;
   background-color: #3a3a3a;
   border-right: 3px solid #C0C0C0;
   box-sizing: border-box;
 }
 
-.template21-left-column h2 {
+.ve-template21-left-column h2 {
   color: #fff;
   margin-bottom: 10px;
 }
 
-.template21-left-column ul {
+.ve-template21-left-column ul {
   list-style-type: none;
   padding: 0;
 }
 
-.template21-left-column li {
+.ve-template21-left-column li {
   margin-bottom: 10px;
 }
 
-.template21-left-column a {
+.ve-template21-left-column a {
   color: #fff;
   text-decoration: none;
 }
 
-.template21-left-column a:hover {
+.ve-template21-left-column a:hover {
   text-decoration: underline;
 }
 
-.template21-right-column {
-  flex: 0 0 70%; /* Зміна ширини на 70% */
+.ve-template21-right-column {
+  flex: 0 0 100% !important; /* Зміна ширини на 70% */
   padding: 20px;
   background-color: #2c2c2c;
   box-sizing: border-box;

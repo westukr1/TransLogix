@@ -75,26 +75,31 @@ const GroupingListToRoute = (onRefreshRequests) => {
   localStorage.setItem("session_id", sessionId);
  
   
-  useEffect(() => {
-    const storedFilters = JSON.parse(sessionStorage.getItem("filters"));
-    if (storedFilters?.requests?.length > 0) {
-      setSelectedRequests(storedFilters.requests);
-      setPassengerRequests(prev => ({
-        ...prev,
-        right: storedFilters.requests,
-      }));
-      console.log("🔁 Відновлено заявки з sessionStorage:", storedFilters.requests);
-    }
+ useEffect(() => {
+  const storedFilters = JSON.parse(sessionStorage.getItem("filters"));
   
-    const stored = sessionStorage.getItem("savedPassengerListFilters");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (parsed.start_date) setStartDate(dayjs(parsed.start_date));
-      if (parsed.end_date) setEndDate(dayjs(parsed.end_date));
-      setFilters(parsed);
-      console.log("🔁 Відновлено фільтри для списків з sessionStorage:", parsed);
-    }
-  }, []);
+  if (Array.isArray(storedFilters?.requests) && storedFilters.requests.length > 0) {
+    setSelectedRequests(storedFilters.requests);
+    setPassengerRequests(prev => ({
+      ...prev,
+      right: storedFilters.requests,
+    }));
+    console.log("🔁 Відновлено заявки з sessionStorage:", storedFilters.requests);
+  } else {
+    console.warn("⚠️ storedFilters.requests не є масивом або порожній:", storedFilters?.requests);
+    setSelectedRequests([]);  // Додатково - очистити якщо помилковий тип
+  }
+
+  const stored = sessionStorage.getItem("savedPassengerListFilters");
+  if (stored) {
+    const parsed = JSON.parse(stored);
+    if (parsed.start_date) setStartDate(dayjs(parsed.start_date));
+    if (parsed.end_date) setEndDate(dayjs(parsed.end_date));
+    setFilters(parsed);
+    console.log("🔁 Відновлено фільтри для списків з sessionStorage:", parsed);
+  }
+}, []);
+
   
   
   useEffect(() => {

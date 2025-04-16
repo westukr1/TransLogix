@@ -194,6 +194,7 @@ export const API_ENDPOINTS = {
     // ===== Ordered Lists =====
     createOrderedPassengerList: `${BASE_URL}/api/ordered-passenger-list/create_ordered_list/`,
     getOrderedPassengerList: (listId) => `${BASE_URL}/api/ordered-passenger-list/${listId}/`,
+    filteredPassengerTripRequests: `${BASE_URL}/api/filtered-passenger-trip-requests/`,
     deleteOrderedPassengerList: (listId) => `${BASE_URL}/api/ordered-passenger-list/${listId}/delete/`,
   
     // ===== Assignments =====

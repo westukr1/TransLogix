@@ -266,12 +266,117 @@ const handleDirectionChange = (newDirection) => {
 
 
 
+// const fetchPassengerRequests = useCallback(async () => {
+//   let currentFilters = JSON.parse(sessionStorage.getItem("filters"));
+//   console.log("🔍 Поточні фільтри з sessionStorage:", currentFilters);
+
+//   // 🧩 Якщо фільтри є, але немає заявок — перевіряємо бекенд
+//   if (currentFilters && (!currentFilters.requests || currentFilters.requests.length === 0)) {
+//     console.log("📭 У sessionStorage немає заявок. Перевіряємо бекенд...");
+//     try {
+//       const backendResponse = await axios.get(API_ENDPOINTS.getActiveTempList, {
+//         headers: {
+//           'Session-ID': sessionId,
+//         },
+//       });
+      
+//       console.log("🛰️ Відповідь з бекенду:", backendResponse.data);
+//       if (backendResponse.status === 200 && backendResponse.data.filter_params?.requests?.length > 0) {
+//         const updatedFilters = {
+//           ...currentFilters,
+//           requests: backendResponse.data.filter_params.requests,
+//         };
+//         sessionStorage.setItem("filters", JSON.stringify(updatedFilters));
+//         currentFilters = updatedFilters;
+//         console.log("✅ Заявки відновлені з бекенду і записані у sessionStorage:", updatedFilters.requests);
+//       }
+//     } catch (error) {
+//       console.error("❌ Помилка при перевірці заявок на бекенді:", error);
+//     }
+//   }
+  
+//   if (!currentFilters) {
+//     console.log("📤 Немає фільтрів у Session Storage. Виконуємо запит на бекенд...");
+//     try {
+//       const response = await axios.get(API_ENDPOINTS.getActiveTempList, {
+//         headers: {
+//           'Session-ID': sessionId,
+//         },
+//       });
+      
+
+//       if (response.status === 200 && response.data.filter_params) {
+//         console.log("✅ Отримано фільтри з бекенду:", response.data.filter_params);
+//         const existingFilters = JSON.parse(sessionStorage.getItem("filters")) || {};
+//         currentFilters = {
+//           ...response.data.filter_params,
+//           requests: existingFilters.requests || [],
+//         };
+//         sessionStorage.setItem("filters", JSON.stringify(currentFilters));
+//       } else {
+//         console.warn("⚠️ Немає фільтрів на бекенді, використовується дефолтний набір.");
+//         const existingFilters = JSON.parse(sessionStorage.getItem("filters")) || {};
+//         currentFilters = {
+//           ...defaultFilters,
+//           requests: existingFilters.requests || [],
+//         };
+//         sessionStorage.setItem("filters", JSON.stringify(currentFilters));
+//       }
+//     } catch (error) {
+//       console.error("❌ Помилка отримання фільтрів з бекенду, встановлюємо дефолтні:", error);
+//       const existingFilters = JSON.parse(sessionStorage.getItem("filters")) || {};
+//       currentFilters = {
+//         ...defaultFilters,
+//         requests: existingFilters.requests || [],
+//       };
+//       sessionStorage.setItem("filters", JSON.stringify(currentFilters));
+//     }
+//   }
+
+//   console.log("📤 Використовуємо фільтри у запиті:", currentFilters);
+
+//   let directionQuery = "";
+//   if (currentFilters.allow_mixed_directions && directionFilter === "ALL") {
+//     directionQuery = "HOME_TO_WORK,WORK_TO_HOME";
+//   } else {
+//     directionQuery = currentFilters.direction || "";
+//   }
+
+//   const excludedIds = currentFilters?.requests?.map((r) => r.id) || [];
+//   console.log("📤 ID заявок для виключення (ids_exclude):", excludedIds);
+
+//   try {
+//     const response = await axios.get("http://localhost:8000/api/filtered-passenger-trip-requests/", {
+//       headers: { Authorization: `Bearer ${token}` },
+//       params: {
+//         included_in_list: "false",
+//         start_date: currentFilters.start_date ? formatDate(currentFilters.start_date) : '',
+//         end_date: currentFilters.end_date ? formatDate(currentFilters.end_date) : '',
+//         direction: directionQuery,
+//         search: '',
+//         is_active: onlyActive,
+//         ids_exclude: excludedIds.join(","),
+//       },
+//     });
+
+//     if (response.status === 200 && Array.isArray(response.data)) {
+//       console.log("✅ Отримані заявки пасажирів:", response.data);
+//       setPassengerRequests(response.data);
+//     } else {
+//       console.warn("⚠️ Очікувався масив заявок, але отримано:", response.data);
+//       setPassengerRequests([]); // захист від .map помилок
+//     }
+    
+//   } catch (error) {
+//     console.error("❌ Помилка отримання заявок пасажирів:", error);
+//   }
+// }, [token, sessionId, onlyActive, directionFilter]);
 const fetchPassengerRequests = useCallback(async () => {
   let currentFilters = JSON.parse(sessionStorage.getItem("filters"));
   console.log("🔍 Поточні фільтри з sessionStorage:", currentFilters);
 
-  // 🧩 Якщо фільтри є, але немає заявок — перевіряємо бекенд
-  if (currentFilters && (!currentFilters.requests || currentFilters.requests.length === 0)) {
+  // 🧹 Якщо фільтри є, але немає заявок — перевіряємо бекенд
+  if (currentFilters && (!Array.isArray(currentFilters.requests) || currentFilters.requests.length === 0)) {
     console.log("📭 У sessionStorage немає заявок. Перевіряємо бекенд...");
     try {
       const backendResponse = await axios.get(API_ENDPOINTS.getActiveTempList, {
@@ -279,22 +384,32 @@ const fetchPassengerRequests = useCallback(async () => {
           'Session-ID': sessionId,
         },
       });
-      
-      console.log("🛰️ Відповідь з бекенду:", backendResponse.data);
-      if (backendResponse.status === 200 && backendResponse.data.filter_params?.requests?.length > 0) {
+
+      console.log("🚁 Відповідь з бекенду:", backendResponse.data);
+      const backendRequests = backendResponse.data?.filter_params?.requests;
+      if (backendResponse.status === 200 && Array.isArray(backendRequests)) {
         const updatedFilters = {
           ...currentFilters,
-          requests: backendResponse.data.filter_params.requests,
+          requests: backendRequests,
         };
         sessionStorage.setItem("filters", JSON.stringify(updatedFilters));
         currentFilters = updatedFilters;
         console.log("✅ Заявки відновлені з бекенду і записані у sessionStorage:", updatedFilters.requests);
+      } else {
+        // 🧼 Якщо бекенд не повернув масив — явно зберігаємо пустий масив
+        const updatedFilters = {
+          ...currentFilters,
+          requests: [],
+        };
+        sessionStorage.setItem("filters", JSON.stringify(updatedFilters));
+        currentFilters = updatedFilters;
+        console.warn("⚠️ Бекенд не повернув список заявок — записали пустий масив.");
       }
     } catch (error) {
       console.error("❌ Помилка при перевірці заявок на бекенді:", error);
     }
   }
-  
+
   if (!currentFilters) {
     console.log("📤 Немає фільтрів у Session Storage. Виконуємо запит на бекенд...");
     try {
@@ -303,7 +418,6 @@ const fetchPassengerRequests = useCallback(async () => {
           'Session-ID': sessionId,
         },
       });
-      
 
       if (response.status === 200 && response.data.filter_params) {
         console.log("✅ Отримано фільтри з бекенду:", response.data.filter_params);
@@ -342,12 +456,11 @@ const fetchPassengerRequests = useCallback(async () => {
     directionQuery = currentFilters.direction || "";
   }
 
-  const excludedIds = currentFilters?.requests?.map((r) => r.id) || [];
+  const excludedIds = Array.isArray(currentFilters?.requests) ? currentFilters.requests.map((r) => r.id) : [];
   console.log("📤 ID заявок для виключення (ids_exclude):", excludedIds);
 
   try {
-    const response = await axios.get("http://localhost:8000/api/filtered-passenger-trip-requests/", {
-      headers: { Authorization: `Bearer ${token}` },
+    const response = await axios.get(API_ENDPOINTS.filteredPassengerTripRequests, {
       params: {
         included_in_list: "false",
         start_date: currentFilters.start_date ? formatDate(currentFilters.start_date) : '',
@@ -359,10 +472,14 @@ const fetchPassengerRequests = useCallback(async () => {
       },
     });
 
-    if (response.status === 200) {
+    if (response.status === 200 && Array.isArray(response.data)) {
       console.log("✅ Отримані заявки пасажирів:", response.data);
       setPassengerRequests(response.data);
+    } else {
+      console.warn("⚠️ Очікувався масив заявок, але отримано:", response.data);
+      setPassengerRequests([]);
     }
+
   } catch (error) {
     console.error("❌ Помилка отримання заявок пасажирів:", error);
   }

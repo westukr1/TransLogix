@@ -198,7 +198,7 @@ const VehicleEdit = () => {
             </div>
 
             <div className="ve-template21-content">
-                <div className="template21-left-column">
+                <div className="ve-template21-left-column">
                     <div className="vehicle-image-box">
                         <img
                             src={vehicleData.image_url || require('../VehicleAndDriverRegistration/defaultPictureVehicle.jpg')}
@@ -209,7 +209,7 @@ const VehicleEdit = () => {
                     
                 </div>
 
-                <div className="template21-right-column" style={{width: '100%' }}>
+                <div className="ve-template21-right-column" style={{width: '100%' }}>
                     <div className="tab-container">
                         <button 
                             className={`tab-button ${activeTab === 'info' ? 'active' : ''}`}
@@ -350,9 +350,9 @@ const VehicleEdit = () => {
                                 onChange={handleChange}
                             />
 
-                            <button type="submit" className="nav-button">
+                            {/* <button type="submit" className="nav-button">
                                 {t('save')}
-                            </button>
+                            </button> */}
                         </form>
                     )}
 
@@ -440,13 +440,14 @@ const VehicleEdit = () => {
                                         { headerName: t('active'), field: 'active', editable: true, width: 100 },
                                         { headerName: t('image_url'), field: 'image_url', editable: true, width: 100 },
                                     ]}
-                                /><button className="nav-button"
-                                onClick={saveChanges}>{t('save_changes')}
-                            </button>
+                                />
                             </div>
                             
                         </div>
                     )}
+                    <button className="nav-button"
+                                onClick={saveChanges}>{t('save_changes')}
+                            </button>
                 </div>
             </div>
         </div>
