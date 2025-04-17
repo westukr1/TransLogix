@@ -137,14 +137,13 @@ const RouteMapModal = ({ onClose }) => {
         // 🔍 1. Логування перед запитом до тимчасового списку
         console.log("📡 Відправка запиту з Session-ID:", sessionId);
         console.log("📡 Відправка запиту з token:", token);
+       
+
 
         // 2. Отримуємо тимчасовий список заявок
-        const tempResponse = await axios.get(API_ENDPOINTS.getActiveTempList, {
-          headers: {
-            'Session-ID': sessionId,
-            "Authorization": `Bearer ${token}`, // 🔥 додай це
-          },
-        });
+        const tempResponse = await axios.get(API_ENDPOINTS.getActiveTempList);
+
+
        
         console.log("📨 Відповідь з бекенду (повна):", tempResponse.data);
   
@@ -399,29 +398,47 @@ const RouteMapModal = ({ onClose }) => {
   ))}
   <Polyline path={standardRoute} options={{ strokeColor: "red" }} />
   <Polyline path={optimizedRoute} options={{ strokeColor: "blue" }} />
-  {selectedRequests.map((request, index) => (
-  <Marker
-    key={`pickup-${index}`}
-    position={{
-      lat: parseFloat(request.pickup_latitude),
-      lng: parseFloat(request.pickup_longitude),
-    }}
-    label={`${index + 1}`}
-  />
-))}
-{selectedRequests.map((request, index) => (
-  <Marker
-    key={`dropoff-${index}`}
-    position={{
-      lat: parseFloat(request.dropoff_latitude),
-      lng: parseFloat(request.dropoff_longitude),
-    }}
-    label={`D${index + 1}`}
-    icon={{
-      url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png", // інший колір
-    }}
-  />
-))}
+  {selectedRequests.map((request, index) => {
+  const fullName = `${request.passenger_first_name || ''} ${request.passenger_last_name || ''}`;
+  const datetime = request.estimated_start_time
+    ? new Date(request.estimated_start_time).toLocaleString()
+    : t("no_time");
+  const title = `${index + 1}. ${fullName.trim()}\n${datetime}`;
+
+  return (
+    <Marker
+      key={`pickup-${index}`}
+      position={{
+        lat: parseFloat(request.pickup_latitude),
+        lng: parseFloat(request.pickup_longitude),
+      }}
+      label={`${index + 1}`}
+      title={title}
+    />
+  );
+})}
+
+{selectedRequests.map((request, index) => {
+  const fullName = `${request.passenger_first_name || ''} ${request.passenger_last_name || ''}`;
+  const datetime = request.estimated_end_time
+    ? new Date(request.estimated_end_time).toLocaleString()
+    : t("no_time");
+  const title = `D${index + 1}. ${fullName.trim()}\n${datetime}`;
+
+  return (
+    <Marker
+      key={`dropoff-${index}`}
+      position={{
+        lat: parseFloat(request.dropoff_latitude),
+        lng: parseFloat(request.dropoff_longitude),
+      }}
+      label={`D${index + 1}`}
+      icon={{ url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }}
+      title={title}
+    />
+  );
+})}
+
 
 </GoogleMap>
           </div>

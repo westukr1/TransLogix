@@ -824,6 +824,7 @@ useEffect(() => {
   
     // ✅ Оновлюємо sessionStorage і зберігаємо на бекенді
     syncSelectedRequests(updatedSelectedRequests);
+    updateRouteRequestsInStorage(updatedSelectedRequests);
     // updateRouteRequestsInStorage();
   };
   
