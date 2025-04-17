@@ -169,6 +169,7 @@ export const API_ENDPOINTS = {
     createTripRequest: `${BASE_URL}/api/passenger-trip-requests/create/`,
     getFilteredTripRequests: `${BASE_URL}/api/filtered-passenger-trip-requests/`,
     updateTripStatus: (id) => `${BASE_URL}/api/passenger-trip-requests/${id}/update-status/`,
+    updateTripRequestStatus: (id) => `${BASE_URL}/api/passenger-trip-requests/${id}/update-status/`,
   
     // ===== Address Points =====
     toggleCoordinateActive: (id) => `${BASE_URL}/api/coordinate-points/${id}/toggle-active/`,

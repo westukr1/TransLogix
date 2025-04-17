@@ -956,32 +956,42 @@ const handleFilterChange = (e) => {
       alert(t("minimum_points_required"));
       return;
     }
-  // 🔍 Перевірка обмежень перед розрахунком
-  const restrictionsCheck = checkRouteRestrictions(routeSettings, selectedRequests);
-  if (!restrictionsCheck.isValid) {
-    alert(t("violated_constraints") + ":\n" + restrictionsCheck.violated.map(v => "• " + t(v)).join("\n"));
-    return;
-  }
-    const origin = `${selectedRequests[0].pickup_latitude},${selectedRequests[0].pickup_longitude}`;
-    const destination = `${selectedRequests[selectedRequests.length - 1].dropoff_latitude},${selectedRequests[selectedRequests.length - 1].dropoff_longitude}`;
-    const waypoints = selectedRequests
-      .slice(1, -1)
-      .map((request) => `${request.pickup_latitude},${request.pickup_longitude}`);
-   // 🔹 Логування перед відправкою запиту
-   console.log("📤 Відправка запиту на бекенд для розрахунку маршруту:");
-   console.log("📌 Початкова точка:", origin);
-   console.log("📌 Кінцева точка:", destination);
-   console.log("📌 Проміжні точки:", waypoints);
-   console.log("📌 Вибрана мова:", userLanguage);
-   try {
-    const response = await axios.post(API_ENDPOINTS.calculateRoute, {
-      origin,
-      destination,
-      waypoints,
-      language: userLanguage,
-    });
-     
-      console.log("✅ Отримано маршрут:", response.data);
+  
+    // 🔍 Перевірка обмежень перед розрахунком
+    const restrictionsCheck = checkRouteRestrictions(routeSettings, selectedRequests);
+    if (!restrictionsCheck.isValid) {
+      alert(t("violated_constraints") + ":\n" + restrictionsCheck.violated.map(v => "• " + t(v)).join("\n"));
+      return;
+    }
+  
+    const direction = directionFilter; // Напрямок: HOME_TO_WORK або WORK_TO_HOME
+    let origin, destination, waypoints;
+  
+    if (direction === "HOME_TO_WORK") {
+      origin = `${selectedRequests[0].pickup_latitude},${selectedRequests[0].pickup_longitude}`;
+      destination = `${selectedRequests[selectedRequests.length - 1].dropoff_latitude},${selectedRequests[selectedRequests.length - 1].dropoff_longitude}`;
+      waypoints = selectedRequests.slice(1, -1).map((r) => `${r.pickup_latitude},${r.pickup_longitude}`);
+    } else {
+      origin = `${selectedRequests[0].pickup_latitude},${selectedRequests[0].pickup_longitude}`;
+      destination = `${selectedRequests[selectedRequests.length - 1].dropoff_latitude},${selectedRequests[selectedRequests.length - 1].dropoff_longitude}`;
+      waypoints = selectedRequests.slice(1, -1).map((r) => `${r.dropoff_latitude},${r.dropoff_longitude}`);
+    }
+  
+    console.log("\ud83d\udce4 \u0412\u0456\u0434\u043f\u0440\u0430\u0432\u043a\u0430 \u0437\u0430\u043f\u0438\u0442\u0443 \u043d\u0430 \u0431\u0435\u043a\u0435\u043d\u0434 \u0434\u043b\u044f \u0440\u043e\u0437\u0440\u0430\u0445\u0443\u043d\u043a\u0443 \u043c\u0430\u0440\u0448\u0440\u0443\u0442\u0443:");
+    console.log("\ud83d\udccc \u041f\u043e\u0447\u0430\u0442\u043a\u043e\u0432\u0430 \u0442\u043e\u0447\u043a\u0430:", origin);
+    console.log("\ud83d\udccc \u041a\u0456\u043d\u0446\u0435\u0432\u0430 \u0442\u043e\u0447\u043a\u0430:", destination);
+    console.log("\ud83d\udccc \u041f\u0440\u043e\u043c\u0456\u0436\u043d\u0456 \u0442\u043e\u0447\u043a\u0438:", waypoints);
+    console.log("\ud83d\udccc \u0412\u0438\u0431\u0440\u0430\u043d\u0430 \u043c\u043e\u0432\u0430:", userLanguage);
+  
+    try {
+      const response = await axios.post(API_ENDPOINTS.calculateRoute, {
+        origin,
+        destination,
+        waypoints,
+        language: userLanguage,
+      });
+  
+      console.log("\u2705 \u041e\u0442\u0440\u0438\u043c\u0430\u043d\u043e \u043c\u0430\u0440\u0448\u0440\u0443\u0442:", response.data);
   
       const formatAddress = (address) => {
         const parts = address.split(",");
@@ -1003,62 +1013,40 @@ const handleFilterChange = (e) => {
       const { standard_route, optimized_route, optimization_applied } = response.data;
   
       if (!standard_route) {
-        alert("Помилка: Дані маршруту не отримані.");
+        alert("\u041f\u043e\u043c\u0438\u043b\u043a\u0430: \u0414\u0430\u043d\u0456 \u043c\u0430\u0440\u0448\u0440\u0443\u0442\u0443 \u043d\u0435 \u043e\u0442\u0440\u0438\u043c\u0430\u043d\u0456.");
         return;
       }
   
-      // Форматуємо дані маршруту
-      const formattedStandardRoute = {
-        distance: Math.round(standard_route.total_distance),
-        duration: formatDuration(standard_route.total_duration),
-        stops: standard_route.stops,
-        passengers: selectedRequests.length,
-        startAddress: formatAddress(standard_route.start_address),
-        endAddress: formatAddress(standard_route.end_address),
-      };
-  
-      const formattedOptimizedRoute = optimized_route
-        ? {
-            distance: Math.round(optimized_route.total_distance),
-            duration: formatDuration(optimized_route.total_duration),
-            stops: optimized_route.stops,
-            passengers: selectedRequests.length,
-            startAddress: formatAddress(optimized_route.start_address),
-            endAddress: formatAddress(optimized_route.end_address),
-          }
-        : null;
-  
-      // Відкриваємо спливаюче вікно
-      console.log("📌 Відповідь від бекенду перед збереженням:", response.data);
       setModalData({
         show: true,
         standardRoute: {
           distance: Math.round(standard_route.total_distance),
-          duration: `${Math.floor(standard_route.total_duration / 60)}h ${Math.round(standard_route.total_duration % 60)}m`,
+          duration: formatDuration(standard_route.total_duration),
           stops: standard_route.stops,
-          startAddress: standard_route.start_address,
-          endAddress: standard_route.end_address,
+          startAddress: formatAddress(standard_route.start_address),
+          endAddress: formatAddress(standard_route.end_address),
         },
         optimizedRoute: optimization_applied
           ? {
               distance: Math.round(optimized_route.total_distance),
-              duration: `${Math.floor(optimized_route.total_duration / 60)}h ${Math.round(optimized_route.total_duration % 60)}m`,
+              duration: formatDuration(optimized_route.total_duration),
               stops: optimized_route.stops,
-              startAddress: optimized_route.start_address,
-              endAddress: optimized_route.end_address,
+              startAddress: formatAddress(optimized_route.start_address),
+              endAddress: formatAddress(optimized_route.end_address),
             }
           : null,
         optimizedOrder: response.data.optimized_order || null,
         optimizationApplied: optimization_applied,
-        
       });
-      setStandardRoute(response.data.standard_route || []);
-      setOptimizedRoute(response.data.optimized_route || []);
+  
+      setStandardRoute(standard_route || []);
+      setOptimizedRoute(optimized_route || []);
     } catch (error) {
-      console.error("❌ Помилка при розрахунку маршруту:", error);
+      console.error("\u274c \u041f\u043e\u043c\u0438\u043b\u043a\u0430 \u043f\u0440\u0438 \u0440\u043e\u0437\u0440\u0430\u0445\u0443\u043d\u043a\u0443 \u043c\u0430\u0440\u0448\u0440\u0443\u0442\u0443:", error);
       alert(t("error_calculating_route"));
     }
   };
+  
 
     
   // Функція прийняття стандартного маршруту
