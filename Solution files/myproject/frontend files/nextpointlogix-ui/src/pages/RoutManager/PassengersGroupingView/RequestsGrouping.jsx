@@ -458,6 +458,16 @@ const fetchPassengerRequests = useCallback(async () => {
 
   const excludedIds = Array.isArray(currentFilters?.requests) ? currentFilters.requests.map((r) => r.id) : [];
   console.log("📤 ID заявок для виключення (ids_exclude):", excludedIds);
+  console.log("📤 Запит на отримання заявок (тут повинні іти повні дані заявок для таблиці відібрані за цими значеннями фільтрів):", {
+    included_in_list: "false",
+    start_date: currentFilters.start_date ? formatDate(currentFilters.start_date) : '',
+        end_date: currentFilters.end_date ? formatDate(currentFilters.end_date) : '',
+        direction: directionQuery,
+        search: '',
+        is_active: onlyActive,
+        ids_exclude: excludedIds.join(","),
+  });
+  
 
   try {
     const response = await axios.get(API_ENDPOINTS.filteredPassengerTripRequests, {
@@ -473,7 +483,7 @@ const fetchPassengerRequests = useCallback(async () => {
     });
 
     if (response.status === 200 && Array.isArray(response.data)) {
-      console.log("✅ Отримані заявки пасажирів:", response.data);
+      console.log("✅ Отримані заявки пасажирів (тут повинні бути повні значення заявок):", response.data);
       setPassengerRequests(response.data);
     } else {
       console.warn("⚠️ Очікувався масив заявок, але отримано:", response.data);

@@ -187,16 +187,23 @@ export const API_ENDPOINTS = {
     getCities: (districtId) => `${BASE_URL}/api/cities/${districtId}/`,
   
     // ===== Temporary Filters & Lists =====
+    
     getActiveTempList: `${BASE_URL}/api/temp-lists/get_active_list/`,
     deleteExpiredTempList: `${BASE_URL}/api/temp-lists/delete_expired/`,
     saveTempList: `${BASE_URL}/api/temp-lists/save_list/`,
+    getRouteSettings: `${BASE_URL}/api/get-settings/`,
+
   
     // ===== Ordered Lists =====
     createOrderedPassengerList: `${BASE_URL}/api/ordered-passenger-list/create_ordered_list/`,
     getOrderedPassengerList: (listId) => `${BASE_URL}/api/ordered-passenger-list/${listId}/`,
+    getOrderedPassengerLists: `${BASE_URL}/api/ordered-passenger-list/`,
     filteredPassengerTripRequests: `${BASE_URL}/api/filtered-passenger-trip-requests/`,
     deleteOrderedPassengerList: (listId) => `${BASE_URL}/api/ordered-passenger-list/${listId}/delete/`,
-  
+    createOrderedPassengerList: `${BASE_URL}/api/ordered-passenger-list/create_ordered_list/`,
+    deleteOrderedPassengerList: (id) => `${BASE_URL}/api/ordered-passenger-list/${id}/delete/`,
+    getOrderedPassengerListDetails: (id) => `${BASE_URL}/api/ordered-passenger-list/${id}/`,
+
     // ===== Assignments =====
     getDriverVehicles: (driverId) => `${BASE_URL}/drivers/${driverId}/vehicles/`,
     assignVehicle: (driverId) => `${BASE_URL}/driver/${driverId}/assign-vehicle/`,

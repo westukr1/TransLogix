@@ -422,6 +422,13 @@ const fetchUpdatedRequests = async () => {
         ids_include: storedRequestIds.join(","),
       },
     });
+    const responseData = requestDetailsResponse.data;
+
+if (!Array.isArray(responseData)) {
+  console.warn("❌ Очікувався масив, але отримано:", responseData);
+  setPassengerRequests(prevState => ({ ...prevState, right: [] }));
+  return;
+}
     const enrichedRequests = storedRequestsFull.map(storedRequest => {
       const detailedRequest = requestDetailsResponse.data.find(req => req.id === storedRequest.id);
       return detailedRequest ? { ...detailedRequest, ...storedRequest } : storedRequest;
@@ -573,26 +580,19 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
 
   
 
-  // Функція для отримання налаштувань
-  const fetchRouteSettings = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:8000/api/get-settings/",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
-      );
-      setRouteSettings(response.data);
-    } catch (error) {
-      console.error("Error fetching route settings:", error);
-    }
-  };
+// Функція для отримання налаштувань
+const fetchRouteSettings = async () => {
+  try {
+    const response = await axios.get(API_ENDPOINTS.getRouteSettings);
+    setRouteSettings(response.data);
+  } catch (error) {
+    console.error("❌ Error fetching route settings:", error);
+  }
+};
 
-  useEffect(() => {
-    fetchRouteSettings();
-  }, []);
+useEffect(() => {
+  fetchRouteSettings();
+}, []);
 
   function checkRouteRestrictions(routeSettings, selectedRequests) {
     const violations = [];
@@ -675,14 +675,14 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
           ? dayjs(filters.end_date).format("YYYY-MM-DDTHH:mm:ss")
           : null;
   
-      // console.log("📤 Відправка фільтрів:", {
-      //   estimated_start_time__gte: formattedStartDate,
-      //   estimated_end_time__lte: formattedEndDate,
-      //   direction: filters.direction || null,
-      //   is_active: filters.is_active ?? null,
-      //   start_city__icontains: filters.start_city || null,
-      //   search: filters.search_query || null,
-      // });
+      console.log("📤 Відправка фільтрів:", {
+        estimated_start_time__gte: formattedStartDate,
+        estimated_end_time__lte: formattedEndDate,
+        direction: filters.direction || null,
+        is_active: filters.is_active ?? null,
+        start_city__icontains: filters.start_city || null,
+        search: filters.search_query || null,
+      });
   
       const response = await axios.get(API_ENDPOINTS.getOrderedPassengerLists, {
         params: {
@@ -695,8 +695,9 @@ const saveRouteFiltersToBackend = async (filtersToSave, requestsToSave) => {
         },
       });
   
-      // console.log("📥 Отримані дані:", response.data);
-      setPassengerLists(response.data);
+      console.log("📥 Отримані дані (тут повинні бути збережені списки пасажирів):", response.data);
+      setPassengerLists(Array.isArray(response.data) ? response.data : []);
+
     } catch (error) {
       console.error(
         "❌ Помилка при отриманні списку пасажирів:",
