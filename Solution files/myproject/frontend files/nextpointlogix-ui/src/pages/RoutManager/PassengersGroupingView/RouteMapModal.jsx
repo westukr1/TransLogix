@@ -10,7 +10,15 @@ import axios from '../../../utils/axiosInstance'; // правильний шля
 import { useSelector } from 'react-redux';
 import { API_ENDPOINTS } from '../../../config/apiConfig';
 
+import { AgGridReact } from "ag-grid-react";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 
+
+
+dayjs.extend(utc);
 
 const libraries = ["places"];
 const containerStyle = {
@@ -33,10 +41,10 @@ const RouteMapModal = ({ onClose }) => {
     const [latitude, setLatitude] = useState(initialLatitude);
     const [longitude, setLongitude] = useState(initialLongitude);
     const [markerPosition, setMarkerPosition] = useState(null);
-    const [apiKey, setApiKey] = useState(
-      localStorage.getItem("google_maps_api_key") || ""
-    );
+    const [apiKey, setApiKey] = useState("");
+    const [isKeyLoaded, setIsKeyLoaded] = useState(false);
     const mapRef = useRef(null);
+    const calledRef = useRef(false);
 
     const stopDetails = location.state?.stopDetails || [];
     const tripType = location.state?.direction || "N/A";
@@ -54,7 +62,14 @@ const RouteMapModal = ({ onClose }) => {
     const sessionId = localStorage.getItem("session_id") || "bd1e7f30-12d3-4b56-92a3-bc46e2c84cda";
     localStorage.setItem("session_id", sessionId);
   
-    
+    const { isLoaded, loadError } = useJsApiLoader({
+      id: "script-loader",
+      googleMapsApiKey: apiKey,
+      version: "weekly",
+      libraries: ["places"],
+      region: "US",
+      language: "en",
+    });
     
     // const extractCoordinates = (route) => {
     //     if (!route || typeof route !== "object") return [];
@@ -101,27 +116,8 @@ const RouteMapModal = ({ onClose }) => {
       ? { lat: standardRoute[0].lat, lng: standardRoute[0].lng }
       : { lat: 49.8397, lng: 24.0297}; // Default Lviv
 
-      useEffect(() => {
-        if (!apiKey) {
-          const fetchGoogleMapsKey = async () => {
-            try {
-              const response = await axios.get(API_ENDPOINTS.googleMapsKey);
-              const data = response.data;
-              setApiKey(data.google_maps_api_key);
-              localStorage.setItem("google_maps_api_key", data.google_maps_api_key);
-            } catch (error) {
-              console.error(t("error_fetching_key"), error);
-            }
-          };
-          fetchGoogleMapsKey();
-        }
-      }, [apiKey, t]);
-      
+     // Завантаження API ключа тільки з бекенду
 
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: apiKey,
-    libraries,
-  });
   useEffect(() => {
     if (requests.length > 0) {
       setSelectedRequests(requests);
@@ -130,18 +126,21 @@ const RouteMapModal = ({ onClose }) => {
   
 
   useEffect(() => {
+    if (calledRef.current) return; // ⛔️ вже викликано раніше
+    calledRef.current = true;
     const fetchPassengerRequests = async () => {
       try {
         // 🔍 1. Логування перед запитом до тимчасового списку
         console.log("📡 Відправка запиту з Session-ID:", sessionId);
         console.log("📡 Відправка запиту з token:", token);
-       
-
-
+  
         // 2. Отримуємо тимчасовий список заявок
-        const tempResponse = await axios.get(API_ENDPOINTS.getActiveTempList);
-
-
+        const tempResponse = await axios.get('http://localhost:8000/api/temp-lists/get_active_list/', {
+          headers: {
+            'Session-ID': sessionId,
+            'Authorization': `Bearer ${token}`,
+          },
+        });
        
         console.log("📨 Відповідь з бекенду (повна):", tempResponse.data);
   
@@ -161,7 +160,7 @@ const RouteMapModal = ({ onClose }) => {
         // 4. Запит на отримання повних даних заявок
         const fullResponse = await axios.get(API_ENDPOINTS.getFilteredTripRequests, {
           headers: {
-            "Session-ID": sessionId,  // 🔥 Обов'язково передати знову, якщо потрібно (залежить від BE)
+            "Session-ID": sessionId,
           },
           params: {
             ids_include: requestIds.join(","),
@@ -169,11 +168,39 @@ const RouteMapModal = ({ onClose }) => {
         });
   
         if (fullResponse.status === 200) {
-          console.log("📦 Повні дані заявок за цим списком:", fullResponse.data);
-          setRequests(fullResponse.data);
+
+                    // Об'єднуємо дані з тимчасового списку (sequence_number)
+const sequenceMap = {};
+(tempResponse.data.requests || []).forEach(req => {
+  sequenceMap[req.id] = req.sequence_number;
+});
+
+const enrichedRequests = (fullResponse.data || []).map(item => ({
+  ...item,
+  sequence_number: sequenceMap[item.id] || null,
+}));
+
+const sortedRequests = enrichedRequests.sort((a, b) => a.sequence_number - b.sequence_number);
+console.log("📦 Повні дані заявок за цим списком, додані порядкові номери:", sortedRequests);
+setRequests(sortedRequests);
         }
       } catch (error) {
         console.error("❌ Помилка отримання заявок:", error);
+  
+        if (
+          error.response &&
+          error.response.status === 410 &&
+          error.response.data &&
+          error.response.data.conflicting_ids
+        ) {
+          const ids = error.response.data.conflicting_ids;
+          alert(
+            t("temporary_list_expired_due_to_conflict") +
+            `\n${ids.map((id) => `• ${id}`).join("\n")}`
+          );
+        } else {
+          alert(t("error_calculating_route"));
+        }
       } finally {
         setLoading(false);
       }
@@ -181,6 +208,8 @@ const RouteMapModal = ({ onClose }) => {
   
     fetchPassengerRequests();
   }, [token, sessionId]);
+     
+
   
   if (loading) return <div>Loading...</div>;
   //  // Зчитуємо точки маршруту із sessionStorage
@@ -199,7 +228,7 @@ const RouteMapModal = ({ onClose }) => {
   //   setStandardRoute(coordinates);
   // }, []);
   
-
+ 
   const handleExit = () => {
     const filters = JSON.parse(sessionStorage.getItem("filters"));
     const selectedRequests = filters?.requests || [];
@@ -294,11 +323,176 @@ const RouteMapModal = ({ onClose }) => {
     height: "100%",
   };
 
+  if (!isLoaded) return <div>{t("loading_google_maps")}</div>;
+  const columnDefs = [
+        // {
+        //   headerName: t("is_selected"),
+        //   field: "is_selected",
+        //   width: 50,
+        //   cellRenderer: (params) => (
+        //     <input
+        //     type="checkbox"
+        //     title="remove from the list"
+        //     checked={true} // бо у правій таблиці завжди лише відібрані
+        //     onChange={() => handleDeselect(params.data.id)} // ⬅ ось тут головне
+        //     />
+        //   ),
+        // },
+        // {
+        //   headerName: t("status"),
+        //   field: "status",
+        //   width: 30,
+        //   cellRenderer: (params) => {
+        //     const { sequence_number } = params.data;
+        //     const maxSequence = Math.max(
+        //       ...selectedRequests.map((req) => req.sequence_number || 0)
+        //     );
+        //     if (sequence_number === 1) return t("start");
+        //     if (sequence_number === maxSequence) return t("finish");
+        //     return "";
+        //   },
+        // },
+        {
+          headerName: t("sequence"),
+          field: "sequence_number",
+          width: 30,
+          
+          cellRenderer: (params) => {
+            
+            return params.data.sequence_number ?? "-";
+          }
+        },
+              
+        
+        // {
+        //   headerName: t("№"),
+        //   field: "№",
+        //   cellRenderer: (params) => (
+        //     <div style={{ display: "flex", alignItems: "center" }}>
+        //       {/* <button onClick={() => handleReorder(params.data.id, "up")}>
+        //         ⬆️
+        //       </button> */}
+        //       <span style={{ margin: "0 10px" }}>
+        //         {params.data.sequence_number || "-"}
+        //       </span>
+        //       {/* <button onClick={() => handleReorder(params.data.id, "down")}>
+        //         ⬇️
+        //       </button> */}
+        //     </div>
+        //   ),
+        //   width: 20,
+        // },
+        { headerName: t("request_id"), field: "id", width: 60 },
+        {
+          headerName: t("passenger_first_name"),
+          field: "passenger_first_name",
+          width: 70,
+        },
+        {
+          headerName: t("passenger_last_name"),
+          field: "passenger_last_name",
+          width: 70,
+        },
   
-
-  if (!apiKey || !isLoaded) {
-    return <p>{t("loading_google_maps")}</p>;
-  }
+        {
+          headerName: t("direction"),
+          field: "direction",
+          cellStyle: { fontWeight: "bold" },
+          width: 120,
+        },
+  
+        {
+          headerName: t("departure_info"), // 🔵 Блок ВІДПРАВКА
+          children: [
+            {
+              headerName: t("departure_time"),
+              cellStyle: { fontWeight: "bold" },
+              field: "departure_time",
+              width: 120,
+              valueFormatter: (params) =>
+                params.value
+                  ? dayjs(params.value).format("DD-MM-YYYY HH:mm")
+                  : "",
+            },
+            {
+              headerName: t("pickup_city"),
+              cellStyle: { fontWeight: "bold" },
+              field: "pickup_city",
+              width: 70,
+            },
+            {
+              headerName: t("pickup_street"),
+              field: "pickup_street",
+              width: 100,
+            },
+            {
+              headerName: t("pickup_house"),
+              field: "pickup_house",
+              width: 40,
+            },
+            {
+              headerName: t("pickup_latitude"),
+              field: "pickup_latitude",
+              width: 60,
+            },
+            {
+              headerName: t("pickup_longitude"),
+              field: "pickup_longitude",
+              width: 60,
+            },
+          ],
+        },
+  
+        {
+          headerName: t("arrival_info"), // 🔵 Блок ПРИБУТТЯ
+          children: [
+            {
+              headerName: t("arrival_time"),
+              cellStyle: { fontWeight: "bold" },
+              field: "arrival_time",
+              width: 120,
+              valueFormatter: (params) =>
+                params.value
+                  ? dayjs(params.value).format("DD-MM-YYYY HH:mm")
+                  : "",
+            },
+            {
+              headerName: t("dropoff_city"),
+              cellStyle: { fontWeight: "bold" },
+              field: "dropoff_city",
+              width: 70,
+            },
+            {
+              headerName: t("dropoff_street"),
+              field: "dropoff_street",
+              width: 100,
+            },
+            {
+              headerName: t("dropoff_house"),
+              field: "dropoff_house",
+              width: 40,
+            },
+            {
+              headerName: t("dropoff_latitude"),
+              field: "dropoff_latitude",
+              width: 70,
+            },
+            {
+              headerName: t("dropoff_longitude"),
+              field: "dropoff_longitude",
+              width: 70,
+            },
+          ],
+        },
+        { headerName: t("passenger_id"), field: "passenger", width: 40 },
+        {
+          headerName: t("passenger_phone"),
+          field: "passenger_phone",
+          width: 120,
+        },
+        { headerName: t("is_active"), field: "is_active", width: 40 },
+        { headerName: t("comment"), field: "comment", width: 600 },
+      ];
 
   return (
     <div className="rmm-two-column-template">
@@ -372,6 +566,9 @@ const RouteMapModal = ({ onClose }) => {
               {t("save_coordinates")}
             </button> */}
 
+      <div className="ag-theme-alpine" style={{ height: 400, width: "100%", marginBottom: "1rem" }}>
+        <AgGridReact rowData={requests} columnDefs={columnDefs} pagination={true} paginationPageSize={10} />
+      </div>
 
           </div>
           <div

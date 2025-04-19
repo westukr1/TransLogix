@@ -640,6 +640,8 @@
   "violated_constraints": "Violated Constraints",
   "no_optimized_route_found": "Більш оптимального маршруту не знайдено.",
 "accept_non_optimized":"Прийняти дані без оптимізації",
-"accept_optimized":"Прийняти оптимізований маршрут"
+"accept_optimized":"Прийняти оптимізований маршрут",
+"temporary_list_expired_due_to_conflict": "Тимчасовий список втратив актуальність, оскільки заявка(и) вже включені у інший маршрут"
+
 
 }

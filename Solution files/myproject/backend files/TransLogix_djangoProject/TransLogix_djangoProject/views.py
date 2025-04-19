@@ -1457,7 +1457,7 @@ from rest_framework.generics import ListAPIView
 from .models import PassengerTripRequest
 from .serializers import PassengerTripRequestSerializer
 from django.db.models import Q
-from django.utils.timezone import make_aware
+from django.utils.timezone import make_aware, is_naive
 from datetime import datetime
 
 
@@ -1699,6 +1699,11 @@ class OrderedPassengerListViewSet(viewsets.ModelViewSet):
                     datetime.strptime(data.get("estimated_start_time"), "%Y-%m-%d %H:%M:%S"))
                 estimated_end_time = make_aware(
                     datetime.strptime(data.get("estimated_end_time"), "%Y-%m-%d %H:%M:%S"))
+                
+                if is_naive(estimated_start_time):
+                    estimated_start_time = make_aware(estimated_start_time)
+                if is_naive(estimated_end_time):
+                    estimated_end_time = make_aware(estimated_end_time)
 
                 logger.info("📌 Створення списку з параметрами: direction=%s, start_time=%s, end_time=%s",
                             data.get("direction"), estimated_start_time, estimated_end_time)
@@ -1909,8 +1914,12 @@ class TemporaryPassengerListViewSet(viewsets.ModelViewSet):
             )
 
             if conflicting_requests.exists():
+                ids = list(conflicting_requests.values_list("id", flat=True))
                 instance.delete()
-                return Response({"message": "Тимчасовий список втратив актуальність"}, status=status.HTTP_410_GONE)
+                return Response({
+                        "message": "Тимчасовий список втратив актуальність",
+                         "conflicting_ids": ids
+                        }, status=status.HTTP_410_GONE)
 
             # Повертаємо всю структуру назад
             return Response(TemporaryPassengerListSerializer(instance).data, status=status.HTTP_200_OK)

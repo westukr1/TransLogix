@@ -653,6 +653,8 @@
   "violated_constraints": "Violated Constraints",
 "no_optimized_route_found": "No better optimized route found.",
 "accept_non_optimized":"Accept non-optimized route",
-"accept_optimized":"Accept optimized route"
+"accept_optimized":"Accept optimized route",
+"temporary_list_expired_due_to_conflict": "Temporary list expired due to request(s) already included in another route"
+
 
 }
