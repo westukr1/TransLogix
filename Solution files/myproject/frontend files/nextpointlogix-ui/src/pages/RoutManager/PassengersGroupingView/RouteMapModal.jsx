@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState , useRef} from "react";
 import { Route, useLocation, useNavigate } from "react-router-dom";
-import { GoogleMap, Marker, Polyline, useJsApiLoader } from "@react-google-maps/api";
+import { GoogleMap, Marker, Polyline, useJsApiLoader} from "@react-google-maps/api";
 import { useTranslation } from "react-i18next";
 import "./RouteMapModal.css";
 import { Button } from "@mui/material";
@@ -36,7 +36,8 @@ const RouteMapModal = ({ onClose }) => {
     const [apiKey, setApiKey] = useState(
       localStorage.getItem("google_maps_api_key") || ""
     );
-    const [mapRef, setMapRef] = useState(null);
+    const mapRef = useRef(null);
+
     const stopDetails = location.state?.stopDetails || [];
     const tripType = location.state?.direction || "N/A";
 
@@ -53,6 +54,7 @@ const RouteMapModal = ({ onClose }) => {
     const sessionId = localStorage.getItem("session_id") || "bd1e7f30-12d3-4b56-92a3-bc46e2c84cda";
     localStorage.setItem("session_id", sessionId);
   
+    
     
     // const extractCoordinates = (route) => {
     //     if (!route || typeof route !== "object") return [];
@@ -94,7 +96,7 @@ const RouteMapModal = ({ onClose }) => {
       // }, [location.state]);
     
       // console.log("📌 Отримані дані після оновлення:", { standardRoute, optimizedRoute });
-  
+     
     const defaultCenter = standardRoute.length > 0 
       ? { lat: standardRoute[0].lat, lng: standardRoute[0].lng }
       : { lat: 49.8397, lng: 24.0297}; // Default Lviv
@@ -126,11 +128,7 @@ const RouteMapModal = ({ onClose }) => {
     }
   }, [requests]);
   
-  useEffect(() => {
-    if (isLoaded && mapRef) {
-      placeMarker();
-    }
-  }, [isLoaded, mapRef]);
+
   useEffect(() => {
     const fetchPassengerRequests = async () => {
       try {
@@ -260,19 +258,27 @@ const RouteMapModal = ({ onClose }) => {
   };
 
   const centerMap = () => {
-    if (mapRef) {
-      mapRef.panTo({ lat: latitude, lng: longitude });
+    const savedFilters = JSON.parse(sessionStorage.getItem("filters"));
+    if (
+      savedFilters &&
+      Array.isArray(savedFilters.requests) &&
+      savedFilters.requests.length > 0
+    ) {
+      const first = savedFilters.requests[0];
+      const lat = parseFloat(first.pickup_latitude);
+      const lng = parseFloat(first.pickup_longitude);
+  
+      if (!isNaN(lat) && !isNaN(lng) && mapRef.current) {
+        mapRef.current.panTo({ lat, lng });
+        mapRef.current.setZoom(13);
+        console.log("📍 Центруємо мапу в точці першого пасажира:", lat, lng);
+      } else {
+        console.warn("⚠️ Некоректні координати або mapRef відсутній");
+      }
     }
   };
+  
 
-  const placeMarker = () => {
-    if (mapRef) {
-      const center = mapRef.getCenter();
-      const lat = center.lat();
-      const lng = center.lng();
-      setMarkerPosition({ lat, lng });
-    }
-  };
 
   const setNewCoordinates = () => {
     if (markerPosition) {
@@ -288,10 +294,11 @@ const RouteMapModal = ({ onClose }) => {
     height: "100%",
   };
 
+  
+
   if (!apiKey || !isLoaded) {
     return <p>{t("loading_google_maps")}</p>;
   }
-
 
   return (
     <div className="rmm-two-column-template">
@@ -354,18 +361,16 @@ const RouteMapModal = ({ onClose }) => {
   )}
 </ul>
            
-            <button className="rmm-nav-button" onClick={centerMap}>
+            <button className="rmm-nav-button" onClick={centerMap }>
               {t("center_map")}
             </button>
-            <button className="rmm-nav-button" onClick={placeMarker}>
-              {t("place_marker")}
-            </button>
-            <button className="rmm-nav-button" onClick={setNewCoordinates}>
+
+            {/* <button className="rmm-nav-button" onClick={setNewCoordinates}>
               {t("set_new_coordinates")}
             </button>
             <button className="rmm-nav-button" onClick={handleSaveCoordinates}>
               {t("save_coordinates")}
-            </button>
+            </button> */}
 
 
           </div>
@@ -386,7 +391,10 @@ const RouteMapModal = ({ onClose }) => {
                 boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
               }}
             ></div>
-            <GoogleMap mapContainerStyle={mapContainerStyle} center={defaultCenter} zoom={12}>
+            <GoogleMap mapContainerStyle={mapContainerStyle} center={defaultCenter} zoom={12} onLoad={(map) => {
+    mapRef.current = map;
+    centerMap(); // 🔥 викликаємо тільки коли мапа точно ініціалізована
+  }}>
   {standardRoute.map((point, index) => (
     <Marker key={index} position={{ lat: point.lat, lng: point.lng }} title={`Точка ${index + 1}`} />
   ))}
@@ -412,7 +420,17 @@ const RouteMapModal = ({ onClose }) => {
         lat: parseFloat(request.pickup_latitude),
         lng: parseFloat(request.pickup_longitude),
       }}
-      label={`${index + 1}`}
+      icon={{
+        url: "/entrance 1 marker.png",
+        scaledSize: new window.google.maps.Size(80, 80),
+        labelOrigin: new window.google.maps.Point(40, -5), // 🔼 номер над іконкою
+      }}
+      label={{
+        text: `+${index + 1}`,
+        color: "black",
+        fontSize: "24px",
+        fontWeight: "bold",
+      }}
       title={title}
     />
   );
@@ -423,7 +441,7 @@ const RouteMapModal = ({ onClose }) => {
   const datetime = request.estimated_end_time
     ? new Date(request.estimated_end_time).toLocaleString()
     : t("no_time");
-  const title = `D${index + 1}. ${fullName.trim()}\n${datetime}`;
+  const title = `${index + 1}. ${fullName.trim()}\n${datetime}`;
 
   return (
     <Marker
@@ -432,8 +450,17 @@ const RouteMapModal = ({ onClose }) => {
         lat: parseFloat(request.dropoff_latitude),
         lng: parseFloat(request.dropoff_longitude),
       }}
-      label={`D${index + 1}`}
-      icon={{ url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }}
+      icon={{
+        url: "/exit marker.png",
+        scaledSize: new window.google.maps.Size(80, 80),
+        labelOrigin: new window.google.maps.Point(40, -5), // 🔼 номер над іконкою
+      }}
+      label={{
+        text: `-${index + 1}`,
+        color: "black",
+        fontSize: "24px",
+        fontWeight: "bold",
+      }}
       title={title}
     />
   );
