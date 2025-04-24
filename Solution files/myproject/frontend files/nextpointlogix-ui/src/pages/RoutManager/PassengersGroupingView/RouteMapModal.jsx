@@ -1,6 +1,6 @@
 import React, { useEffect, useState , useRef} from "react";
 import { Route, useLocation, useNavigate } from "react-router-dom";
-import { GoogleMap, Marker, Polyline, useJsApiLoader} from "@react-google-maps/api";
+import { GoogleMap, Marker, Polyline, useJsApiLoader,  DirectionsRenderer} from "@react-google-maps/api";
 import { useTranslation } from "react-i18next";
 import "./RouteMapModal.css";
 import { Button } from "@mui/material";
@@ -31,6 +31,40 @@ const center = {
   lng: 24.0297,
 };
 const RouteMapModal = ({ onClose }) => {
+  // const renderPolyline = () => {
+  //   const routePath = [];
+
+  //   if (selectedRequests?.length > 0) {
+  //     const startLat = parseFloat(selectedRequests[0]?.pickup_latitude);
+  //     const startLng = parseFloat(selectedRequests[0]?.pickup_longitude);
+  //     if (!isNaN(startLat) && !isNaN(startLng)) {
+  //       routePath.push({ lat: startLat, lng: startLng });
+  //     }
+
+  //     routePath.push(
+  //       ...selectedRequests
+  //         .slice()
+  //         .sort((a, b) => (a.sequence_number || 0) - (b.sequence_number || 0))
+  //         .map((req) => ({
+  //           lat: !isNaN(parseFloat(req.dropoff_latitude)) ? parseFloat(req.dropoff_latitude) : 0,
+  //           lng: !isNaN(parseFloat(req.dropoff_longitude)) ? parseFloat(req.dropoff_longitude) : 0,
+  //         }))
+  //         .filter((p) => !isNaN(p.lat) && !isNaN(p.lng))
+  //     );
+  //   }
+
+  //   return routePath.length > 1 ? (
+  //     <Polyline
+  //       path={routePath}
+  //       options={{
+  //         strokeColor: "#008000",
+  //         strokeOpacity: 0.8,
+  //         strokeWeight: 4,
+  //         zIndex: 1,
+  //       }}
+  //     />
+  //   ) : null;
+  // };
     const { t } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
@@ -61,7 +95,8 @@ const RouteMapModal = ({ onClose }) => {
     const token = localStorage.getItem('access_token');
     const sessionId = localStorage.getItem("session_id") || "bd1e7f30-12d3-4b56-92a3-bc46e2c84cda";
     localStorage.setItem("session_id", sessionId);
-  
+    const [directions, setDirections] = useState(null);
+
     const { isLoaded, loadError } = useJsApiLoader({
       id: "script-loader",
       googleMapsApiKey: apiKey,
@@ -70,7 +105,46 @@ const RouteMapModal = ({ onClose }) => {
       region: "US",
       language: "en",
     });
-    
+    useEffect(() => {
+      if (!isLoaded || selectedRequests.length === 0) return;
+  
+      const origin = {
+        lat: parseFloat(selectedRequests[0].pickup_latitude),
+        lng: parseFloat(selectedRequests[0].pickup_longitude),
+      };
+  
+      const sorted = [...selectedRequests].sort((a, b) => a.sequence_number - b.sequence_number);
+  
+      const destination = {
+        lat: parseFloat(sorted[sorted.length - 1].dropoff_latitude),
+        lng: parseFloat(sorted[sorted.length - 1].dropoff_longitude),
+      };
+  
+      const waypoints = sorted.slice(0, -1).map((req) => ({
+        location: {
+          lat: parseFloat(req.dropoff_latitude),
+          lng: parseFloat(req.dropoff_longitude),
+        },
+        stopover: true,
+      }));
+  
+      const directionsService = new window.google.maps.DirectionsService();
+      directionsService.route(
+        {
+          origin,
+          destination,
+          waypoints,
+          travelMode: window.google.maps.TravelMode.DRIVING,
+        },
+        (result, status) => {
+          if (status === window.google.maps.DirectionsStatus.OK) {
+            setDirections(result);
+          } else {
+            console.error("❌ Directions request failed:", result);
+          }
+        }
+      );
+    }, [isLoaded, selectedRequests]);
     // const extractCoordinates = (route) => {
     //     if (!route || typeof route !== "object") return [];
     //     if (route.stops && Array.isArray(route.stops)) {
@@ -494,6 +568,62 @@ setRequests(sortedRequests);
         { headerName: t("comment"), field: "comment", width: 600 },
       ];
 
+  //     const routePath = tripType === "WORK_TO_HOME"
+  // ? [
+  //     // Початкова точка — робота
+  //     {
+  //       lat: parseFloat(selectedRequests[0].pickup_latitude),
+  //       lng: parseFloat(selectedRequests[0].pickup_longitude),
+  //     },
+  //     // Всі крапки висадки
+  //     ...selectedRequests
+  //       .slice()
+  //       .sort((a, b) => a.sequence_number - b.sequence_number)
+  //       .map((req) => ({
+  //         lat: parseFloat(req.dropoff_latitude),
+  //         lng: parseFloat(req.dropoff_longitude),
+  //       })),
+  //   ]
+  // : [
+  //     // Всі крапки посадки
+  //     ...selectedRequests
+  //       .slice()
+  //       .sort((a, b) => a.sequence_number - b.sequence_number)
+  //       .map((req) => ({
+  //         lat: parseFloat(req.pickup_latitude),
+  //         lng: parseFloat(req.pickup_longitude),
+  //       })),
+  //     // Кінцева точка — робота
+  //     {
+  //       lat: parseFloat(selectedRequests[selectedRequests.length - 1].dropoff_latitude),
+  //       lng: parseFloat(selectedRequests[selectedRequests.length - 1].dropoff_longitude),
+  //     },
+  //   ];
+  
+  const buildRoutePath = () => {
+    if (!selectedRequests.length) return [];
+    console.log("🧭 Вхідні selectedRequests:", selectedRequests);
+
+    const origin = {
+      lat: parseFloat(selectedRequests[0].pickup_latitude),
+      lng: parseFloat(selectedRequests[0].pickup_longitude),
+    };
+
+    const dropoffs = selectedRequests
+      .slice()
+      .sort((a, b) => a.sequence_number - b.sequence_number)
+      .map((r) => ({
+        lat: parseFloat(r.dropoff_latitude),
+        lng: parseFloat(r.dropoff_longitude),
+      }));
+
+    const route = [origin, ...dropoffs].filter(p => !isNaN(p.lat) && !isNaN(p.lng));
+
+    console.log("🟢 Побудований маршрут:", route);
+    return route;
+  };
+    console.log("🟢 Selected Requests:", selectedRequests);
+
   return (
     <div className="rmm-two-column-template">
       <div className="top-nav-bar">
@@ -588,6 +718,7 @@ setRequests(sortedRequests);
                 boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
               }}
             ></div>
+            {isLoaded && (
             <GoogleMap mapContainerStyle={mapContainerStyle} center={defaultCenter} zoom={12} onLoad={(map) => {
     mapRef.current = map;
     centerMap(); // 🔥 викликаємо тільки коли мапа точно ініціалізована
@@ -601,9 +732,10 @@ setRequests(sortedRequests);
       title={`Оптимізована точка ${index + 1}`}
     />
   ))}
+  
   <Polyline path={standardRoute} options={{ strokeColor: "red" }} />
   <Polyline path={optimizedRoute} options={{ strokeColor: "blue" }} />
-  {selectedRequests.map((request, index) => {
+{selectedRequests.map((request, index) => {
   const fullName = `${request.passenger_first_name || ''} ${request.passenger_last_name || ''}`;
   const datetime = request.estimated_start_time
     ? new Date(request.estimated_start_time).toLocaleString()
@@ -614,8 +746,8 @@ setRequests(sortedRequests);
     <Marker
       key={`pickup-${index}`}
       position={{
-        lat: parseFloat(request.pickup_latitude),
-        lng: parseFloat(request.pickup_longitude),
+        lat: !isNaN(parseFloat(request.pickup_latitude)) ? parseFloat(request.pickup_latitude) : 0,
+        lng: !isNaN(parseFloat(request.pickup_longitude)) ? parseFloat(request.pickup_longitude) : 0,
       }}
       icon={{
         url: "/entrance 1 marker.png",
@@ -644,8 +776,8 @@ setRequests(sortedRequests);
     <Marker
       key={`dropoff-${index}`}
       position={{
-        lat: parseFloat(request.dropoff_latitude),
-        lng: parseFloat(request.dropoff_longitude),
+        lat: !isNaN(parseFloat(request.dropoff_latitude)) ? parseFloat(request.dropoff_latitude) : 0,
+        lng: !isNaN(parseFloat(request.dropoff_longitude)) ? parseFloat(request.dropoff_longitude) : 0,
       }}
       icon={{
         url: "/exit marker.png",
@@ -662,10 +794,40 @@ setRequests(sortedRequests);
     />
   );
 })}
+{/* {renderPolyline()} */}
 
 
+{/* {isLoaded && (
+  <Polyline
+    path={[
+      { lat: 49.858920, lng: 24.033717 }, // Початок (робота)
+      { lat: 49.828114, lng: 24.031219 }, // Стрийська
+      { lat: 49.843251, lng: 24.039446 }, // Міклухо-Маклая
+      { lat: 49.806058, lng: 24.004535 }, // Наукова
+      { lat: 49.715483, lng: 23.905562 }, // Пустомити
+    ]}
+    options={{
+      strokeColor: "#FF0000", // червона тестова лінія
+      strokeOpacity: 0.8,
+      strokeWeight: 5,
+      zIndex: 100,
+    }}
+  />
+)} */}
+{/* <Polyline
+            path={buildRoutePath()}
+            options={{
+              strokeColor: "#008000",
+              strokeOpacity: 0.8,
+              strokeWeight: 4,
+              zIndex: 1000,
+            }}
+          /> */}
+ {directions && <DirectionsRenderer directions={directions} />}
 </GoogleMap>
+ )}
           </div>
+          
         </div>
       </div>
     </div>
