@@ -1,4 +1,4 @@
-import React, { useEffect, useState , useRef} from "react";
+import React, { useEffect, useState , useRef,  useMemo} from "react";
 import { Route, useLocation, useNavigate } from "react-router-dom";
 import { GoogleMap, Marker, Polyline, useJsApiLoader,  DirectionsRenderer} from "@react-google-maps/api";
 import { useTranslation } from "react-i18next";
@@ -398,6 +398,20 @@ setRequests(sortedRequests);
   };
 
   if (!isLoaded) return <div>{t("loading_google_maps")}</div>;
+  const handleRowDragEnd = (event) => {
+    const updated = [...selectedRequests];
+    const dragged = event.node.data;
+    const fromIndex = updated.findIndex((r) => r.id === dragged.id);
+    updated.splice(fromIndex, 1);
+    updated.splice(event.overIndex, 0, dragged);
+
+    const reordered = updated.map((item, index) => ({
+      ...item,
+      sequence_number: index + 1,
+    }));
+
+    setSelectedRequests(reordered);
+  };
   const columnDefs = [
         // {
         //   headerName: t("is_selected"),
@@ -427,14 +441,12 @@ setRequests(sortedRequests);
         //   },
         // },
         {
-          headerName: t("sequence"),
+          headerName: "#",
           field: "sequence_number",
-          width: 30,
-          
-          cellRenderer: (params) => {
-            
-            return params.data.sequence_number ?? "-";
-          }
+          width: 60,
+          rowDrag: true,
+          rowDragText: (params) => `${params.data.passenger_first_name} ${params.data.passenger_last_name}`,
+          cellRenderer: (params) => `${params.data.sequence_number || ""}`,
         },
               
         
@@ -623,7 +635,9 @@ setRequests(sortedRequests);
     return route;
   };
     console.log("🟢 Selected Requests:", selectedRequests);
-
+   
+ 
+    
   return (
     <div className="rmm-two-column-template">
       <div className="top-nav-bar">
@@ -697,7 +711,17 @@ setRequests(sortedRequests);
             </button> */}
 
       <div className="ag-theme-alpine" style={{ height: 400, width: "100%", marginBottom: "1rem" }}>
-        <AgGridReact rowData={requests} columnDefs={columnDefs} pagination={true} paginationPageSize={10} />
+      <AgGridReact
+          rowData={selectedRequests}
+          columnDefs={columnDefs}
+          rowDragManaged={true}
+          animateRows={true}
+          pagination={true}
+          paginationPageSize={10}
+          getRowNodeId={(data) => data.id.toString()}
+          onRowDragEnd={handleRowDragEnd}
+        />
+
       </div>
 
           </div>
