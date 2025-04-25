@@ -204,6 +204,7 @@ export const API_ENDPOINTS = {
     createOrderedPassengerList: `${BASE_URL}/api/ordered-passenger-list/create_ordered_list/`,
     deleteOrderedPassengerList: (id) => `${BASE_URL}/api/ordered-passenger-list/${id}/delete/`,
     getOrderedPassengerListDetails: (id) => `${BASE_URL}/api/ordered-passenger-list/${id}/`,
+    updateTempListSequence: `${BASE_URL}/api/temp-lists/update_sequence/`,
 
     // ===== Assignments =====
     getDriverVehicles: (driverId) => `${BASE_URL}/drivers/${driverId}/vehicles/`,

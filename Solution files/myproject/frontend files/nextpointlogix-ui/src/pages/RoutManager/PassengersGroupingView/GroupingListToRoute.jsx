@@ -1421,23 +1421,36 @@ const handleCloseMap = () => {
           return "";
         },
       },
+      // {
+      //   headerName: t("sequence_number"),
+      //   field: "sequence_number",
+      //   cellRenderer: (params) => (
+      //     <div style={{ display: "flex", alignItems: "center" }}>
+      //       <button onClick={() => handleReorder(params.data.id, "up")}>
+      //         ⬆️
+      //       </button>
+      //       <span style={{ margin: "0 10px" }}>
+      //         {params.data.sequence_number || "-"}
+      //       </span>
+      //       <button onClick={() => handleReorder(params.data.id, "down")}>
+      //         ⬇️
+      //       </button>
+      //     </div>
+      //   ),
+      //   width: 120,
+      // },
       {
-        headerName: t("sequence_number"),
+        headerName: "#",
         field: "sequence_number",
-        cellRenderer: (params) => (
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <button onClick={() => handleReorder(params.data.id, "up")}>
-              ⬆️
-            </button>
-            <span style={{ margin: "0 10px" }}>
-              {params.data.sequence_number || "-"}
-            </span>
-            <button onClick={() => handleReorder(params.data.id, "down")}>
-              ⬇️
-            </button>
-          </div>
-        ),
-        width: 120,
+        width: 60,
+        rowDrag: true,
+        rowDragText: (params) => {
+          if (params?.data?.passenger_first_name && params?.data?.passenger_last_name) {
+            return `${params.data.passenger_first_name} ${params.data.passenger_last_name}`;
+          }
+          return `ID: ${params?.data?.id || "невідомо"}`;
+        },
+        cellRenderer: (params) => params?.data?.sequence_number || "",
       },
       { headerName: t("request_id"), field: "id", width: 60 },
       {
@@ -1886,7 +1899,51 @@ const handleCloseMap = () => {
     navigate("/");     // перехід на головний екран
   };
   
-
+  const handleRowDragEnd = async (event) => {
+    const updated = [...selectedRequests];
+    const dragged = event.node.data;
+    const fromIndex = updated.findIndex((r) => r.id === dragged.id);
+    updated.splice(fromIndex, 1);
+    updated.splice(event.overIndex, 0, dragged);
+  
+    const reordered = updated.map((item, index) => ({
+      ...item,
+      sequence_number: index + 1,
+    }));
+  
+    setSelectedRequests(reordered);
+  
+    // 🔄 Синхронізуємо sessionStorage
+    const filters = JSON.parse(sessionStorage.getItem("filters")) || {};
+    filters.requests = reordered.map((r) => ({
+      id: r.id,
+      sequence_number: r.sequence_number,
+      pickup_latitude: r.pickup_latitude,
+      pickup_longitude: r.pickup_longitude,
+    }));
+    sessionStorage.setItem("filters", JSON.stringify(filters));
+  
+    try {
+      await axios.post(API_ENDPOINTS.updateTempListSequence, {
+        session_id: sessionId,
+        requests: reordered.map((r) => ({
+          id: r.id,
+          sequence_number: r.sequence_number,
+        })),
+      });
+      console.log("✅ Список оновлено на бекенді.");
+    } catch (error) {
+      console.error("❌ Помилка при оновленні списку:", error);
+    }
+  };
+  
+  const handleRowDragEnter = () => {
+    const ghost = document.querySelector(".ag-dnd-ghost");
+    if (ghost) {
+      ghost.style.display = "none"; // Сховати візуальне перетягування
+    }
+  };
+  
   return (
     
     <div className="gltr-two-column-template">
@@ -2081,9 +2138,16 @@ const handleCloseMap = () => {
                 key={JSON.stringify(selectedRequests)}
                 rowData={selectedRequests}
                 columnDefs={createColumnDefs(false)}
+                rowDragManaged={true}
+                animateRows={true}
                 getRowStyle={getRowStyle}
-                pagination
-                paginationPageSize={20}
+                pagination = {false}
+                // paginationPageSize={20}
+                getRowNodeId={(data) => data.id.toString()}
+                onRowDragEnd={handleRowDragEnd}
+                onRowDragEnter={handleRowDragEnter}
+                suppressRowTransform={true}
+                suppressMoveWhenRowDragging={true}
               />
             </div>
           </div>

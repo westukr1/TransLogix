@@ -209,12 +209,7 @@ const RouteMapModal = ({ onClose }) => {
         console.log("📡 Відправка запиту з token:", token);
   
         // 2. Отримуємо тимчасовий список заявок
-        const tempResponse = await axios.get('http://localhost:8000/api/temp-lists/get_active_list/', {
-          headers: {
-            'Session-ID': sessionId,
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+        const tempResponse = await axios.get(API_ENDPOINTS.getActiveTempList);
        
         console.log("📨 Відповідь з бекенду (повна):", tempResponse.data);
   
@@ -398,20 +393,46 @@ setRequests(sortedRequests);
   };
 
   if (!isLoaded) return <div>{t("loading_google_maps")}</div>;
-  const handleRowDragEnd = (event) => {
+  const handleRowDragEnd = async (event) => {
     const updated = [...selectedRequests];
     const dragged = event.node.data;
     const fromIndex = updated.findIndex((r) => r.id === dragged.id);
     updated.splice(fromIndex, 1);
     updated.splice(event.overIndex, 0, dragged);
-
+  
     const reordered = updated.map((item, index) => ({
       ...item,
       sequence_number: index + 1,
     }));
-
+  
     setSelectedRequests(reordered);
+  
+    try {
+      await axios.post(API_ENDPOINTS.updateTempListSequence, {
+        requests: reordered.map((r) => ({ id: r.id, sequence_number: r.sequence_number })),
+      });
+      
+      console.log("✅ Список оновлено на бекенді.");
+    } catch (error) {
+      console.error("❌ Помилка при оновленні списку:", error);
+    }
+  
+    // Оновлення sessionStorage
+    const filters = JSON.parse(sessionStorage.getItem("filters"));
+    if (filters) {
+      filters.requests = reordered;
+      sessionStorage.setItem("filters", JSON.stringify(filters));
+      console.log("💾 SessionStorage оновлено.");
+    }
   };
+  
+  const handleRowDragEnter = () => {
+    const ghost = document.querySelector(".ag-dnd-ghost");
+    if (ghost) {
+      ghost.style.display = "none";
+    }
+  };
+
   const columnDefs = [
         // {
         //   headerName: t("is_selected"),
@@ -440,14 +461,7 @@ setRequests(sortedRequests);
         //     return "";
         //   },
         // },
-        {
-          headerName: "#",
-          field: "sequence_number",
-          width: 60,
-          rowDrag: true,
-          rowDragText: (params) => `${params.data.passenger_first_name} ${params.data.passenger_last_name}`,
-          cellRenderer: (params) => `${params.data.sequence_number || ""}`,
-        },
+       
               
         
         // {
@@ -469,6 +483,17 @@ setRequests(sortedRequests);
         //   width: 20,
         // },
         { headerName: t("request_id"), field: "id", width: 60 },
+        {
+          headerName: "#",
+          field: "sequence_number",
+          width: 60,
+          rowDrag: true,
+          rowDragText: (params) =>
+            params?.data?.passenger_first_name
+              ? `${params.data.passenger_first_name} ${params.data.passenger_last_name}`
+              : "пасажир",
+          cellRenderer: (params) => params?.data?.sequence_number || "",
+        },
         {
           headerName: t("passenger_first_name"),
           field: "passenger_first_name",
@@ -711,16 +736,19 @@ setRequests(sortedRequests);
             </button> */}
 
       <div className="ag-theme-alpine" style={{ height: 400, width: "100%", marginBottom: "1rem" }}>
-      <AgGridReact
+ <AgGridReact
           rowData={selectedRequests}
           columnDefs={columnDefs}
           rowDragManaged={true}
           animateRows={true}
-          pagination={true}
-          paginationPageSize={10}
+          pagination={false}
           getRowNodeId={(data) => data.id.toString()}
           onRowDragEnd={handleRowDragEnd}
+          onRowDragEnter={handleRowDragEnter}
+          suppressRowTransform={true}
+          suppressMoveWhenRowDragging={true}
         />
+
 
       </div>
 

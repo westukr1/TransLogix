@@ -1927,6 +1927,37 @@ class TemporaryPassengerListViewSet(viewsets.ModelViewSet):
         return Response({}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'])
+    def update_sequence(self, request):
+        """
+        Оновлює порядок заявок (sequence_number) у тимчасовому списку.
+        """
+        user = request.user
+        session_id = request.headers.get("Session-ID")
+
+        if not session_id:
+            return Response({"error": "Session ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        instance = TemporaryPassengerList.objects.filter(user=user, session_id=session_id).first()
+        if not instance:
+            return Response({"error": "Temporary list not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        updated_requests = request.data.get("requests", [])
+        if not isinstance(updated_requests, list) or not all(
+                "id" in r and "sequence_number" in r for r in updated_requests):
+            return Response({"error": "Invalid request data"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Створюємо мапу id -> sequence_number
+        id_map = {r["id"]: r["sequence_number"] for r in updated_requests}
+
+        # Оновлюємо значення в instance.requests
+        for item in instance.requests:
+            if item["id"] in id_map:
+                item["sequence_number"] = id_map[item["id"]]
+
+        instance.save()
+        return Response({"message": "Sequence updated successfully"}, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['post'])
     def save_list(self, request):
         """
         Збереження тимчасового списку пасажирів.
