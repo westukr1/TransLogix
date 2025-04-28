@@ -152,3 +152,8 @@ input[disabled] {
 .filter-container {
   margin-top: 10px;
 }
+.ag-row-drag {
+  height: 20px !important; /* або менше, залежно від rowHeight */
+  max-height: 100%;
+  align-items: center;
+}
