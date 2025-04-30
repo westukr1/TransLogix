@@ -62,7 +62,8 @@ from .serializers import TemporaryPassengerListSerializer
 from django.utils.timezone import now
 from uuid import UUID
 from datetime import timedelta
-
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
 
 
@@ -1372,86 +1373,93 @@ GOOGLE_API_KEY = config("GOOGLE_MAPS_API_KEY")
 
 OPTIMIZATION_THRESHOLD = 10  # 🔴 Поріг оптимізації (у відсотках)
 
-@csrf_exempt
+# Розрахунок списку маршруту, перевірка обмежень маршрутів
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def calculate_route(request):
-    if request.method == "POST":
+    try:
+        user = request.user
+
         try:
-            # Розбір JSON-запиту
-            data = json.loads(request.body)
-            origin = data.get("origin")
-            destination = data.get("destination")
-            waypoints = data.get("waypoints", [])
-            language = data.get("language", "en")
+            settings = user.settings
+        except UserSettings.DoesNotExist:
+            return Response({"error": "settings_not_found"}, status=status.HTTP_404_NOT_FOUND)
 
-            # 🔹 1. Отримуємо маршрут **без оптимізації**
-            standard_params = {
-                "origin": origin,
-                "destination": destination,
-                "waypoints": "|".join(waypoints),
-                "key": GOOGLE_API_KEY,
-                "language": language,
-            }
-            standard_response = requests.get("https://maps.googleapis.com/maps/api/directions/json", params=standard_params)
-            standard_data = standard_response.json()
+        data = request.data
+        origin = data.get("origin")
+        destination = data.get("destination")
+        waypoints = data.get("waypoints", [])
+        language = data.get("language", "en")
+        passenger_count = data.get("passenger_count", len(waypoints) + 2)
+        stop_count = len(waypoints) + 2
 
-            if standard_data.get("status") != "OK":
-                return JsonResponse({"error": "Google API error (Standard Route)", "details": standard_data}, status=400)
+        # 🔹 Отримання стандартного маршруту
+        standard_params = {
+            "origin": origin,
+            "destination": destination,
+            "waypoints": "|".join(waypoints),
+            "key": GOOGLE_API_KEY,
+            "language": language,
+        }
+        standard_response = requests.get("https://maps.googleapis.com/maps/api/directions/json", params=standard_params)
+        standard_data = standard_response.json()
 
-            # 🔹 2. Отримуємо маршрут **з оптимізацією**
-            optimized_params = standard_params.copy()
-            optimized_params["waypoints"] = f"optimize:true|{'|'.join(waypoints)}"
-            optimized_response = requests.get("https://maps.googleapis.com/maps/api/directions/json", params=optimized_params)
-            optimized_data = optimized_response.json()
+        if standard_data.get("status") != "OK":
+            return Response({"error": "Google API error (Standard Route)", "details": standard_data}, status=400)
 
-            if optimized_data.get("status") != "OK":
-                return JsonResponse({"error": "Google API error (Optimized Route)", "details": optimized_data}, status=400)
+        # 🔹 Отримання оптимізованого маршруту
+        optimized_params = standard_params.copy()
+        optimized_params["waypoints"] = f"optimize:true|{'|'.join(waypoints)}"
+        optimized_response = requests.get("https://maps.googleapis.com/maps/api/directions/json", params=optimized_params)
+        optimized_data = optimized_response.json()
 
-            # 📌 Функція обчислення параметрів маршруту
-            def extract_route_info(route_data):
-                route = route_data["routes"][0]
-                legs = route["legs"]
-                total_distance = sum(leg["distance"]["value"] for leg in legs) / 1000  # км
-                total_duration = sum(leg["duration"]["value"] for leg in legs) / 60  # хвилини
+        if optimized_data.get("status") != "OK":
+            return Response({"error": "Google API error (Optimized Route)", "details": optimized_data}, status=400)
 
-                cumulative_durations = []
-                accumulated_time = 0
-                for leg in legs:
-                    accumulated_time += leg["duration"]["value"] / 60  # Хвилини
-                    cumulative_durations.append(accumulated_time)
-
-                return {
-                    "total_distance": total_distance,
-                    "total_duration": total_duration,
-                    "cumulative_durations": cumulative_durations,
-                    "start_address": legs[0]["start_address"],
-                    "end_address": legs[-1]["end_address"],
-                }
-
-            # 🔹 Отримуємо деталі для обох маршрутів
-            standard_route = extract_route_info(standard_data)
-            optimized_route = extract_route_info(optimized_data)
-            optimized_order = optimized_data["routes"][0].get("waypoint_order", list(range(len(waypoints))))
-
-            # 📌 Обчислення різниці в оптимізації
-            distance_difference = ((standard_route["total_distance"] - optimized_route["total_distance"]) / standard_route["total_distance"]) * 100
-            duration_difference = ((standard_route["total_duration"] - optimized_route["total_duration"]) / standard_route["total_duration"]) * 100
-
-            # 🔹 Якщо оптимізація незначна, не показуємо другий маршрут
-            is_significant_optimization = distance_difference > OPTIMIZATION_THRESHOLD or duration_difference > OPTIMIZATION_THRESHOLD
-
-            result = {
-                "standard_route": standard_route,  # Дані для маршруту без оптимізації
-                "optimized_route": optimized_route if is_significant_optimization else None,  # Приховуємо, якщо немає значної оптимізації
-                "optimized_order": optimized_order if is_significant_optimization else None,  # Приховуємо, якщо немає значної оптимізації
-                "optimization_applied": is_significant_optimization,  # Флаг, чи була застосована оптимізація
+        def extract_route_info(route_data):
+            route = route_data["routes"][0]
+            legs = route["legs"]
+            total_distance = sum(leg["distance"]["value"] for leg in legs) / 1000  # км
+            total_duration = sum(leg["duration"]["value"] for leg in legs) / 60  # хвилини
+            return {
+                "total_distance": total_distance,
+                "total_duration": total_duration,
+                "start_address": legs[0]["start_address"],
+                "end_address": legs[-1]["end_address"],
             }
 
-            return JsonResponse(result)
+        standard_route = extract_route_info(standard_data)
+        optimized_route = extract_route_info(optimized_data)
+        optimized_order = optimized_data["routes"][0].get("waypoint_order", list(range(len(waypoints))))
 
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+        # 🔍 Перевірка обмежень
+        violations = []
+        if passenger_count > settings.max_passengers:
+            violations.append("max_passengers")
+        if stop_count > settings.max_stops:
+            violations.append("max_stops")
+        if standard_route["total_distance"] > settings.max_route_distance:
+            violations.append("max_route_distance")
+        if standard_route["total_duration"] > settings.max_route_duration:
+            violations.append("max_route_duration")
 
-    return JsonResponse({"error": "Invalid request method"}, status=400)
+        if violations:
+            return Response({"error": "route_constraints_violated", "violated": violations}, status=400)
+
+        # 📌 Формуємо результат
+        result = {
+            "standard_route": standard_route,
+            "optimized_route": optimized_route,
+            "optimized_order": optimized_order,
+            "optimization_applied": True,
+        }
+
+        return Response(result)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
 
 from rest_framework.generics import ListAPIView
 from .models import PassengerTripRequest

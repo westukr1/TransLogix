@@ -153,6 +153,7 @@ input[disabled] {
   margin-top: 10px;
 }
 .ag-row-drag {
+<<<<<<< HEAD
   max-width: 200px !important; /* або будь-яка інша ширина */
   white-space: nowrap;
   overflow: hidden;
@@ -197,3 +198,9 @@ input[disabled] {
   font-weight: bold;
   color: #fff;
 }
+=======
+  height: 20px !important; /* або менше, залежно від rowHeight */
+  max-height: 100%;
+  align-items: center;
+}
+>>>>>>> 7887cd733e80d674b08fe2af9602b993c3a95b43

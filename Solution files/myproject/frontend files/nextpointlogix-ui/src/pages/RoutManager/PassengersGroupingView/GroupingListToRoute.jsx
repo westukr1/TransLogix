@@ -62,7 +62,8 @@ const GroupingListToRoute = (onRefreshRequests) => {
   const [selectedListPassengers, setSelectedListPassengers] = useState([]);
   const [modalData, setModalData] = useState({ show: false });
   const [showMapModal, setShowMapModal] = useState(false);
- 
+  const [violationModal, setViolationModal] = useState({ show: false, violations: [] });
+
   const [standardRoute, setStandardRoute] = useState([]);
   const [optimizedRoute, setOptimizedRoute] = useState([]);
   const stopDetails = location.state?.stopDetails || [];
@@ -594,69 +595,79 @@ useEffect(() => {
   fetchRouteSettings();
 }, []);
 
-  function checkRouteRestrictions(routeSettings, selectedRequests) {
-    const violations = [];
-  
-    // 1. Кількість пасажирів
-    const passengerCount = selectedRequests.length;
-    if (routeSettings.min_passengers && passengerCount < routeSettings.min_passengers) {
-      violations.push("min_passengers");
-    }
-    if (routeSettings.max_passengers && passengerCount > routeSettings.max_passengers) {
-      violations.push("max_passengers");
-    }
-  
-    // 2. Змішані напрямки (to_work vs to_home)
-    const directions = new Set(selectedRequests.map(r => r.request_type));
-    if (!routeSettings.allow_mixed_directions && directions.size > 1) {
-      violations.push("allow_mixed_directions");
-    }
-  
-    // 3. Робочі адреси (одна чи кілька)
-    const workAddresses = new Set(
-      selectedRequests
-        .filter(r => r.request_type === "to_work")
-        .map(r => `${r.dropoff_latitude},${r.dropoff_longitude}`)
-    );
-    if (!routeSettings.allow_multiple_work_addresses && workAddresses.size > 1) {
-      violations.push("allow_multiple_work_addresses");
-    }
-  
-    // 4. Дата (припускаємо, що поле date є у форматі YYYY-MM-DD)
-    const uniqueDates = new Set(selectedRequests.map(r => r.date));
-    if (routeSettings.date_interval === 0 && uniqueDates.size > 1) {
-      violations.push("date_interval");
-    }
-  
-    // 5. Час прибуття в межах допуску (arrival_time ± tolerance)
-    if (routeSettings.arrival_time_tolerance && selectedRequests[0].arrival_time) {
-      const firstTime = new Date(`1970-01-01T${selectedRequests[0].arrival_time}`);
-      const tolerance = routeSettings.arrival_time_tolerance;
-      for (let r of selectedRequests) {
-        const time = new Date(`1970-01-01T${r.arrival_time}`);
-        const diff = Math.abs((time - firstTime) / 60000);
-        if (diff > tolerance) {
-          violations.push("arrival_time_tolerance");
-          break;
-        }
+const checkRouteRestrictions = (routeSettings, selectedRequests) => {
+  const violations = [];
+
+  console.log("🧩 Виконання перевірки обмежень...", routeSettings);
+
+  // 1. Кількість пасажирів
+  const passengerCount = selectedRequests.length;
+  console.log("👥 Кількість пасажирів:", passengerCount);
+  if (routeSettings.min_passengers && passengerCount < routeSettings.min_passengers) {
+    violations.push("min_passengers");
+    console.warn("🚫 Порушено: min_passengers");
+  }
+  if (routeSettings.max_passengers && passengerCount > routeSettings.max_passengers) {
+    violations.push("max_passengers");
+    console.warn("🚫 Порушено: max_passengers");
+  }
+
+  // 2. Змішані напрямки
+  const directions = new Set(selectedRequests.map(r => r.request_type));
+  console.log("🔀 Напрямки у вибраних заявках:", [...directions]);
+  if (!routeSettings.allow_mixed_directions && directions.size > 1) {
+    violations.push("allow_mixed_directions");
+    console.warn("🚫 Порушено: allow_mixed_directions");
+  }
+
+  // 3. Робочі адреси
+  const workAddresses = new Set(
+    selectedRequests
+      .filter(r => r.request_type === "to_work")
+      .map(r => `${r.dropoff_latitude},${r.dropoff_longitude}`)
+  );
+  console.log("🏢 Унікальні адреси роботи:", [...workAddresses]);
+  if (!routeSettings.allow_multiple_work_addresses && workAddresses.size > 1) {
+    violations.push("allow_multiple_work_addresses");
+    console.warn("🚫 Порушено: allow_multiple_work_addresses");
+  }
+
+  // 4. Перевірка дати
+  const uniqueDates = new Set(selectedRequests.map(r => r.date));
+  console.log("📅 Унікальні дати заявок:", [...uniqueDates]);
+  if (routeSettings.date_interval === 0 && uniqueDates.size > 1) {
+    violations.push("date_interval");
+    console.warn("🚫 Порушено: date_interval");
+  }
+
+  // 5. Час прибуття
+  if (routeSettings.arrival_time_tolerance && selectedRequests[0].arrival_time) {
+    const firstTime = new Date(`1970-01-01T${selectedRequests[0].arrival_time}`);
+    const tolerance = routeSettings.arrival_time_tolerance;
+    for (let r of selectedRequests) {
+      const time = new Date(`1970-01-01T${r.arrival_time}`);
+      const diff = Math.abs((time - firstTime) / 60000);
+      if (diff > tolerance) {
+        violations.push("arrival_time_tolerance");
+        console.warn("🚫 Порушено: arrival_time_tolerance", r.arrival_time);
+        break;
       }
     }
-  
-    // 6. Кількість зупинок (припускаємо, що кожна заявка — окрема зупинка)
-    const uniqueStops = new Set(selectedRequests.map(r => `${r.pickup_latitude},${r.pickup_longitude}`));
-    if (routeSettings.max_stops && uniqueStops.size > routeSettings.max_stops) {
-      violations.push("max_stops");
-    }
-  
-    // 7. max_route_duration / max_route_distance — не можемо перевірити до бекенду,
-    // тому їх потрібно перевірити після calculateRoute.
-  
-    return {
-      isValid: violations.length === 0,
-      violated: violations
-    };
   }
-  
+
+  // 6. Кількість зупинок
+  const uniqueStops = new Set(selectedRequests.map(r => `${r.pickup_latitude},${r.pickup_longitude}`));
+  console.log("🛑 Унікальні зупинки:", [...uniqueStops]);
+  if (routeSettings.max_stops && uniqueStops.size > routeSettings.max_stops) {
+    violations.push("max_stops");
+    console.warn("🚫 Порушено: max_stops");
+  }
+
+  return {
+    isValid: violations.length === 0,
+    violated: violations
+  };
+};
   const fetchPassengerLists = async () => {
     try {
       if (!filters) {
@@ -830,37 +841,37 @@ useEffect(() => {
   
   
 
-  const handleReorder = (id, direction) => {
-    setIsRouteCalculated(false); // Маршрут тепер вимагає перерахунку
-    setSelectedRequests((prevRequests) => {
-      const index = prevRequests.findIndex((r) => r.id === id);
-      if (
-        index === -1 ||
-        (direction === "up" && index === 0) ||
-        (direction === "down" && index === prevRequests.length - 1)
-      ) {
-        return prevRequests;
-      }
+  // const handleReorder = (id, direction) => {
+  //   setIsRouteCalculated(false); // Маршрут тепер вимагає перерахунку
+  //   setSelectedRequests((prevRequests) => {
+  //     const index = prevRequests.findIndex((r) => r.id === id);
+  //     if (
+  //       index === -1 ||
+  //       (direction === "up" && index === 0) ||
+  //       (direction === "down" && index === prevRequests.length - 1)
+  //     ) {
+  //       return prevRequests;
+  //     }
   
-      const newRequests = [...prevRequests];
-      const [movedItem] = newRequests.splice(index, 1);
-      newRequests.splice(
-        direction === "up" ? index - 1 : index + 1,
-        0,
-        movedItem
-      );
+  //     const newRequests = [...prevRequests];
+  //     const [movedItem] = newRequests.splice(index, 1);
+  //     newRequests.splice(
+  //       direction === "up" ? index - 1 : index + 1,
+  //       0,
+  //       movedItem
+  //     );
   
-      const reordered = newRequests.map((req, idx) => ({
-        ...req,
-        sequence_number: idx + 1,
-      }));
+  //     const reordered = newRequests.map((req, idx) => ({
+  //       ...req,
+  //       sequence_number: idx + 1,
+  //     }));
   
-      // ✅ Зберігаємо оновлений порядок у sessionStorage
-      syncSelectedRequests(reordered);
+  //     // ✅ Зберігаємо оновлений порядок у sessionStorage
+  //     syncSelectedRequests(reordered);
   
-      return reordered;
-    });
-  };
+  //     return reordered;
+  //   });
+  // };
   
 const handleFilterChange = (e) => {
   const { name, value } = e.target;
@@ -957,14 +968,22 @@ const handleFilterChange = (e) => {
       return;
     }
   
-    // 🔍 Перевірка обмежень перед розрахунком
-    const restrictionsCheck = checkRouteRestrictions(routeSettings, selectedRequests);
-    if (!restrictionsCheck.isValid) {
-      alert(t("violated_constraints") + ":\n" + restrictionsCheck.violated.map(v => "• " + t(v)).join("\n"));
+    if (!routeSettings) {
+      alert(t("settings_not_loaded"));
+      console.warn("❌ routeSettings відсутній");
       return;
     }
   
-    const direction = directionFilter; // Напрямок: HOME_TO_WORK або WORK_TO_HOME
+    console.log("🔍 Отримані обмеження маршруту:", routeSettings);
+    const restrictionsCheck = checkRouteRestrictions(routeSettings, selectedRequests);
+    if (!restrictionsCheck.isValid) {
+      const violationsList = restrictionsCheck.violated.map(v => `• ${t(v)}`).join("\n");
+      alert(t("violated_constraints") + ":\n" + violationsList);
+      console.warn("❌ Виявлено порушення:", restrictionsCheck.violated);
+      return;
+    }
+  
+    const direction = directionFilter;
     let origin, destination, waypoints;
   
     if (direction === "HOME_TO_WORK") {
@@ -977,21 +996,30 @@ const handleFilterChange = (e) => {
       waypoints = selectedRequests.slice(1, -1).map((r) => `${r.dropoff_latitude},${r.dropoff_longitude}`);
     }
   
-    console.log("\ud83d\udce4 \u0412\u0456\u0434\u043f\u0440\u0430\u0432\u043a\u0430 \u0437\u0430\u043f\u0438\u0442\u0443 \u043d\u0430 \u0431\u0435\u043a\u0435\u043d\u0434 \u0434\u043b\u044f \u0440\u043e\u0437\u0440\u0430\u0445\u0443\u043d\u043a\u0443 \u043c\u0430\u0440\u0448\u0440\u0443\u0442\u0443:");
-    console.log("\ud83d\udccc \u041f\u043e\u0447\u0430\u0442\u043a\u043e\u0432\u0430 \u0442\u043e\u0447\u043a\u0430:", origin);
-    console.log("\ud83d\udccc \u041a\u0456\u043d\u0446\u0435\u0432\u0430 \u0442\u043e\u0447\u043a\u0430:", destination);
-    console.log("\ud83d\udccc \u041f\u0440\u043e\u043c\u0456\u0436\u043d\u0456 \u0442\u043e\u0447\u043a\u0438:", waypoints);
-    console.log("\ud83d\udccc \u0412\u0438\u0431\u0440\u0430\u043d\u0430 \u043c\u043e\u0432\u0430:", userLanguage);
+    console.log("📤 Відправка запиту на розрахунок маршруту:");
+    console.log("📌 Origin:", origin);
+    console.log("📌 Destination:", destination);
+    console.log("📌 Waypoints:", waypoints);
+    console.log("📌 Language:", userLanguage);
   
     try {
+      const token = localStorage.getItem('access_token');
       const response = await axios.post(API_ENDPOINTS.calculateRoute, {
         origin,
         destination,
         waypoints,
         language: userLanguage,
-      });
+        passenger_count: selectedRequests.length,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    
   
-      console.log("\u2705 \u041e\u0442\u0440\u0438\u043c\u0430\u043d\u043e \u043c\u0430\u0440\u0448\u0440\u0443\u0442:", response.data);
+      console.log("✅ Отримано маршрут:", response.data);
   
       const formatAddress = (address) => {
         const parts = address.split(",");
@@ -1013,7 +1041,7 @@ const handleFilterChange = (e) => {
       const { standard_route, optimized_route, optimization_applied } = response.data;
   
       if (!standard_route) {
-        alert("\u041f\u043e\u043c\u0438\u043b\u043a\u0430: \u0414\u0430\u043d\u0456 \u043c\u0430\u0440\u0448\u0440\u0443\u0442\u0443 \u043d\u0435 \u043e\u0442\u0440\u0438\u043c\u0430\u043d\u0456.");
+        alert("Помилка: Дані маршруту не отримані.");
         return;
       }
   
@@ -1042,7 +1070,7 @@ const handleFilterChange = (e) => {
       setStandardRoute(standard_route || []);
       setOptimizedRoute(optimized_route || []);
     } catch (error) {
-      console.error("\u274c \u041f\u043e\u043c\u0438\u043b\u043a\u0430 \u043f\u0440\u0438 \u0440\u043e\u0437\u0440\u0430\u0445\u0443\u043d\u043a\u0443 \u043c\u0430\u0440\u0448\u0440\u0443\u0442\u0443:", error);
+      console.error("❌ Помилка при розрахунку маршруту:", error);
       alert(t("error_calculating_route"));
     }
   };
@@ -2187,6 +2215,19 @@ const handleCloseMap = () => {
   onAcceptStandard={acceptStandardRoute}
   onShowMap={handleShowMap}
 />
+{violationModal.show && (
+  <div className="violation-modal">
+    <h2>{t("violated_constraints")}</h2>
+    <ul>
+      {violationModal.violations.map((v, index) => (
+        <li key={index}>{t(v)}</li>
+      ))}
+    </ul>
+    <button onClick={() => setViolationModal({ show: false, violations: [] })}>
+      {t("close")}
+    </button>
+  </div>
+)}
 
 {showMapModal && (
   <RouteMapModal
