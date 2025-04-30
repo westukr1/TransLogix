@@ -1450,7 +1450,16 @@ const handleCloseMap = () => {
           }
           return `ID: ${params?.data?.id || "невідомо"}`;
         },
-        cellRenderer: (params) => params?.data?.sequence_number || "",
+        cellRenderer: (params) => (
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            height: "20px",  // Зменшена висота
+            fontSize: "0.85em",
+          }}>
+            {params?.data?.sequence_number || ""}
+          </div>
+        )
       },
       { headerName: t("request_id"), field: "id", width: 60 },
       {
@@ -2135,20 +2144,20 @@ const handleCloseMap = () => {
               style={{ height: "50%", marginTop: "20px" }}
             >
               <AgGridReact
-                key={JSON.stringify(selectedRequests)}
-                rowData={selectedRequests}
-                columnDefs={createColumnDefs(false)}
-                rowDragManaged={true}
-                animateRows={true}
-                getRowStyle={getRowStyle}
-                pagination = {false}
-                // paginationPageSize={20}
-                getRowNodeId={(data) => data.id.toString()}
-                onRowDragEnd={handleRowDragEnd}
-                onRowDragEnter={handleRowDragEnter}
-                suppressRowTransform={true}
-                suppressMoveWhenRowDragging={true}
-              />
+  key={JSON.stringify(selectedRequests)}
+  rowData={selectedRequests}
+  columnDefs={createColumnDefs(false)}
+  rowDragManaged={true}
+  animateRows={true}
+  getRowStyle={getRowStyle}
+  pagination={false}
+  getRowNodeId={(data) => data.id.toString()}
+  suppressRowTransform={true}
+  suppressMoveWhenRowDragging={true}
+  onRowDragEnd={handleRowDragEnd}
+  onRowDragEnter={handleRowDragEnter}
+/>
+
             </div>
           </div>
           <div className="button-container">
