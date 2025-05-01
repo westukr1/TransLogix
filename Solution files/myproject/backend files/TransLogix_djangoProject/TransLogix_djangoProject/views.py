@@ -67,7 +67,7 @@ from django.http import JsonResponse
 from .models import RoutePlanDraft, RouteDraftList
 from .serializers import RoutePlanDraftSerializer, RouteDraftListSerializer
 from rest_framework import permissions
-
+from .route_optimizer.optimizer import build_optimized_routes
 
 
 # Включення логування SQL-запитів
@@ -2068,3 +2068,34 @@ class RouteDraftListViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return self.queryset.filter(plan__user=self.request.user)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def optimize_routes_api(request):
+    """
+    API endpoint для запуску оптимізатора маршрутів.
+    Очікує список заявок у форматі JSON.
+    """
+    user = request.user
+    data = request.data
+
+    requests_data = data.get("requests", [])
+    route_date = data.get("route_date", str(date.today()))
+    name = data.get("name", f"План {route_date}")
+    strategy = data.get("strategy", "min_distance")
+    save = data.get("save", False)
+
+    result = build_optimized_routes(
+        requests=requests_data,
+        user_id=user.id,
+        strategy=strategy,
+        save=save,
+        route_date=route_date,
+        name=name,
+        user=user,
+    )
+
+    if not result["success"]:
+        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response(result, status=status.HTTP_200_OK)

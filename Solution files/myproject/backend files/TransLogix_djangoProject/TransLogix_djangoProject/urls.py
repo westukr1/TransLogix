@@ -67,7 +67,7 @@ from rest_framework.routers import DefaultRouter
 from .views import TemporaryPassengerListViewSet, delete_expired_lists
 from .views import get_passenger_requests_details
 from .views import RoutePlanDraftViewSet, RouteDraftListViewSet
-
+from .views import optimize_routes_api
 
 
 router = DefaultRouter()
@@ -183,6 +183,7 @@ urlpatterns = [
     path('api/passenger-requests/details/', get_passenger_requests_details, name='get_passenger_requests_details'),
     path('api/temp-lists/get_active_list/', TemporaryPassengerListViewSet.as_view({'get': 'get_active_list'}), name='get_active_list'),
 
-    path('api/', include(router.urls)),  
+    path('api/', include(router.urls)),
+    path('api/optimize/', optimize_routes_api, name='optimize_routes'),
 ]
 
