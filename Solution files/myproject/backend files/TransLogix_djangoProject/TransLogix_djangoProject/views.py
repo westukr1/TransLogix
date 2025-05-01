@@ -64,7 +64,9 @@ from uuid import UUID
 from datetime import timedelta
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-
+from .models import RoutePlanDraft, RouteDraftList
+from .serializers import RoutePlanDraftSerializer, RouteDraftListSerializer
+from rest_framework import permissions
 
 
 
@@ -2039,3 +2041,30 @@ def get_passenger_requests_details(request):
 
     # Відправляємо дані у вигляді списку
     return Response(PassengerTripRequestSerializer(passenger_requests, many=True).data, status=status.HTTP_200_OK)
+
+class RoutePlanDraftViewSet(viewsets.ModelViewSet):
+    queryset = RoutePlanDraft.objects.all()
+    serializer_class = RoutePlanDraftSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def deactivate(self, request, pk=None):
+        draft = self.get_object()
+        draft.is_active = False
+        draft.save()
+        return Response({"status": "deactivated"})
+
+
+class RouteDraftListViewSet(viewsets.ModelViewSet):
+    queryset = RouteDraftList.objects.all()
+    serializer_class = RouteDraftListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(plan__user=self.request.user)

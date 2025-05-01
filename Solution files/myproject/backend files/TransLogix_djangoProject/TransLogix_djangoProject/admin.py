@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User
 from .models import OrderedPassengerList
+from .models import RoutePlanDraft, RouteDraftList
 
 class CustomUserAdmin(UserAdmin):  # Кастомний UserAdmin для стандартної моделі User
     model = User
@@ -22,6 +23,8 @@ class CustomUserAdmin(UserAdmin):  # Кастомний UserAdmin для ста�
 
 # Реєструємо кастомний UserAdmin для стандартної моделі User
 admin.site.register(User, CustomUserAdmin)
+admin.site.register(RoutePlanDraft)
+admin.site.register(RouteDraftList)
 
 @admin.register(OrderedPassengerList)
 class OrderedPassengerListAdmin(admin.ModelAdmin):

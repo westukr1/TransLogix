@@ -6,6 +6,7 @@ from .models import  Country, Region, City, District, Street
 from .models import DriverVehicleAssignment, FuelType
 from .models import Passenger, PassengerTripRequest,OrderedPassengerList
 from .models import TemporaryPassengerList
+from .models import RoutePlanDraft, RouteDraftList
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -728,4 +729,16 @@ class OrderedPassengerListSerializer(serializers.ModelSerializer):
 class TemporaryPassengerListSerializer(serializers.ModelSerializer):
     class Meta:
         model = TemporaryPassengerList
+        fields = '__all__'
+
+class RouteDraftListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RouteDraftList
+        fields = '__all__'
+
+class RoutePlanDraftSerializer(serializers.ModelSerializer):
+    draft_lists = RouteDraftListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = RoutePlanDraft
         fields = '__all__'

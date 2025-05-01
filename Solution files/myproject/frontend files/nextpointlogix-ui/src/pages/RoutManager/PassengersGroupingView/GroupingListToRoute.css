@@ -155,6 +155,7 @@ input[disabled] {
 .ag-row-drag {
 
   max-width: 200px !important; /* або будь-яка інша ширина */
+  height: 20px !important;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

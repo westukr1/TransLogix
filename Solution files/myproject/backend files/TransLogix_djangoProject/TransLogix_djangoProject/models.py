@@ -9,6 +9,8 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.utils import timezone
 import uuid
 from datetime import timedelta
+from django.conf import settings
+
 
 class User(AbstractUser):
 
@@ -606,3 +608,30 @@ class TemporaryPassengerList(models.Model):
 
     def __str__(self):
         return f"Temporary list for {self.user.username} (Session {self.session_id})"
+    
+class RoutePlanDraft(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    route_date = models.DateField()
+    total_distance_km = models.FloatField(default=0.0)
+    total_duration_min = models.FloatField(default=0.0)
+    total_fuel_liters = models.FloatField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Draft {self.name} by {self.user.username} on {self.route_date}"
+
+
+class RouteDraftList(models.Model):
+    plan = models.ForeignKey(RoutePlanDraft, on_delete=models.CASCADE, related_name='draft_lists')
+    route_index = models.IntegerField()
+    data_json = models.JSONField()
+    distance_km = models.FloatField(default=0.0)
+    duration_min = models.FloatField(default=0.0)
+    fuel_liters = models.FloatField(null=True, blank=True)
+
+    def __str__(self):
+        return f"DraftList #{self.route_index} for plan {self.plan.name}"

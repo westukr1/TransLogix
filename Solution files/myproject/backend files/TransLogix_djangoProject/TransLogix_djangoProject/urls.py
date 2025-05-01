@@ -66,6 +66,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import TemporaryPassengerListViewSet, delete_expired_lists
 from .views import get_passenger_requests_details
+from .views import RoutePlanDraftViewSet, RouteDraftListViewSet
 
 
 
@@ -77,6 +78,8 @@ router.register(r'fuel-types', FuelTypeViewSet, basename='fuel-type')
 router.register(r'ordered-passenger-list', OrderedPassengerListViewSet)
 router.register(r'temporary-passenger-list', TemporaryPassengerListViewSet, basename="temporary_passenger_list")
 router.register(r'temp-lists', TemporaryPassengerListViewSet, basename='temp-list')
+router.register(r'route-plans', RoutePlanDraftViewSet, basename='routeplandraft')
+router.register(r'route-lists', RouteDraftListViewSet, basename='routedraftlist')
 
 # Для створення пасажира go fuck yourself
 import logging
@@ -180,5 +183,6 @@ urlpatterns = [
     path('api/passenger-requests/details/', get_passenger_requests_details, name='get_passenger_requests_details'),
     path('api/temp-lists/get_active_list/', TemporaryPassengerListViewSet.as_view({'get': 'get_active_list'}), name='get_active_list'),
 
+    path('api/', include(router.urls)),  
 ]
 
