@@ -1,12 +1,72 @@
-"desktop.ini" 
-"desktop.ini" 
-"desktop.ini" 
-# IDE settings
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+*.log
+
+# Django-specific
+db.sqlite3
+*.sqlite3
+.env
+.env.*
+staticfiles/
+media/
+django_debug.log
+**/django_debug.log
+
+# PyCharm / VS Code / IDE
 .idea/
+.vscode/
+*.code-workspace
 
 # Virtual environments
 venv/
-Solution files/myproject/backend files/TransLogix_djangoProject/venv/
+.venv/
+*/venv/
+*/.venv/
+Solution files/myproject/backend files/**/venv/
+Solution files/myproject/backend files/**/.venv/
 
-# Static files
-Solution files/myproject/backend files/TransLogix_djangoProject/staticfiles/
+# Migrations (optional — якщо ви не трекаєте їх)
+**/migrations/__pycache__/
+**/migrations/*.pyc
+**/migrations/*.pyo
+# Uncomment below if you ignore migration files completely:
+# **/migrations/*.py
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node / Frontend
+node_modules/
+*.tsbuildinfo
+package-lock.json
+yarn.lock
+npm-debug.log*
+
+# Compiled static assets (optional)
+build/
+dist/
+
+# Coverage / Testing
+htmlcov/
+.coverage
+.tox/
+.cache/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Local backups / temp
+*.bak
+*.tmp
+*.swp

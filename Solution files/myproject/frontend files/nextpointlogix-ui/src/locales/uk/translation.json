@@ -641,7 +641,16 @@
   "no_optimized_route_found": "Більш оптимального маршруту не знайдено.",
 "accept_non_optimized":"Прийняти дані без оптимізації",
 "accept_optimized":"Прийняти оптимізований маршрут",
-"temporary_list_expired_due_to_conflict": "Тимчасовий список втратив актуальність, оскільки заявка(и) вже включені у інший маршрут"
-
+"temporary_list_expired_due_to_conflict": "Тимчасовий список втратив актуальність, оскільки заявка(и) вже включені у інший маршрут",
+"user_created_route": "Маршрут створений користувачем",
+"routes_optimization_parameters": "Параметри оптимізації маршрутів",
+"route_optimization": "Оптимізація маршруту",
+"strategy": "Стратегія оптимізації",
+"strategy.min_distance": "Мінімальна відстань",
+"strategy.min_duration": "Мінімальна тривалість",
+"strategy.balanced": "Збалансовано",
+"automatically_save": "Автоматично зберігати маршрут",
+"strategy.auto_vehicle_limit": "За доступною кількістю транспорту",
+"strategy.min_fuel_cost": "Мінімальні витрати пального"
 
 }

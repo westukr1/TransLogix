@@ -1,0 +1,113 @@
+ const calculateRoute = async () => {
+    if (selectedRequests.length < 2) {
+      alert(t("minimum_points_required"));
+      return;
+    }
+  
+    if (!routeSettings) {
+      alert(t("settings_not_loaded"));
+      console.warn("❌ routeSettings відсутній");
+      return;
+    }
+  
+    console.log("🔍 Отримані обмеження маршруту:", routeSettings);
+    const restrictionsCheck = checkRouteRestrictions(routeSettings, selectedRequests);
+    if (!restrictionsCheck.isValid) {
+      const violationsList = restrictionsCheck.violated.map(v => `• ${t(v)}`).join("\n");
+      alert(t("violated_constraints") + ":\n" + violationsList);
+      console.warn("❌ Виявлено порушення:", restrictionsCheck.violated);
+      return;
+    }
+  
+    const direction = directionFilter;
+    let origin, destination, waypoints;
+  
+    if (direction === "HOME_TO_WORK") {
+      origin = `${selectedRequests[0].pickup_latitude},${selectedRequests[0].pickup_longitude}`;
+      destination = `${selectedRequests[selectedRequests.length - 1].dropoff_latitude},${selectedRequests[selectedRequests.length - 1].dropoff_longitude}`;
+      waypoints = selectedRequests.slice(1, -1).map((r) => `${r.pickup_latitude},${r.pickup_longitude}`);
+    } else {
+      origin = `${selectedRequests[0].pickup_latitude},${selectedRequests[0].pickup_longitude}`;
+      destination = `${selectedRequests[selectedRequests.length - 1].dropoff_latitude},${selectedRequests[selectedRequests.length - 1].dropoff_longitude}`;
+      waypoints = selectedRequests.slice(1, -1).map((r) => `${r.dropoff_latitude},${r.dropoff_longitude}`);
+    }
+  
+    console.log("📤 Відправка запиту на розрахунок маршруту:");
+    console.log("📌 Origin:", origin);
+    console.log("📌 Destination:", destination);
+    console.log("📌 Waypoints:", waypoints);
+    console.log("📌 Language:", userLanguage);
+  
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.post(API_ENDPOINTS.calculateRoute, {
+        origin,
+        destination,
+        waypoints,
+        language: userLanguage,
+        passenger_count: selectedRequests.length,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    
+  
+      console.log("✅ Отримано маршрут:", response.data);
+  
+      const formatAddress = (address) => {
+        const parts = address.split(",");
+        if (parts.length >= 3) {
+          const street = parts[0].trim();
+          const house = parts[1].trim();
+          const city = parts[2].trim();
+          return `${city}, ${street}, ${house}`;
+        }
+        return address;
+      };
+  
+      const formatDuration = (minutes) => {
+        const hours = Math.floor(minutes / 60);
+        const remainingMinutes = Math.round(minutes % 60);
+        return `${hours}h ${remainingMinutes}m`;
+      };
+  
+      const { standard_route, optimized_route, optimization_applied } = response.data;
+  
+      if (!standard_route) {
+        alert("Помилка: Дані маршруту не отримані.");
+        return;
+      }
+  
+      setModalData({
+        show: true,
+        standardRoute: {
+          distance: Math.round(standard_route.total_distance),
+          duration: formatDuration(standard_route.total_duration),
+          stops: standard_route.stops,
+          startAddress: formatAddress(standard_route.start_address),
+          endAddress: formatAddress(standard_route.end_address),
+        },
+        optimizedRoute: optimization_applied
+          ? {
+              distance: Math.round(optimized_route.total_distance),
+              duration: formatDuration(optimized_route.total_duration),
+              stops: optimized_route.stops,
+              startAddress: formatAddress(optimized_route.start_address),
+              endAddress: formatAddress(optimized_route.end_address),
+            }
+          : null,
+        optimizedOrder: response.data.optimized_order || null,
+        optimizationApplied: optimization_applied,
+      });
+  
+      setStandardRoute(standard_route || []);
+      setOptimizedRoute(optimized_route || []);
+    } catch (error) {
+      console.error("❌ Помилка при розрахунку маршруту:", error);
+      alert(t("error_calculating_route"));
+    }
+  };
+  

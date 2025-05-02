@@ -7,6 +7,7 @@ from .models import DriverVehicleAssignment, FuelType
 from .models import Passenger, PassengerTripRequest,OrderedPassengerList
 from .models import TemporaryPassengerList
 from .models import RoutePlanDraft, RouteDraftList
+from .models import UserSettings
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -77,6 +78,23 @@ class UserSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+    
+class UserSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserSettings
+        fields = [
+            "date_interval",
+            "arrival_time_tolerance",
+            "allow_mixed_directions",
+            "max_route_duration",
+            "max_route_distance",
+            "max_stops",
+            "max_passengers",
+            "min_passengers",
+            "allow_multiple_work_addresses",
+            "strategy",  # нове поле
+            "auto_save",      # нове поле
+        ]
 
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)

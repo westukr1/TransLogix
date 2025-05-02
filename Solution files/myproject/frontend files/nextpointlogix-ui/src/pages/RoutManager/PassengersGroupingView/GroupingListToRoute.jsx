@@ -968,40 +968,16 @@ const handleFilterChange = (e) => {
       return;
     }
   
-    if (!routeSettings) {
-      alert(t("settings_not_loaded"));
-      console.warn("❌ routeSettings відсутній");
-      return;
-    }
-  
-    console.log("🔍 Отримані обмеження маршруту:", routeSettings);
-    const restrictionsCheck = checkRouteRestrictions(routeSettings, selectedRequests);
-    if (!restrictionsCheck.isValid) {
-      const violationsList = restrictionsCheck.violated.map(v => `• ${t(v)}`).join("\n");
-      alert(t("violated_constraints") + ":\n" + violationsList);
-      console.warn("❌ Виявлено порушення:", restrictionsCheck.violated);
-      return;
-    }
-  
     const direction = directionFilter;
-    let origin, destination, waypoints;
+    const origin = `${selectedRequests[0].pickup_latitude},${selectedRequests[0].pickup_longitude}`;
+    const destination = `${selectedRequests[selectedRequests.length - 1].dropoff_latitude},${selectedRequests[selectedRequests.length - 1].dropoff_longitude}`;
+    const waypoints = selectedRequests.slice(1, -1).map(r =>
+      direction === "HOME_TO_WORK"
+        ? `${r.pickup_latitude},${r.pickup_longitude}`
+        : `${r.dropoff_latitude},${r.dropoff_longitude}`
+    );
   
-    if (direction === "HOME_TO_WORK") {
-      origin = `${selectedRequests[0].pickup_latitude},${selectedRequests[0].pickup_longitude}`;
-      destination = `${selectedRequests[selectedRequests.length - 1].dropoff_latitude},${selectedRequests[selectedRequests.length - 1].dropoff_longitude}`;
-      waypoints = selectedRequests.slice(1, -1).map((r) => `${r.pickup_latitude},${r.pickup_longitude}`);
-    } else {
-      origin = `${selectedRequests[0].pickup_latitude},${selectedRequests[0].pickup_longitude}`;
-      destination = `${selectedRequests[selectedRequests.length - 1].dropoff_latitude},${selectedRequests[selectedRequests.length - 1].dropoff_longitude}`;
-      waypoints = selectedRequests.slice(1, -1).map((r) => `${r.dropoff_latitude},${r.dropoff_longitude}`);
-    }
-  
-    console.log("📤 Відправка запиту на розрахунок маршруту:");
-    console.log("📌 Origin:", origin);
-    console.log("📌 Destination:", destination);
-    console.log("📌 Waypoints:", waypoints);
-    console.log("📌 Language:", userLanguage);
-  
+    console.log("📤 Відправка запиту на розрахунок маршруту (все на бекенді)");
     try {
       const token = localStorage.getItem('access_token');
       const response = await axios.post(API_ENDPOINTS.calculateRoute, {
@@ -1010,24 +986,24 @@ const handleFilterChange = (e) => {
         waypoints,
         language: userLanguage,
         passenger_count: selectedRequests.length,
-      },
-      {
+        direction,
+        selected_requests: selectedRequests,  // 👉 бекенд отримає весь масив
+      }, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
-    );
-    
+      });
   
-      console.log("✅ Отримано маршрут:", response.data);
+      const { standard_route, optimized_route, optimization_applied, optimized_order } = response.data;
+      if (!standard_route) {
+        alert("Помилка: Дані маршруту не отримані.");
+        return;
+      }
   
       const formatAddress = (address) => {
         const parts = address.split(",");
         if (parts.length >= 3) {
-          const street = parts[0].trim();
-          const house = parts[1].trim();
-          const city = parts[2].trim();
-          return `${city}, ${street}, ${house}`;
+          return `${parts[2].trim()}, ${parts[0].trim()}, ${parts[1].trim()}`;
         }
         return address;
       };
@@ -1038,13 +1014,6 @@ const handleFilterChange = (e) => {
         return `${hours}h ${remainingMinutes}m`;
       };
   
-      const { standard_route, optimized_route, optimization_applied } = response.data;
-  
-      if (!standard_route) {
-        alert("Помилка: Дані маршруту не отримані.");
-        return;
-      }
-  
       setModalData({
         show: true,
         standardRoute: {
@@ -1054,16 +1023,14 @@ const handleFilterChange = (e) => {
           startAddress: formatAddress(standard_route.start_address),
           endAddress: formatAddress(standard_route.end_address),
         },
-        optimizedRoute: optimization_applied
-          ? {
-              distance: Math.round(optimized_route.total_distance),
-              duration: formatDuration(optimized_route.total_duration),
-              stops: optimized_route.stops,
-              startAddress: formatAddress(optimized_route.start_address),
-              endAddress: formatAddress(optimized_route.end_address),
-            }
-          : null,
-        optimizedOrder: response.data.optimized_order || null,
+        optimizedRoute: optimization_applied ? {
+          distance: Math.round(optimized_route.total_distance),
+          duration: formatDuration(optimized_route.total_duration),
+          stops: optimized_route.stops,
+          startAddress: formatAddress(optimized_route.start_address),
+          endAddress: formatAddress(optimized_route.end_address),
+        } : null,
+        optimizedOrder: optimized_order || null,
         optimizationApplied: optimization_applied,
       });
   
@@ -2118,9 +2085,10 @@ const handleCloseMap = () => {
                 columnDefs={enhancedColumnDefs}
                 pagination={true}
                 paginationPageSize={20}
-                domLayout="autoHeight"
+                domLayout="normal"
                 onRowDoubleClicked={handleListDoubleClick}
                 getRowStyle={getRowStyle2}
+               
               />
               ;
             </div>
@@ -2159,7 +2127,10 @@ const handleCloseMap = () => {
                     {t("max_stops")}: <span style={{ color: 'yellow', fontWeight: 'bold' }}>{routeSettings.max_stops}</span> <strong>&#8226;</strong> 
                     {t("max_passengers")}: <span style={{ color: 'yellow', fontWeight: 'bold' }}>{routeSettings.max_passengers}</span> <strong>&#8226;</strong> 
                     {t("min_passengers")}: <span style={{ color: 'yellow', fontWeight: 'bold' }}>{routeSettings.min_passengers}</span> <strong>&#8226;</strong> 
-                    {t("allow_multiple_work_addresses")}: <span style={{ color: 'yellow', fontWeight: 'bold' }}>{routeSettings.allow_multiple_work_addresses ? t("yes") : t("no")}</span>
+                    {t("allow_multiple_work_addresses")}: <span style={{ color: 'yellow', fontWeight: 'bold' }}>{routeSettings.allow_multiple_work_addresses ? t("yes") : t("no")}</span><strong>&#8226;</strong>
+                    {t("strategy")}: <span style={{ color: 'yellow', fontWeight: 'bold' }}>{t(`strategy.${routeSettings.strategy}`)}</span> <strong>&#8226;</strong>
+                    {t("automatically_save")}: <span style={{ color: 'yellow', fontWeight: 'bold' }}>{routeSettings.auto_save ? t("yes") : t("no")}</span><strong>&#8226;</strong>
+
                   </p>
                 </div>
               )}
@@ -2184,6 +2155,7 @@ const handleCloseMap = () => {
   suppressMoveWhenRowDragging={true}
   onRowDragEnd={handleRowDragEnd}
   onRowDragEnter={handleRowDragEnter}
+  domLayout="normal"
 />
 
             </div>

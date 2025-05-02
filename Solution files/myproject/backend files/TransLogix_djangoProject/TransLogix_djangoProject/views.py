@@ -313,11 +313,16 @@ def update_settings(request):
         settings.min_passengers = data.get("min_passengers", settings.min_passengers)
         settings.allow_multiple_work_addresses = data.get("allow_multiple_work_addresses", settings.allow_multiple_work_addresses)
 
+        # 🔹 Нові поля:
+        settings.strategy = data.get("strategy", settings.strategy)
+        settings.auto_save = data.get("auto_save", settings.auto_save)
+
         settings.save()
 
         return Response({"message": "Settings updated successfully."})
 
     return Response({"error": "Invalid request method."}, status=400)
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -333,7 +338,10 @@ def get_settings(request):
         "max_passengers": settings.max_passengers,
         "min_passengers": settings.min_passengers,
         "allow_multiple_work_addresses": settings.allow_multiple_work_addresses,
+        "strategy": settings.strategy,  # 🔹 додано
+        "auto_save": settings.auto_save,        # 🔹 додано
     })
+
 
 class RouteListView(APIView):
     permission_classes = [IsAuthenticated]

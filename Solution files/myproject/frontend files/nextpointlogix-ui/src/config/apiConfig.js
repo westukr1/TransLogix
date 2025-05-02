@@ -15,8 +15,7 @@ export const API_ENDPOINTS = {
   // deleteExpiredTempLists: `${BASE_URL}/api/delete-expired-lists/`,
   // getFilteredTripRequests: `${BASE_URL}/api/filtered-passenger-trip-requests/`,
   // updateTripRequestStatus: (id) => `${BASE_URL}/api/passenger-trip-requests/${id}/update-status/`,
-  // getSettings: `${BASE_URL}/api/get-settings/`,
-  // updateSettings: `${BASE_URL}/api/update-settings/`,
+  
   // getRoutes: `${BASE_URL}/api/routes/`,
   // getPassengers: `${BASE_URL}/api/passengers/`,
   // getPassengerRequestsDetails: `${BASE_URL}/api/passenger-requests/details/`,
@@ -85,7 +84,7 @@ export const API_ENDPOINTS = {
   // toggleSelectAll: `${BASE_URL}/api/passengers/toggle-select-all/`,
   // toggleCoordinateActive: (id) => `${BASE_URL}/api/coordinate-points/${id}/toggle-active/`,
   // getFilteredRoutes: `${BASE_URL}/api/filtered-routes/`,
-  // filteredCoordinates: () => `${BASE_URL}/api/filtered-coordinates/`,
+  
   // getPassengers: (isActive) => `${BASE_URL}/api/passengers/?is_active=${isActive}`,
   // getFilteredRoutes: `${BASE_URL}/api/filtered-routes/`,
   // getAllRoutes: `${BASE_URL}/api/routes/`,
@@ -128,7 +127,10 @@ export const API_ENDPOINTS = {
     googleMapsKey: `${BASE_URL}/api/google-maps-key/`,
     getUserInfo: `${BASE_URL}/api/me/`,
 
-  
+    // ===== Settings =====
+    getSettings: `${BASE_URL}/api/get-settings/`,
+    updateSettings: `${BASE_URL}/api/update-settings/`,
+    
     // ===== Passengers =====
     getPassengers: (isActive = true) => `${BASE_URL}/api/passengers/?is_active=${isActive}`,
     getPassengerDetails: (id) => `${BASE_URL}/api/passengers/${id}/`,
@@ -141,7 +143,8 @@ export const API_ENDPOINTS = {
     getPassengerAddresses: (id) => `${BASE_URL}/api/passengers/${id}/addresses/`,
     updatePassengerAddresses: (id) => `${BASE_URL}/api/passenger/${id}/addresses/update/`,
     getHouseNumber: (pointId) => `${BASE_URL}/api/coordinate-point/${pointId}/house-number/`,
-  
+    filteredCoordinates: () => `${BASE_URL}/api/filtered-coordinates/`,
+
     // ===== Drivers =====
     getDrivers: `${BASE_URL}/api/drivers/`,
     getDriverById: (id) => `${BASE_URL}/api/drivers/${id}/`,

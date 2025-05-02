@@ -65,6 +65,15 @@ class UserSettings(models.Model):
     max_passengers = models.PositiveIntegerField(default=50)  # Максимальна кількість пасажирів
     min_passengers = models.PositiveIntegerField(default=1)  # Мінімальна кількість пасажирів
     allow_multiple_work_addresses = models.BooleanField(default=False)  # Дозволити кілька робочих адрес
+    strategy = models.CharField(
+        max_length=50,
+        default='min_distance',
+        help_text="optimization strategy: min_distance, min_duration, balanced, auto_vehicle_limit, min_fuel_cost"
+    )
+    auto_save = models.BooleanField(
+        default=False,
+        help_text="automatically save route plan after optimization"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

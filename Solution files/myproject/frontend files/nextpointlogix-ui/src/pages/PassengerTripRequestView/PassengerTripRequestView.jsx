@@ -374,16 +374,16 @@ const PassengerTripRequestView = () => {
           >
             {" "}
             {t("trip_requests_from_passengers")}{" "}
-          </h1>
-          <div style={{ display: "flex", gap: "10px" }}>
-            <h3
+          </h1> <h3
               style={{
                 color: "white",
                 fontsize: "50%",
               }}
             >
-              Data range from -
+              Data range -
             </h3>
+          <div style={{  gap: "10px" }}>
+           
             <DatePicker
               selected={startDate}
               onChange={(date) => setStartDate(date)}
@@ -393,15 +393,7 @@ const PassengerTripRequestView = () => {
               dateFormat="dd-MM-yyyy"
               calendarClassName="custom-datepicker"
             />
-            <h3
-              style={{
-                color: "white",
-                fontsize: "50%",
-              }}
-            >
-              {" "}
-              - to -{" "}
-            </h3>
+          
             <DatePicker
               selected={endDate}
               onChange={(date) => setEndDate(date)}

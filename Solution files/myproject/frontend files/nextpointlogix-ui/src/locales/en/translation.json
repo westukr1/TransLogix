@@ -654,7 +654,16 @@
 "no_optimized_route_found": "No better optimized route found.",
 "accept_non_optimized":"Accept non-optimized route",
 "accept_optimized":"Accept optimized route",
-"temporary_list_expired_due_to_conflict": "Temporary list expired due to request(s) already included in another route"
+"temporary_list_expired_due_to_conflict": "Temporary list expired due to request(s) already included in another route",
+"user_created_route": "User created route",
+"routes_optimization_parameters": "Routes optimization parameters",
+"strategy": "Optimization Strategy",
+"strategy.min_distance": "Minimum Distance",
+"strategy.min_duration": "Minimum Duration",
+"strategy.balanced": "Balanced",
+"automatically_save": "Auto-save Route",
+"strategy.auto_vehicle_limit": "By Available Vehicle Count",
+"strategy.min_fuel_cost": "Minimum Fuel Cost"
 
 
 }

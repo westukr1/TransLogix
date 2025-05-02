@@ -68,6 +68,7 @@ from .views import TemporaryPassengerListViewSet, delete_expired_lists
 from .views import get_passenger_requests_details
 from .views import RoutePlanDraftViewSet, RouteDraftListViewSet
 from .views import optimize_routes_api
+from .serializers import UserSettingsSerializer
 
 
 router = DefaultRouter()

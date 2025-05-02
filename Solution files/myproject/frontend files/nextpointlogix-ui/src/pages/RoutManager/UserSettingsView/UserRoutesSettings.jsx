@@ -22,6 +22,8 @@ const UserRoutesSettings = () => {
     max_passengers: 50,
     min_passengers: 1,
     allow_multiple_work_addresses: false,
+    strategy: "min_distance", // 🔹 нове
+    auto_save: false,   
   });
 
   // Функція для отримання налаштувань
@@ -48,11 +50,38 @@ const UserRoutesSettings = () => {
   }, []);
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setSettings((prevSettings) => ({
-      ...prevSettings,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    const newValue = type === "checkbox" ? checked : value;
+  
+    const updated = {
+      ...settings,
+      [name]: newValue,
+    };
+  
+    setSettings(updated);
+  
+    // 🔁 Автоматичне збереження кожного поля
+    axios
+      .post(API_ENDPOINTS.updateSettings, updated)
+      .then(() => {
+        console.log(`✅ Setting '${name}' updated to:`, newValue);
+      })
+      .catch((error) => {
+        console.error(`❌ Error updating setting '${name}':`, error);
+        alert(t("error.update_settings"));
+      });
   };
+  const handleExit = () => {
+    const filters = JSON.parse(sessionStorage.getItem("filters"));
+    const selectedRequests = filters?.requests || [];
+  
+    navigate("/passengers-grouping-view/grouping-list-to-route", {
+      state: {
+        from: "RouteMapModal",
+        savedRequests: selectedRequests,
+      },
+    });
+  };
+
   return (
     <div className="urs-two-column-template">
       <div className="top-nav-bar">
@@ -65,9 +94,11 @@ const UserRoutesSettings = () => {
           <button className="nav-button" onClick={() => navigate("/")}>
             {t("nav.main_screen")}
           </button>
-          <button className="nav-button" onClick={() => navigate(-1)}>
-            {t("nav.back")}
+          
+          <button className="nav-button" onClick={handleExit}>
+            {t("exit")}
           </button>
+        
         </div>
       </div>
       <div className="urs-template2s-content">
@@ -209,7 +240,35 @@ const UserRoutesSettings = () => {
         {/* Right Column */}
         <div className="urs-template2s-right-column">
           <div className="urs-template2s-upper-right">
-            <p>{t("right_upper_content")}</p>
+          <p>{t("routes_optimization_parameters")}</p>
+          <tr>
+  <td>
+    <label>{t("strategy")}:</label>
+  </td>
+  <td>
+    <select name="strategy" value={settings.strategy} onChange={handleInputChange}>
+      <option value="min_distance">{t("strategy.min_distance")}</option>
+      <option value="min_duration">{t("strategy.min_duration")}</option>
+      <option value="balanced">{t("strategy.balanced")}</option>
+      <option value="auto_vehicle_limit">{t("strategy.auto_vehicle_limit")}</option>
+      <option value="min_fuel_cost">{t("strategy.min_fuel_cost")}</option>
+    </select>
+  </td>
+</tr>
+<tr>
+  <td>
+    <label>{t("automatically_save")}:</label>
+  </td>
+  <td>
+    <input
+      type="checkbox"
+      name="auto_save"
+      checked={settings.auto_save}
+      onChange={handleInputChange}
+    />
+  </td>
+</tr>
+
           </div>
           <div className="urs-template2s-lower-right">
             <p>{t("right_lower_content")}</p>
