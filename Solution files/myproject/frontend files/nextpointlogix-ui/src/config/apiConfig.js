@@ -166,7 +166,8 @@ export const API_ENDPOINTS = {
     // ===== Routes =====
     getRoutes: `${BASE_URL}/api/routes/`,
     getFilteredRoutes: `${BASE_URL}/api/filtered-routes/`,
-    calculateRoute: `${BASE_URL}/api/calculate-route/`,
+    calculateRoute: `${BASE_URL}/api/optimize/`,  // ✅ новий правильний endpoint
+
   
     // ===== Trip Requests =====
     createTripRequest: `${BASE_URL}/api/passenger-trip-requests/create/`,

@@ -1001,12 +1001,14 @@ const handleFilterChange = (e) => {
       }
   
       const formatAddress = (address) => {
+        if (!address || typeof address !== "string") return "";
         const parts = address.split(",");
         if (parts.length >= 3) {
           return `${parts[2].trim()}, ${parts[0].trim()}, ${parts[1].trim()}`;
         }
         return address;
       };
+      
   
       const formatDuration = (minutes) => {
         const hours = Math.floor(minutes / 60);
@@ -1107,21 +1109,17 @@ const acceptOptimizedRoute = () => {
 
   console.log("📌 Перед сортуванням selectedRequests:", selectedRequests);
 
-  // Додаємо початкову та кінцеву точки та сортуємо решту точок
-  const sortedRequests = [
-    selectedRequests[0], // Початкова точка
-    ...modalData.optimizedOrder.map((index, newIndex) => {
-      if (!selectedRequests[index + 1]) {
-        console.error("❌ Некоректний індекс в optimizedOrder:", index);
-        console.log("📌 Поточний список запитів:", selectedRequests);
+  // 👉 Сортуємо selectedRequests за порядком ID з optimizedOrder
+  const sortedRequests = modalData.optimizedOrder
+    .map((id, index) => {
+      const match = selectedRequests.find(r => r.id === id);
+      if (!match) {
+        console.warn("⚠️ Не знайдено заявку з ID:", id);
         return null;
       }
-      const updatedRequest = { ...selectedRequests[index + 1] };
-      updatedRequest.sequence_number = newIndex + 1; // Оновлення порядкового номера
-      return updatedRequest;
-    }).filter(request => request !== null),
-    selectedRequests[selectedRequests.length - 1] // Кінцева точка
-  ];
+      return { ...match, sequence_number: index + 1 };
+    })
+    .filter(Boolean); // видаляємо null
 
   console.log("🔄 Оновлений список запитів після оптимізації:", sortedRequests);
 
@@ -2108,7 +2106,7 @@ const handleCloseMap = () => {
                 {t("distance")}: {routeDetails.distance} km{" "}
                 <strong>&#8226;</strong> {t("estimated_time")}:{" "}
                 {routeDetails.duration} <strong>&#8226;</strong>{" "}
-                {t("stop_count")}: {routeDetails.stops} <strong>&#8226;</strong>{" "}
+                {t("stop_count")}: {routeDetails.stops.length} <strong>&#8226;</strong>{" "}
                 {t("passenger_count")}: {routeDetails.passengers}
               </h3>
             ) : (

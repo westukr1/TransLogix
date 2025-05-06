@@ -232,6 +232,12 @@ LOGGING = {
             'filename': 'django_debug.log',
             'formatter': 'verbose',
         },
+        'optimizer_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'optimizer.log',
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
         'django': {
@@ -249,8 +255,14 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': False,
         },
+        'route_optimizer': {
+            'handlers': ['optimizer_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
     },
 }
+
 
 CRON_CLASSES = [
     "TransLogix_djangoProject.crons.DeleteExpiredListsCronJob",

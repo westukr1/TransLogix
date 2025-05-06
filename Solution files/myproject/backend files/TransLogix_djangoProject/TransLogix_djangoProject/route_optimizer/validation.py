@@ -18,10 +18,13 @@ def validate_requests(requests):
         if not r.get("dropoff_latitude") or not r.get("dropoff_longitude"):
             errors.append(f"Заявка #{i+1}: відсутні координати точки висадки")
 
-        pid = r.get("passenger_id")
-        if pid in seen_passenger_ids:
+        pid = r.get("passenger_id") or r.get("passenger")
+        if pid is None:
+            errors.append(f"Заявка #{i+1}: відсутній ID пасажира")
+        elif pid in seen_passenger_ids:
             errors.append(f"Заявка #{i+1}: дубль пасажира (ID: {pid})")
-        seen_passenger_ids.add(pid)
+        else:
+            seen_passenger_ids.add(pid)
 
         if r.get("used_in_plan") is True:
             errors.append(f"Заявка #{i+1}: вже використана в іншому маршруті")

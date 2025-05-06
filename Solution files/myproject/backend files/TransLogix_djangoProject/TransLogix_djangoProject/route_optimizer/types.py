@@ -5,6 +5,19 @@ from typing import List, Optional
 class Point:
     lat: float
     lng: float
+    id: int
+    point_type: str  # 'pickup' або 'dropoff'
+
+    def __eq__(self, other):
+        if not isinstance(other, Point):
+            return False
+        return (
+            abs(self.lat - other.lat) < 1e-6 and
+            abs(self.lng - other.lng) < 1e-6
+        )
+
+    def __repr__(self):
+        return f"Point(lat={self.lat}, lng={self.lng}, id={self.id}, type={self.point_type})"
 
 @dataclass
 class Request:

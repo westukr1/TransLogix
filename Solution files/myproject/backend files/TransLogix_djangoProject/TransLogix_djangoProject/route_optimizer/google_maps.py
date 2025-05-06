@@ -40,3 +40,43 @@ def fetch_google_route(points: list[Point], language="en", optimize=True):
 
     response = requests.get("https://maps.googleapis.com/maps/api/directions/json", params=params)
     return response.json()
+
+def get_route_and_order(points: list[dict], language="en", optimize=True):
+    """
+    Обгортка над Google Directions API з обчисленням порядку точок.
+    """
+    if len(points) < 2:
+        return None
+
+    origin = f"{points[0]['lat']},{points[0]['lng']}"
+    destination = f"{points[-1]['lat']},{points[-1]['lng']}"
+    waypoints = [f"{p['lat']},{p['lng']}" for p in points[1:-1]]
+
+    if optimize and waypoints:
+        waypoints_str = f"optimize:true|{'|'.join(waypoints)}"
+    else:
+        waypoints_str = '|'.join(waypoints)
+
+    params = {
+        "origin": origin,
+        "destination": destination,
+        "waypoints": waypoints_str,
+        "language": language,
+        "key": GOOGLE_API_KEY,
+    }
+
+    response = requests.get("https://maps.googleapis.com/maps/api/directions/json", params=params)
+    data = response.json()
+
+    if data["status"] != "OK":
+        return None
+
+    legs = data["routes"][0]["legs"]
+    total_distance = sum(leg["distance"]["value"] for leg in legs) / 1000
+    total_duration = sum(leg["duration"]["value"] for leg in legs) / 60
+
+    return {
+        "distance_km": total_distance,
+        "duration_min": total_duration,
+        "waypoint_order": data["routes"][0].get("waypoint_order", [])
+    }

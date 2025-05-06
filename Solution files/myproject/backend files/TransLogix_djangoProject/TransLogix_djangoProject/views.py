@@ -75,6 +75,7 @@ from .route_optimizer.optimizer import build_optimized_routes
 #logger.setLevel(logging.DEBUG)
 #logger.addHandler(logging.StreamHandler())
 
+logger = logging.getLogger("route_optimizer")
 
 class CustomLoginView(APIView):
     permission_classes = [AllowAny]
@@ -2087,7 +2088,10 @@ def optimize_routes_api(request):
     user = request.user
     data = request.data
 
-    requests_data = data.get("requests", [])
+    logger.debug("\ud83d\udce2 Отримано запит optimize_routes_api: %s", data)
+    print("📨 Отримано запит optimize_routes_api:", data)
+
+    requests_data = data.get("requests") or data.get("selected_requests") or []
     route_date = data.get("route_date", str(date.today()))
     name = data.get("name", f"План {route_date}")
     strategy = data.get("strategy", "min_distance")
