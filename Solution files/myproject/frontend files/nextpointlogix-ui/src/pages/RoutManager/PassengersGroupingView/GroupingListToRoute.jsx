@@ -1110,18 +1110,15 @@ const acceptOptimizedRoute = () => {
   console.log("📌 Перед сортуванням selectedRequests:", selectedRequests);
 
   // 👉 Сортуємо selectedRequests за порядком ID з optimizedOrder
-  const sortedRequests = modalData.optimizedOrder
-    .map((id, index) => {
-      const match = selectedRequests.find(r => r.id === id);
-      if (!match) {
-        console.warn("⚠️ Не знайдено заявку з ID:", id);
-        return null;
-      }
-      return { ...match, sequence_number: index + 1 };
-    })
-    .filter(Boolean); // видаляємо null
+  const sortedRequests = modalData.optimized_sorted_requests || [];
+
+  if (sortedRequests.length === 0) {
+    console.warn("⚠️ optimized_sorted_requests порожній або не отриманий.");
+  }
+  
 
   console.log("🔄 Оновлений список запитів після оптимізації:", sortedRequests);
+  // sessionStorage.setItem('selectedRequests', JSON.stringify(sortedRequests));
 
   // Оновлення стану
   setSelectedRequests([...sortedRequests]);

@@ -10,122 +10,127 @@ import logging
 
 logger = logging.getLogger("route_optimizer")
 
-def build_optimized_routes(requests, user_id, strategy="min_distance", save=False, route_date=None, name=None, user=None):
+def build_optimized_routes(requests, direction, user, strategy="min_distance", save=False, route_date=None, name=None):
     print("▶️ Старт оптимізації. Стратегія:", strategy)
     logger.info("Старт оптимізації. Стратегія: %s", strategy)
     logger.debug("Отримані сирі заявки: %s", requests)
     logger.debug("Кількість заявок: %d", len(requests))
 
-    is_valid, validation_errors = validate_requests(requests)
-    if not is_valid:
-        logger.warning("Валідація не пройдена: %s", validation_errors)
-        return {"success": False, "errors": validation_errors}
-
-    constraints = load_user_constraints(user_id)
+    constraints = load_user_constraints(user.id)
     if not constraints:
-        logger.error("Обмеження користувача не знайдено (user_id=%s)", user_id)
-        return {"success": False, "errors": ["Не знайдено обмежень користувача"]}
+        logger.error("Не знайдено обмежень користувача (user_id=%s)", user.id)
+        return {"success": False, "message": "Не знайдено обмежень користувача"}
 
-    logger.debug("Обмеження: %s", constraints)
+    passes, violations = check_constraints(requests, constraints)
+    if not passes:
+        logger.warning("Порушення обмежень у маршруті: %s", violations)
 
-    all_routes = []
-    grouped = cluster_requests(requests, constraints)
-    logger.debug("Заявки поділено на %d груп(и)", len(grouped))
+    points = convert_requests_to_points(requests)
+    sortable_points, start_point, end_point = get_route_bounds(points, direction)
+    all_points = [start_point] + sortable_points + [end_point]
+    logger.debug("📦 Усі точки (включно з початком і кінцем): %s", [str(p) for p in all_points])
 
-    start_address = ""
-    end_address = ""
+    standard_result = fetch_google_route(all_points, optimize=False)
+    if not standard_result or standard_result.get("status") != "OK":
+        logger.error("Не вдалося отримати стандартний маршрут з Google Maps API.")
+        return {"success": False, "message": "Google Maps API error (standard)"}
 
-    for i, group in enumerate(grouped):
-        logger.debug("Перевірка обмежень для групи #%d (%d заявок)", i + 1, len(group))
-        passes, violations = check_constraints(group, constraints)
-        if not passes:
-            logger.warning("Порушення обмежень у групі #%d: %s", i + 1, violations)
-            return {"success": False, "errors": violations}
+    standard_legs = standard_result["routes"][0]["legs"]
+    standard_distance = round(sum(leg["distance"]["value"] for leg in standard_legs) / 1000, 2)
+    standard_duration = round(sum(leg["duration"]["value"] for leg in standard_legs) / 60)
 
-        points = convert_requests_to_points(group)
+    logger.debug("📊 Стандартна дистанція: %.2f км, тривалість: %d хв", standard_distance, standard_duration)
 
-        # Визначення найвіддаленішої точки та точки "роботи"
-        start_point, sortable_points, end_point = get_route_bounds(points, group[0]["direction"])
+    optimized_response = get_route_and_order(
+        [{"lat": float(p.lat), "lng": float(p.lng)} for p in all_points],
+        optimize=True
+    )
 
-        # --- Стандартний маршрут (як є)
-        standard_result = fetch_google_route([start_point] + sortable_points + [end_point], optimize=False)
-        if standard_result.get("status") != "OK":
-            logger.error("Google API не повернув OK. Код статусу: %s", standard_result.get("status"))
-            return {"success": False, "errors": ["Помилка Google API"]}
+    optimized_route = None
+    optimized_order_ids = []
+    optimized_distance = 0
+    optimized_duration = 0
+    optimized_sorted_requests = []
 
-        standard_legs = standard_result["routes"][0]["legs"]
-        standard_distance = sum(l["distance"]["value"] for l in standard_legs) / 1000
-        standard_duration = sum(l["duration"]["value"] for l in standard_legs) / 60
-
-        # --- Оптимізований маршрут
-        optimized_result = fetch_google_route([start_point] + sortable_points + [end_point], optimize=True)
-        if optimized_result.get("status") != "OK":
-            logger.warning("Оптимізований маршрут не отримано. Використовуємо стандартний лише.")
-            optimized_data = None
-            optimized_order = [r["id"] for r in group]
-            optimized_distance = standard_distance
-            optimized_duration = standard_duration
+    if optimized_response:
+        waypoint_order = optimized_response.get("waypoint_order")
+        if waypoint_order:
+            ordered_points = [sortable_points[i] for i in waypoint_order]
         else:
-            optimized_data = optimized_result["routes"][0]
-            optimized_legs = optimized_data["legs"]
-            optimized_distance = sum(l["distance"]["value"] for l in optimized_legs) / 1000
-            optimized_duration = sum(l["duration"]["value"] for l in optimized_legs) / 60
+            ordered_points = sortable_points
 
-            # Порядок точок, які були передані як waypoints (без старту і фінішу)
-            waypoint_order = optimized_data.get("waypoint_order", list(range(len(sortable_points))))
-            optimized_order = [sortable_points[i].id for i in waypoint_order]
+        optimized_full_sequence = [start_point] + ordered_points + [end_point]
+        logger.debug("🚀 Оптимізована послідовність точок: %s", [str(p) for p in optimized_full_sequence])
 
+        optimized_order_ids = [p.id for p in optimized_full_sequence if p.point_type in ["pickup", "dropoff"]]
+        optimized_distance = round(optimized_response["distance_km"], 2)
+        optimized_duration = round(optimized_response["duration_min"])
 
-        logger.debug("Група #%d: дистанція %.2f км, тривалість %.2f хв", i + 1, standard_distance, standard_duration)
+        start_address, end_address = determine_start_end_addresses(requests)
 
-        all_routes.append(Route(
-            requests=group,
-            optimized_order=optimized_order,
-            total_distance_km=standard_distance,
-            total_duration_min=standard_duration,
-            start_point=start_point,
-            end_point=end_point,
-        ))
+        optimized_route = {
+            "total_distance": optimized_distance,
+            "total_duration": optimized_duration,
+            "stops": [{"lat": float(p.lat), "lng": float(p.lng)} for p in optimized_full_sequence],
+            "start_address": start_address,
+            "end_address": end_address,
+        }
 
-    if not all_routes:
-        return {"success": False, "errors": ["Маршрутів не знайдено"]}
+        optimized_sorted_requests = convert_points_to_request_format(optimized_full_sequence)
 
-    try:
-        start_address, end_address = determine_start_end_addresses(all_routes[0].requests)
-    except Exception as e:
-        logger.error("Помилка при визначенні адрес: %s", e)
+    route_stop_count = len(sortable_points)
+    advanced_violations = []
+    if constraints.get("max_route_distance") and standard_distance > constraints["max_route_distance"]:
+        advanced_violations.append(f"Перевищено максимальну довжину маршруту: {standard_distance} км")
+    if constraints.get("max_route_duration") and standard_duration > constraints["max_route_duration"]:
+        advanced_violations.append(f"Перевищено максимальну тривалість маршруту: {standard_duration} хв")
+    if constraints.get("max_stops") and route_stop_count > constraints["max_stops"]:
+        advanced_violations.append(f"Перевищено максимальну кількість зупинок: {route_stop_count}")
 
-    if save and route_date and name and user:
-        logger.info("Збереження маршруту '%s' на %s", name, route_date)
-        save_to_draft(user, route_date, name, all_routes)
+    if advanced_violations:
+        logger.warning("❌ Додаткові порушення: %s", advanced_violations)
 
-    logger.info("Оптимізація завершена. Побудовано маршрутів: %d", len(all_routes))
+    start_address, end_address = determine_start_end_addresses(requests)
 
     response_payload = {
         "success": True,
         "standard_route": {
-            "total_distance": round(standard_distance, 2),
-            "total_duration": round(standard_duration),
+            "total_distance": standard_distance,
+            "total_duration": standard_duration,
             "stops": [
-                {"lat": float(p.lat), "lng": float(p.lng)} for p in [start_point] + sortable_points + [end_point]
+                {"lat": float(p.lat), "lng": float(p.lng)}
+                for p in [start_point] + sortable_points + [end_point]
             ],
             "start_address": start_address,
             "end_address": end_address,
         },
-        "optimization_applied": bool(optimized_result and optimized_data),
-        "optimized_route": {
-            "total_distance": round(optimized_distance, 2),
-            "total_duration": round(optimized_duration) ,
-            "stops": [
-                {"lat": float(p.lat), "lng": float(p.lng)} for p in [start_point] + [sortable_points[i] for i in waypoint_order] + [end_point]
-            ],
-            "start_address": start_address,
-            "end_address": end_address,
-        } if optimized_data else None,
-        "optimized_order": optimized_order,
-        "distance_improvement_km": round(standard_distance - optimized_distance, 2) if optimized_data else 0.0,
-        "duration_improvement_min": round(standard_duration - optimized_duration) if optimized_data else 0
+        "optimization_applied": optimized_route is not None,
+        "optimized_route": optimized_route,
+        "optimized_order": optimized_order_ids,
+        "optimized_sorted_requests": optimized_sorted_requests,
+        "distance_improvement_km": round(standard_distance - optimized_distance, 2) if optimized_route else 0.0,
+        "duration_improvement_min": round(standard_duration - optimized_duration) if optimized_route else 0,
+        "errors": advanced_violations if advanced_violations else []
     }
 
-    logger.debug("Відповідь від оптимізатора: %s", response_payload)
+    logger.debug(" Відповідь від оптимізатора: %s", response_payload)
     return response_payload
+def convert_points_to_request_format(points):
+    """
+    Повертає список словників у форматі, придатному для збереження у sessionStorage / frontend:
+    [{id: 584, sequence_number: 1, pickup_latitude: "49.858920", pickup_longitude: "24.033717"}, ...]
+    """
+    requests = []
+    seen_ids = set()
+    for index, p in enumerate(points):
+        base_id = int(str(p.id).split("_")[0])  # Витягуємо тільки ID заявки
+        if base_id in seen_ids:
+            continue  # пропускаємо дублікати (вже є у списку)
+        seen_ids.add(base_id)
+        requests.append({
+            "id": base_id,
+            "sequence_number": index + 1,
+            "pickup_latitude": str(p.lat),
+            "pickup_longitude": str(p.lng),
+        })
+    return requests

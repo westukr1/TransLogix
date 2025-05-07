@@ -2077,7 +2077,6 @@ class RouteDraftListViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return self.queryset.filter(plan__user=self.request.user)
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def optimize_routes_api(request):
@@ -2088,7 +2087,7 @@ def optimize_routes_api(request):
     user = request.user
     data = request.data
 
-    logger.debug("\ud83d\udce2 Отримано запит optimize_routes_api: %s", data)
+    logger.debug("📢 Отримано запит optimize_routes_api: %s", data)
     print("📨 Отримано запит optimize_routes_api:", data)
 
     requests_data = data.get("requests") or data.get("selected_requests") or []
@@ -2096,15 +2095,19 @@ def optimize_routes_api(request):
     name = data.get("name", f"План {route_date}")
     strategy = data.get("strategy", "min_distance")
     save = data.get("save", False)
+    direction = data.get("direction")  # 🔹 Додано
+
+    if not direction:
+        return Response({"success": False, "message": "Не вказано напрямок маршруту"}, status=status.HTTP_400_BAD_REQUEST)
 
     result = build_optimized_routes(
         requests=requests_data,
-        user_id=user.id,
+        direction=direction,   # 🔹 Додано
+        user=user,
         strategy=strategy,
         save=save,
         route_date=route_date,
         name=name,
-        user=user,
     )
 
     if not result["success"]:
