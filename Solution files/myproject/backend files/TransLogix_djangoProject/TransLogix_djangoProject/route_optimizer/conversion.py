@@ -92,3 +92,28 @@ def get_route_bounds(points, direction):
     else:
         return sortable_points, work_point, furthest_point
 
+def convert_points_to_request_format(points, direction):
+    """
+    Повертає список словників у форматі, придатному для збереження у sessionStorage / frontend.
+    Використовує pickup або dropoff в залежності від напрямку.
+    """
+    requests = []
+    seen_ids = set()
+    index = 1
+    for p in points:
+        base_id = int(str(p.id).split("_")[0])  # отримуємо ID заявки (без _pickup / _dropoff)
+        if base_id in seen_ids:
+            continue
+        if direction.upper() == "TO_WORK" and p.point_type != "pickup":
+            continue
+        if direction.upper() == "WORK_TO_HOME" and p.point_type != "dropoff":
+            continue
+        seen_ids.add(base_id)
+        requests.append({
+            "id": base_id,
+            "sequence_number": index,
+            "pickup_latitude": str(p.lat),
+            "pickup_longitude": str(p.lng),
+        })
+        index += 1
+    return requests

@@ -1,14 +1,10 @@
-from .types import Request, Route
-from .validation import validate_requests
-from .constraints import load_user_constraints, check_constraints
-from .conversion import convert_requests_to_points, determine_start_end_addresses, get_route_bounds
-from .google_maps import fetch_google_route
-from .google_maps import get_route_and_order
-from .clustering import cluster_requests
-from .persistence import save_to_draft
+from .types import Point, Request
+from .conversion import convert_requests_to_points, determine_start_end_addresses, get_route_bounds, convert_points_to_request_format
+from .google_maps import get_route_and_order, fetch_google_route
+from .constraints import check_constraints, load_user_constraints
 import logging
 
-logger = logging.getLogger("route_optimizer")
+logger = logging.getLogger(__name__)
 
 def build_optimized_routes(requests, direction, user, strategy="min_distance", save=False, route_date=None, name=None):
     print("▶️ Старт оптимізації. Стратегія:", strategy)
@@ -51,6 +47,7 @@ def build_optimized_routes(requests, direction, user, strategy="min_distance", s
     optimized_distance = 0
     optimized_duration = 0
     optimized_sorted_requests = []
+    optimized_full_sequence = []
 
     if optimized_response:
         waypoint_order = optimized_response.get("waypoint_order")
@@ -71,12 +68,21 @@ def build_optimized_routes(requests, direction, user, strategy="min_distance", s
         optimized_route = {
             "total_distance": optimized_distance,
             "total_duration": optimized_duration,
-            "stops": [{"lat": float(p.lat), "lng": float(p.lng)} for p in optimized_full_sequence],
+            "stops": [
+                {
+                    "lat": float(p.lat),
+                    "lng": float(p.lng),
+                    "id": p.id,
+                    "point_type": p.point_type,
+                    "sequence_number": i + 1
+                } for i, p in enumerate(optimized_full_sequence)
+            ],
             "start_address": start_address,
             "end_address": end_address,
         }
 
-        optimized_sorted_requests = convert_points_to_request_format(optimized_full_sequence)
+        optimized_sorted_requests = convert_points_to_request_format(optimized_full_sequence, direction)
+        logger.debug(" Заявки для sessionStorage (optimized_sorted_requests): %s", optimized_sorted_requests)
 
     route_stop_count = len(sortable_points)
     advanced_violations = []
@@ -115,22 +121,29 @@ def build_optimized_routes(requests, direction, user, strategy="min_distance", s
 
     logger.debug(" Відповідь від оптимізатора: %s", response_payload)
     return response_payload
-def convert_points_to_request_format(points):
+
+def convert_points_to_request_format(points, direction):
     """
-    Повертає список словників у форматі, придатному для збереження у sessionStorage / frontend:
-    [{id: 584, sequence_number: 1, pickup_latitude: "49.858920", pickup_longitude: "24.033717"}, ...]
+    Повертає список словників у форматі, придатному для збереження у sessionStorage / frontend.
+    Використовує pickup або dropoff в залежності від напрямку.
     """
     requests = []
     seen_ids = set()
-    for index, p in enumerate(points):
-        base_id = int(str(p.id).split("_")[0])  # Витягуємо тільки ID заявки
+    index = 1
+    for p in points:
+        base_id = int(str(p.id).split("_")[0])
         if base_id in seen_ids:
-            continue  # пропускаємо дублікати (вже є у списку)
+            continue
+        if direction == "HOME_TO_WORK" and p.point_type != "pickup":
+            continue
+        if direction == "WORK_TO_HOME" and p.point_type != "dropoff":
+            continue
         seen_ids.add(base_id)
         requests.append({
             "id": base_id,
-            "sequence_number": index + 1,
+            "sequence_number": index,
             "pickup_latitude": str(p.lat),
             "pickup_longitude": str(p.lng),
         })
+        index += 1
     return requests

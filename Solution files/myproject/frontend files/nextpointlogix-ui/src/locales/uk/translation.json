@@ -651,6 +651,7 @@
 "strategy.balanced": "Збалансовано",
 "automatically_save": "Автоматично зберігати маршрут",
 "strategy.auto_vehicle_limit": "За доступною кількістю транспорту",
-"strategy.min_fuel_cost": "Мінімальні витрати пального"
+"strategy.min_fuel_cost": "Мінімальні витрати пального",
+"optimized_sequence": "Оптимізована послідовність"
 
 }

@@ -663,7 +663,8 @@
 "strategy.balanced": "Balanced",
 "automatically_save": "Auto-save Route",
 "strategy.auto_vehicle_limit": "By Available Vehicle Count",
-"strategy.min_fuel_cost": "Minimum Fuel Cost"
+"strategy.min_fuel_cost": "Minimum Fuel Cost" ,
+"optimized_sequence": "Optimized Sequence"
 
 
 }

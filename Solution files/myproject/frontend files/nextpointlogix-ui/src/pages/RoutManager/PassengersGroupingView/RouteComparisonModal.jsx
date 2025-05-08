@@ -28,6 +28,19 @@ const RouteComparisonModal = ({ modalData, onClose, onAcceptOptimized, onAcceptS
         <p>🔹 {t("total_duration")}: {modalData?.optimizedRoute?.duration}</p>
         <p>🔹 {t("start_address")}: {modalData?.optimizedRoute?.startAddress}</p>
         <p>🔹 {t("end_address")}: {modalData?.optimizedRoute?.endAddress}</p>
+        {modalData?.optimized_sorted_requests?.length > 0 && (
+        <div style={{ marginTop: "10px" }}>
+          <p><strong>{t("optimized_sequence")}:</strong></p>
+          <ul style={{ paddingLeft: "20px" }}>
+            {modalData.optimized_sorted_requests.map((req) => (
+              <li key={req.id}>
+                ID: <strong>{req.id}</strong>, {t("sequence_number")}: <strong>{req.sequence_number}</strong>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
         </div>
       ) : (
         <p className="no-optimization">🔹 {t("no_optimized_route_found")}</p>

@@ -1034,6 +1034,7 @@ const handleFilterChange = (e) => {
         } : null,
         optimizedOrder: optimized_order || null,
         optimizationApplied: optimization_applied,
+        direction: direction,
       });
   
       setStandardRoute(standard_route || []);
@@ -1076,7 +1077,7 @@ const acceptStandardRoute = () => {
 // 2. Відправляти сформований список на перевірку.
 // 3. Щоразу дані для перевірки беруться з таблиці у тому порядку, який є актуальним після змін юзера.
 
-const acceptOptimizedRoute = () => {
+const acceptOptimizedRoute = async () => {
   console.log("🔄 Натиснуто 'Прийняти оптимізований маршрут'");
   console.log("📌 Поточний стан modalData:", modalData);
 
@@ -1099,35 +1100,77 @@ const acceptOptimizedRoute = () => {
 
   // Оновлення деталей маршруту
   setRouteDetails({
-    distance: modalData.optimizedRoute.total_distance || 0,
-    duration: modalData.optimizedRoute.total_duration || "N/A",
-    stops: modalData.optimizedRoute.stops || 0,
+    distance: modalData.optimizedRoute.distance || 0,
+    duration: modalData.optimizedRoute.duration || "N/A",
+    stops: selectedRequests.length || 0,
     passengers: selectedRequests.length,
-    startAddress: modalData.optimizedRoute.start_address || "N/A",
-    endAddress: modalData.optimizedRoute.end_address || "N/A",
+    startAddress: modalData.optimizedRoute.startAddress || "N/A",
+    endAddress: modalData.optimizedRoute.endAddress || "N/A",
   });
 
-  console.log("📌 Перед сортуванням selectedRequests:", selectedRequests);
+  // ✅ ВИКОРИСТАННЯ ГОТОВОГО СПИСКУ
+  console.log("🔍 modalData.optimizedOrder (debug):", modalData?.optimizedOrder);
+  const optimized_sorted_requests = modalData?.optimizedRoute?.stops
+  ?.filter(p => p.point_type === (modalData.direction === "HOME_TO_WORK" ? "pickup" : "dropoff"))
+  ?.map((point, index) => ({
+    id: point.id,
+    sequence_number: index + 1,
+    pickup_latitude: point.lat.toString(),
+    pickup_longitude: point.lng.toString(),
+  })) || [];
 
-  // 👉 Сортуємо selectedRequests за порядком ID з optimizedOrder
-  const sortedRequests = modalData.optimized_sorted_requests || [];
+console.log("✅ Сформовано optimized_sorted_requests:", optimized_sorted_requests);
 
-  if (sortedRequests.length === 0) {
-    console.warn("⚠️ optimized_sorted_requests порожній або не отриманий.");
-  }
-  
+  // if (!modalData.optimized_sorted_requests || modalData.optimized_sorted_requests.length === 0) {
+  //   console.warn("⚠️ optimized_sorted_requests порожній або не отриманий.");
+  //   return;
+  // }
+
+  const sortedRequests = optimized_sorted_requests.map(optReq => {
+    const full = selectedRequests.find(r => r.id === optReq.id);
+    if (!full) {
+      console.warn("❗ Заявку не знайдено в selectedRequests:", optReq.id);
+      return null;
+    }
+    return { ...full, sequence_number: optReq.sequence_number };
+  }).filter(Boolean);
+
 
   console.log("🔄 Оновлений список запитів після оптимізації:", sortedRequests);
-  // sessionStorage.setItem('selectedRequests', JSON.stringify(sortedRequests));
 
   // Оновлення стану
   setSelectedRequests([...sortedRequests]);
-  console.log("📌 Після оновлення setSelectedRequests:", sortedRequests);
-  setModalData({ show: false }); // Закриття модального вікна
+  
+  const existingFilters = JSON.parse(sessionStorage.getItem("filters"));
 
-  // 🔹 Додаємо можливість збереження списку після підтвердження маршруту
-  setIsRouteCalculated(true);
+if (existingFilters) {
+  const updatedFilters = {
+    ...existingFilters,
+    requests: sortedRequests,
+    expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString() // оновлюємо час дії
+  };
+  sessionStorage.setItem("filters", JSON.stringify(updatedFilters));
+  console.log("🗂️ Фільтри оновлено у sessionStorage:", updatedFilters);
+} else {
+  console.warn("⚠️ Не знайдено запису 'filters' у sessionStorage для оновлення.");
+}
+
+try {
+  await axios.post(API_ENDPOINTS.updateTempListSequence, {
+    requests: optimized_sorted_requests.map(r => ({
+      id: r.id,
+      sequence_number: r.sequence_number,
+    })),
+  });
+  console.log("✅ Тимчасовий список оновлено на бекенді після оптимізації.");
+} catch (err) {
+  console.error("❌ Помилка при оновленні тимчасового списку на бекенді:", err);
+}
+
+  setModalData({ show: false }); // Закриття модального вікна
+  setIsRouteCalculated(true); // Дозволити збереження маршруту
 };
+
 // Якщо юзер вносить зміни у список (додає/видаляє заявки чи змінює порядок), кнопка збереження стає неактивною
 useEffect(() => {
   setIsRouteCalculated(false);
@@ -1135,8 +1178,14 @@ useEffect(() => {
 
 // Функція відкриття модального вікна карти
 const handleShowMap = () => {
-  
-  navigate("/route-map");
+  navigate("/route-map", {
+    state: {
+      savedRequests: selectedRequests,
+      standardRoute: standardRoute,
+      optimizedRoute: optimizedRoute,
+      direction: directionFilter,
+    },
+  });
 };
 //Тимчасово закоментимо щоб виявити помилку
 useEffect(() => {

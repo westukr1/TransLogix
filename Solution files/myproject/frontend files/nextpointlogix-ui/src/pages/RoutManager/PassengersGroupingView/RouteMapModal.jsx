@@ -96,6 +96,8 @@ const RouteMapModal = ({ onClose }) => {
     const sessionId = localStorage.getItem("session_id") || "bd1e7f30-12d3-4b56-92a3-bc46e2c84cda";
     localStorage.setItem("session_id", sessionId);
     const [directions, setDirections] = useState(null);
+    const [selectedMarkerId, setSelectedMarkerId] = useState(null);
+
 
     const { isLoaded, loadError } = useJsApiLoader({
       id: "script-loader",
@@ -368,7 +370,7 @@ setRequests(sortedRequests);
   
       if (!isNaN(lat) && !isNaN(lng) && mapRef.current) {
         mapRef.current.panTo({ lat, lng });
-        mapRef.current.setZoom(13);
+        mapRef.current.setZoom(15); // Збільшуємо масштаб до 5
         console.log("📍 Центруємо мапу в точці першого пасажира:", lat, lng);
       } else {
         console.warn("⚠️ Некоректні координати або mapRef відсутній");
@@ -660,7 +662,11 @@ setRequests(sortedRequests);
     return route;
   };
     console.log("🟢 Selected Requests:", selectedRequests);
-   
+    const handleRowClick = (event) => {
+      const clickedId = event.data.id;
+      setSelectedMarkerId(clickedId);
+    };
+     
  
     
   return (
@@ -745,6 +751,7 @@ setRequests(sortedRequests);
           getRowNodeId={(data) => data.id.toString()}
           onRowDragEnd={handleRowDragEnd}
           onRowDragEnter={handleRowDragEnter}
+          onRowClicked={handleRowClick}
           suppressRowTransform={true}
           suppressMoveWhenRowDragging={true}
         />
@@ -803,7 +810,10 @@ setRequests(sortedRequests);
       }}
       icon={{
         url: "/entrance 1 marker.png",
-        scaledSize: new window.google.maps.Size(80, 80),
+        scaledSize: new window.google.maps.Size(
+          selectedMarkerId === request.id ? 160 : 80,
+          selectedMarkerId === request.id ? 160 : 80
+        ),
         labelOrigin: new window.google.maps.Point(40, -5), // 🔼 номер над іконкою
       }}
       label={{
@@ -833,7 +843,10 @@ setRequests(sortedRequests);
       }}
       icon={{
         url: "/exit marker.png",
-        scaledSize: new window.google.maps.Size(80, 80),
+        scaledSize: new window.google.maps.Size(
+          selectedMarkerId === request.id ? 160 : 80,
+          selectedMarkerId === request.id ? 160 : 80
+        ),
         labelOrigin: new window.google.maps.Point(40, -5), // 🔼 номер над іконкою
       }}
       label={{
