@@ -1015,7 +1015,24 @@ const handleFilterChange = (e) => {
         const remainingMinutes = Math.round(minutes % 60);
         return `${hours}h ${remainingMinutes}m`;
       };
-  
+  sessionStorage.setItem("route_calculation_data", JSON.stringify({
+  standardRoute: {
+    distance: Math.round(standard_route.total_distance),
+    duration: formatDuration(standard_route.total_duration),
+    stops: standard_route.stops,
+    startAddress: formatAddress(standard_route.start_address),
+    endAddress: formatAddress(standard_route.end_address),
+  },
+  optimizedRoute: optimization_applied ? {
+    distance: Math.round(optimized_route.total_distance),
+    duration: formatDuration(optimized_route.total_duration),
+    stops: optimized_route.stops,
+    startAddress: formatAddress(optimized_route.start_address),
+    endAddress: formatAddress(optimized_route.end_address),
+  } : null,
+  optimizationApplied: optimization_applied,
+  overrideStandardWithOptimized: false
+}));
       setModalData({
         show: true,
         standardRoute: {
@@ -1069,6 +1086,23 @@ const acceptStandardRoute = () => {
   setModalData({ show: false }); // Закриваємо вікно
   // 🔹 Додаємо можливість збереження списку після підтвердження маршруту
   setIsRouteCalculated(true);
+
+  const savedRouteData = sessionStorage.getItem("route_calculation_data");
+if (savedRouteData) {
+  try {
+    const parsed = JSON.parse(savedRouteData);
+    const updated = {
+      ...parsed,
+      standardRoute: modalData.optimizedRoute,     // замінюємо
+      optimizedRoute: null,                        // очищаємо
+      overrideStandardWithOptimized: true,         // щоб на мапі показати заміну
+    };
+    sessionStorage.setItem("route_calculation_data", JSON.stringify(updated));
+    console.log("✅ Оновлено sessionStorage з прийнятим оптимізованим маршрутом.");
+  } catch (e) {
+    console.error("❌ Помилка при оновленні sessionStorage:", e);
+  }
+}
 };
 
 // Функція прийняття оптимізованого маршруту
@@ -1077,99 +1111,7 @@ const acceptStandardRoute = () => {
 // 2. Відправляти сформований список на перевірку.
 // 3. Щоразу дані для перевірки беруться з таблиці у тому порядку, який є актуальним після змін юзера.
 
-const acceptOptimizedRoute = async () => {
-  console.log("🔄 Натиснуто 'Прийняти оптимізований маршрут'");
-  console.log("📌 Поточний стан modalData:", modalData);
 
-  if (!modalData.optimizedRoute || !modalData.optimizedOrder) {
-    console.error("❌ Оптимізовані дані не знайдено.");
-    console.log("📌 Дані, отримані з бекенду:", modalData);
-    return;
-  }
-
-  console.log("✅ Оптимізований маршрут прийнято:", modalData.optimizedRoute);
-  console.log("📌 Оптимізований порядок точок:", modalData.optimizedOrder);
-
-  // Враховуємо, що початкова і кінцева точка не змінюються
-  const expectedOptimizedLength = selectedRequests.length - 2;
-  if (modalData.optimizedOrder.length !== expectedOptimizedLength) {
-    console.warn("⚠️ Деякі точки були пропущені при оптимізації.");
-    console.log("📌 Очікувана кількість точок для оптимізації:", expectedOptimizedLength);
-    console.log("📌 Отримано точок:", modalData.optimizedOrder.length);
-  }
-
-  // Оновлення деталей маршруту
-  setRouteDetails({
-    distance: modalData.optimizedRoute.distance || 0,
-    duration: modalData.optimizedRoute.duration || "N/A",
-    stops: selectedRequests.length || 0,
-    passengers: selectedRequests.length,
-    startAddress: modalData.optimizedRoute.startAddress || "N/A",
-    endAddress: modalData.optimizedRoute.endAddress || "N/A",
-  });
-
-  // ✅ ВИКОРИСТАННЯ ГОТОВОГО СПИСКУ
-  console.log("🔍 modalData.optimizedOrder (debug):", modalData?.optimizedOrder);
-  const optimized_sorted_requests = modalData?.optimizedRoute?.stops
-  ?.filter(p => p.point_type === (modalData.direction === "HOME_TO_WORK" ? "pickup" : "dropoff"))
-  ?.map((point, index) => ({
-    id: point.id,
-    sequence_number: index + 1,
-    pickup_latitude: point.lat.toString(),
-    pickup_longitude: point.lng.toString(),
-  })) || [];
-
-console.log("✅ Сформовано optimized_sorted_requests:", optimized_sorted_requests);
-
-  // if (!modalData.optimized_sorted_requests || modalData.optimized_sorted_requests.length === 0) {
-  //   console.warn("⚠️ optimized_sorted_requests порожній або не отриманий.");
-  //   return;
-  // }
-
-  const sortedRequests = optimized_sorted_requests.map(optReq => {
-    const full = selectedRequests.find(r => r.id === optReq.id);
-    if (!full) {
-      console.warn("❗ Заявку не знайдено в selectedRequests:", optReq.id);
-      return null;
-    }
-    return { ...full, sequence_number: optReq.sequence_number };
-  }).filter(Boolean);
-
-
-  console.log("🔄 Оновлений список запитів після оптимізації:", sortedRequests);
-
-  // Оновлення стану
-  setSelectedRequests([...sortedRequests]);
-  
-  const existingFilters = JSON.parse(sessionStorage.getItem("filters"));
-
-if (existingFilters) {
-  const updatedFilters = {
-    ...existingFilters,
-    requests: sortedRequests,
-    expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString() // оновлюємо час дії
-  };
-  sessionStorage.setItem("filters", JSON.stringify(updatedFilters));
-  console.log("🗂️ Фільтри оновлено у sessionStorage:", updatedFilters);
-} else {
-  console.warn("⚠️ Не знайдено запису 'filters' у sessionStorage для оновлення.");
-}
-
-try {
-  await axios.post(API_ENDPOINTS.updateTempListSequence, {
-    requests: optimized_sorted_requests.map(r => ({
-      id: r.id,
-      sequence_number: r.sequence_number,
-    })),
-  });
-  console.log("✅ Тимчасовий список оновлено на бекенді після оптимізації.");
-} catch (err) {
-  console.error("❌ Помилка при оновленні тимчасового списку на бекенді:", err);
-}
-
-  setModalData({ show: false }); // Закриття модального вікна
-  setIsRouteCalculated(true); // Дозволити збереження маршруту
-};
 
 // Якщо юзер вносить зміни у список (додає/видаляє заявки чи змінює порядок), кнопка збереження стає неактивною
 useEffect(() => {
