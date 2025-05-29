@@ -460,27 +460,33 @@ const fetchPassengerRequests = useCallback(async () => {
   console.log("📤 ID заявок для виключення (ids_exclude):", excludedIds);
   console.log("📤 Запит на отримання заявок (тут повинні іти повні дані заявок для таблиці відібрані за цими значеннями фільтрів):", {
     included_in_list: "false",
-    start_date: currentFilters.start_date ? formatDate(currentFilters.start_date) : '',
-        end_date: currentFilters.end_date ? formatDate(currentFilters.end_date) : '',
-        direction: directionQuery,
-        search: '',
-        is_active: onlyActive,
-        ids_exclude: excludedIds.join(","),
+      start_date: currentFilters.start_date || defaultFilters.start_date,
+      end_date: currentFilters.end_date || defaultFilters.end_date,
+      direction: currentFilters.direction || defaultFilters.direction,
+      search: '',
+      is_active: onlyActive,
+      ids_exclude: excludedIds.join(","),
   });
   
 
-  try {
-    const response = await axios.get(API_ENDPOINTS.filteredPassengerTripRequests, {
-      params: {
-        included_in_list: "false",
-        start_date: currentFilters.start_date ? formatDate(currentFilters.start_date) : '',
-        end_date: currentFilters.end_date ? formatDate(currentFilters.end_date) : '',
-        direction: directionQuery,
-        search: '',
-        is_active: onlyActive,
-        ids_exclude: excludedIds.join(","),
-      },
-    });
+  const effectiveFilters = {
+  start_date: currentFilters.start_date || defaultFilters.start_date,
+  end_date: currentFilters.end_date || defaultFilters.end_date,
+  direction: currentFilters.direction || defaultFilters.direction,
+};
+
+try {
+  const response = await axios.get(API_ENDPOINTS.filteredPassengerTripRequests, {
+    params: {
+      included_in_list: "false",
+      start_date: formatDate(effectiveFilters.start_date),
+      end_date: formatDate(effectiveFilters.end_date),
+      direction: directionQuery || effectiveFilters.direction,
+      search: '',
+      is_active: onlyActive,
+      ids_exclude: excludedIds.join(","),
+    },
+  });
 
     if (response.status === 200 && Array.isArray(response.data)) {
       console.log("✅ Отримані заявки пасажирів (тут повинні бути повні значення заявок):", response.data);

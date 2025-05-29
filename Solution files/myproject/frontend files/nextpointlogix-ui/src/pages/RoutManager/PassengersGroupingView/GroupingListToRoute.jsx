@@ -103,20 +103,20 @@ const GroupingListToRoute = (onRefreshRequests) => {
 
   
   
-  useEffect(() => {
-    const stored = sessionStorage.getItem("savedPassengerListFilters");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (parsed.start_date) {
-        setStartDate(dayjs(parsed.start_date));
-      }
-      if (parsed.end_date) {
-        setEndDate(dayjs(parsed.end_date));
-      }
-      setFilters(parsed);
-      console.log("🔁 Відновлено фільтри для списків з sessionStorage:", parsed);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const stored = sessionStorage.getItem("savedPassengerListFilters");
+  //   if (stored) {
+  //     const parsed = JSON.parse(stored);
+  //     if (parsed.start_date) {
+  //       setStartDate(dayjs(parsed.start_date));
+  //     }
+  //     if (parsed.end_date) {
+  //       setEndDate(dayjs(parsed.end_date));
+  //     }
+  //     setFilters(parsed);
+  //     console.log("🔁 Відновлено фільтри для списків з sessionStorage:", parsed);
+  //   }
+  // }, []);
   
   const syncSelectedRequests = (updatedRequests) => {
     // Зберігаємо у sessionStorage окремо (для логів, якщо потрібно)
@@ -743,13 +743,30 @@ const checkRouteRestrictions = (routeSettings, selectedRequests) => {
   
   
   
+  // useEffect(() => {
+  //   console.log("📌 Виклик fetchPassengerLists із sessionStorage фільтрами:", filters);
+  //   if (filters?.start_date && filters?.end_date) {
+  //     fetchPassengerLists();
+  //   }
+  // }, [filters]);
   useEffect(() => {
-    console.log("📌 Виклик fetchPassengerLists із sessionStorage фільтрами:", filters);
-    if (filters?.start_date && filters?.end_date) {
+  const stored = sessionStorage.getItem("savedPassengerListFilters");
+  if (stored) {
+    const parsed = JSON.parse(stored);
+
+    if (parsed.start_date) setStartDate(dayjs(parsed.start_date));
+    if (parsed.end_date) setEndDate(dayjs(parsed.end_date));
+
+    setFilters(parsed); // встановлюємо фільтри
+    console.log("🔁 Відновлено фільтри для списків з sessionStorage:", parsed);
+
+    // чекаємо оновлення фільтрів через мікрозатримку
+    setTimeout(() => {
       fetchPassengerLists();
-    }
-  }, [filters]);
-  
+    }, 0);
+  }
+}, []);
+
 
   const fetchListDetails = async (listId) => {
     try {
@@ -1110,6 +1127,69 @@ if (savedRouteData) {
 // 1. Формувати список відібраних заявок пасажирів (додавати, віднімати, змінювати порядок).
 // 2. Відправляти сформований список на перевірку.
 // 3. Щоразу дані для перевірки беруться з таблиці у тому порядку, який є актуальним після змін юзера.
+
+const acceptOptimizedRoute = () => {
+  console.log("🔄 Натиснуто 'Прийняти оптимізований маршрут'");
+  console.log("📌 Поточний стан modalData:", modalData);
+
+  if (!modalData.optimizedRoute || !modalData.optimizedOrder) {
+    console.error("❌ Оптимізовані дані не знайдено.");
+    console.log("📌 Дані, отримані з бекенду:", modalData);
+    return;
+  }
+
+  console.log("✅ Оптимізований маршрут прийнято:", modalData.optimizedRoute);
+  console.log("📌 Оптимізований порядок точок:", modalData.optimizedOrder);
+
+  const expectedOptimizedLength = selectedRequests.length - 2;
+  if (modalData.optimizedOrder.length !== expectedOptimizedLength) {
+    console.warn("⚠️ Деякі точки були пропущені при оптимізації.");
+    console.log("📌 Очікувана кількість точок для оптимізації:", expectedOptimizedLength);
+    console.log("📌 Отримано точок:", modalData.optimizedOrder.length);
+  }
+
+  setRouteDetails({
+    distance: modalData.optimizedRoute.total_distance || 0,
+    duration: modalData.optimizedRoute.total_duration || "N/A",
+    stops: modalData.optimizedRoute.stops?.length || 0,
+    passengers: selectedRequests.length,
+    startAddress: modalData.optimizedRoute.start_address || "N/A",
+    endAddress: modalData.optimizedRoute.end_address || "N/A",
+  });
+
+  // Створення списку запитів у новому порядку
+  const optimized_sorted_requests = modalData?.optimizedRoute?.stops
+    ?.filter((p) => p.point_type === (modalData.direction === "HOME_TO_WORK" ? "pickup" : "dropoff"))
+    ?.map((point, index) => ({
+      id: point.id,
+      sequence_number: index + 1,
+      pickup_latitude: point.lat.toString(),
+      pickup_longitude: point.lng.toString(),
+    })) || [];
+
+  console.log("✅ Сформовано optimized_sorted_requests:", optimized_sorted_requests);
+  setSelectedRequests([...optimized_sorted_requests]);
+  setModalData({ show: false });
+  setIsRouteCalculated(true);
+
+  // 🗂️ Оновлення sessionStorage: замінюємо стандартний маршрут оптимізованим
+  const savedRouteData = sessionStorage.getItem("route_calculation_data");
+  if (savedRouteData) {
+    try {
+      const parsed = JSON.parse(savedRouteData);
+      const updated = {
+        ...parsed,
+        standardRoute: modalData.optimizedRoute,
+        optimizedRoute: null,
+        overrideStandardWithOptimized: true,
+      };
+      sessionStorage.setItem("route_calculation_data", JSON.stringify(updated));
+      console.log("✅ Оновлено sessionStorage з прийнятим оптимізованим маршрутом.");
+    } catch (e) {
+      console.error("❌ Помилка при оновленні sessionStorage:", e);
+    }
+  }
+};
 
 
 
