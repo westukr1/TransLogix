@@ -732,10 +732,10 @@ const checkRouteRestrictions = (routeSettings, selectedRequests) => {
         start_date: formattedStart,
         end_date: formattedEnd,
       };
-  
+     
       setFilters(updatedFilters); // ✅ оновлюємо state
       sessionStorage.setItem("savedPassengerListFilters", JSON.stringify(updatedFilters)); // ✅ зберігаємо
-  
+      fetchPassengerLists(); // ✅ викликаємо запит для отримання списків
       console.log("✅ Оновлено filters та sessionStorage!");
     } else {
       console.log("⏸️ Filters не змінені — оновлення не потрібне.");
@@ -1201,7 +1201,7 @@ const acceptOptimizedRoute = () => {
       console.error("❌ Помилка при оновленні sessionStorage:", e);
     }
   }
-    setIsRouteCalculated(true);
+    // setIsRouteCalculated(true);
     setIsRouteManuallyCalculated(true);
 };
 
@@ -1359,11 +1359,16 @@ const handleCloseMap = () => {
 
     const requestData = {
       direction: directionFilter || "WORK_TO_HOME",
-      estimated_start_time: dayjs().utc().format("YYYY-MM-DD HH:mm:ss"),
-      estimated_end_time: dayjs()
-        .add(1, "day")
-        .utc()
-        .format("YYYY-MM-DD HH:mm:ss"),
+      estimated_start_time: dayjs(firstRequest.departure_time)
+      .utc()
+      .format("YYYY-MM-DD HH:mm:ss"),
+    
+    estimated_end_time: dayjs(
+        lastRequest.arrival_time || lastRequest.departure_time
+      )
+      .utc()
+      .format("YYYY-MM-DD HH:mm:ss"),
+    
       estimated_travel_time: estimatedTravelTime, // 🟢 Виправлення NaN
       estimated_wait_time: 10,
       has_both_directions: allowMixedDirections ? 1 : 0,
@@ -1433,6 +1438,7 @@ const handleCloseMap = () => {
       });
     
       fetchPassengerLists(); // Оновлення нижньої лівої таблиці
+      setIsRouteCalculated(false); // Скидаємо стан розрахунку маршруту
     } catch (error) {
       console.error("❌ Помилка при збереженні списку:", error);
       alert(t("error_saving_list"));
