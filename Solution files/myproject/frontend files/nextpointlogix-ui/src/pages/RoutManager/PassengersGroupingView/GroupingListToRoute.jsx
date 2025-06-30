@@ -74,7 +74,8 @@ const GroupingListToRoute = (onRefreshRequests) => {
   const [selectedRequests, setSelectedRequests] = useState([]);
   const sessionId = localStorage.getItem("session_id") || "bd1e7f30-12d3-4b56-92a3-bc46e2c84cda";
   localStorage.setItem("session_id", sessionId);
- 
+ const [isRouteManuallyCalculated, setIsRouteManuallyCalculated] = useState(false);
+
   
  useEffect(() => {
   const storedFilters = JSON.parse(sessionStorage.getItem("filters"));
@@ -1120,6 +1121,7 @@ if (savedRouteData) {
     console.error("❌ Помилка при оновленні sessionStorage:", e);
   }
 }
+setIsRouteManuallyCalculated(true);
 };
 
 // Функція прийняття оптимізованого маршруту
@@ -1158,14 +1160,20 @@ const acceptOptimizedRoute = () => {
   });
 
   // Створення списку запитів у новому порядку
-  const optimized_sorted_requests = modalData?.optimizedRoute?.stops
+ const optimized_sorted_requests = modalData?.optimizedRoute?.stops
     ?.filter((p) => p.point_type === (modalData.direction === "HOME_TO_WORK" ? "pickup" : "dropoff"))
-    ?.map((point, index) => ({
-      id: point.id,
-      sequence_number: index + 1,
-      pickup_latitude: point.lat.toString(),
-      pickup_longitude: point.lng.toString(),
-    })) || [];
+    ?.map((point, index) => {
+      const fullRequest = selectedRequests.find((r) => r.id === point.id);
+      if (!fullRequest) {
+        console.warn(`⚠️ Не знайдено повної заявки для ID: ${point.id}`);
+        return null;
+      }
+      return {
+        ...fullRequest,
+        sequence_number: index + 1,
+      };
+    })
+    ?.filter(Boolean) || [];
 
   console.log("✅ Сформовано optimized_sorted_requests:", optimized_sorted_requests);
   setSelectedRequests([...optimized_sorted_requests]);
@@ -1179,24 +1187,33 @@ const acceptOptimizedRoute = () => {
       const parsed = JSON.parse(savedRouteData);
       const updated = {
         ...parsed,
-        standardRoute: modalData.optimizedRoute,
+        standardRoute: {
+          ...modalData.optimizedRoute,
+          stops: optimized_sorted_requests
+        },
         optimizedRoute: null,
         overrideStandardWithOptimized: true,
       };
       sessionStorage.setItem("route_calculation_data", JSON.stringify(updated));
       console.log("✅ Оновлено sessionStorage з прийнятим оптимізованим маршрутом.");
+    
     } catch (e) {
       console.error("❌ Помилка при оновленні sessionStorage:", e);
     }
   }
+    setIsRouteCalculated(true);
+    setIsRouteManuallyCalculated(true);
 };
 
 
 
 // Якщо юзер вносить зміни у список (додає/видаляє заявки чи змінює порядок), кнопка збереження стає неактивною
 useEffect(() => {
-  setIsRouteCalculated(false);
+  if (!isRouteManuallyCalculated) {
+    setIsRouteCalculated(false);
+  }
 }, [selectedRequests]);
+
 
 // Функція відкриття модального вікна карти
 const handleShowMap = () => {
