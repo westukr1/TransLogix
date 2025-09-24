@@ -899,8 +899,7 @@ class GetHouseNumberView(APIView):
                 house_number = coordinate_point.house.house_number
                 return Response({'house_number': house_number}, status=status.HTTP_200_OK)
             else:
-                return Response({'error': 'House number not found for this coordinate point.'},
-                                status=status.HTTP_404_NOT_FOUND)
+                return Response({'house_number': None}, status=status.HTTP_200_OK)
 
         except CoordinatePoint.DoesNotExist:
             return Response({'error': 'Coordinate point not found.'}, status=status.HTTP_404_NOT_FOUND)
