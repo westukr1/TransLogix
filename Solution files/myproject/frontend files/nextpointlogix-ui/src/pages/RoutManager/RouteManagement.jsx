@@ -85,7 +85,7 @@ const RouteManagement = ({
             >
               {t("ordered_passenger_list")}
             </button>
-            <PassengerList passengers={passengers} />
+            <PassengerList />
           </div>
         </div>
         <div className="rm-center-column">
