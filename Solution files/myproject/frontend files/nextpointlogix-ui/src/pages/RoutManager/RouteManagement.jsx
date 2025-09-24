@@ -17,6 +17,7 @@ import DriverList from "./DriverList";
 
 import VehicleList from "./VehicleList";
 import PassengerList from "./PassengerList";
+import PassengerRequestsTable from "./PassengerRequestsTable";
 
 const RouteManagement = ({
   drivers = [],
@@ -68,7 +69,7 @@ const RouteManagement = ({
             >
               {t("grouping_list_to_route")}
             </button>
-            <PassengerList passengers={passengers} />
+             <PassengerRequestsTable />
           </div>
           <div className="rm-middle-column">
             <button
@@ -79,6 +80,7 @@ const RouteManagement = ({
             >
               {t("ordered_passenger_list")}
             </button>
+            <PassengerList passengers={passengers} />
           </div>
         </div>
         <div className="rm-center-column">

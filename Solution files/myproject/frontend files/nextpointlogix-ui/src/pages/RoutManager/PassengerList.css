@@ -20,3 +20,118 @@
 .rm-passenger-list li {
   margin-bottom: 5px;
 }
+.passenger-requests-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.passenger-requests-controls label {
+  font-weight: 500;
+}
+
+.passenger-requests-controls input[type="text"] {
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid #555;
+  background-color: #2a2a2a;
+  color: #fff;
+}
+
+.passenger-requests-controls input[type="text"]:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.35);
+}
+
+.passenger-requests-controls input::placeholder {
+  color: #bdbdbd;
+}
+
+.date-range-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.date-picker-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9rem;
+}
+
+.date-picker-input {
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid #555;
+  background-color: #2a2a2a;
+  color: #fff;
+}
+
+.date-picker-input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.35);
+}
+
+.passenger-requests-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+}
+
+.passenger-requests-options label,
+.rm-passenger-list .filters label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.rm-passenger-list .filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+}
+
+.rm-passenger-list .filters input[type="radio"],
+.passenger-requests-options input[type="checkbox"] {
+  accent-color: #4a90e2;
+}
+
+.passenger-requests-status {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+}
+
+.passenger-requests-status button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  background-color: #4a90e2;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.passenger-requests-status button:hover:not(:disabled) {
+  background-color: #357ab8;
+}
+
+.passenger-requests-status button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.passenger-requests-error {
+  margin-top: 4px;
+  color: #ffb4b4;
+  font-size: 0.9rem;
+}
