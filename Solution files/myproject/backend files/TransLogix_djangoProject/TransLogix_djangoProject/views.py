@@ -899,6 +899,8 @@ class GetHouseNumberView(APIView):
                 house_number = coordinate_point.house.house_number
                 return Response({'house_number': house_number}, status=status.HTTP_200_OK)
             else:
+                # Якщо номер будинку ще не вказано, повертаємо "null" замість помилки,
+                # аби фронтенд міг коректно відобразити порожнє значення без 404.
                 return Response({'house_number': None}, status=status.HTTP_200_OK)
 
         except CoordinatePoint.DoesNotExist:
