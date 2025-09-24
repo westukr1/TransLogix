@@ -15,6 +15,7 @@ const DEFAULT_DIRECTION = "WORK_TO_HOME";
 
 const formatDateForApi = (date) => dayjs(date).format("YYYY-MM-DD HH:mm:ss");
 
+
 const FILTERS_STORAGE_KEY = "routeManager.passengerRequestsFilters";
 
 const PassengerRequestsTable = () => {
@@ -79,6 +80,17 @@ const PassengerRequestsTable = () => {
       console.error("Failed to persist passenger request filters", error);
     }
   }, [allowExtendedInterval, directionFilter, endDate, searchQuery, startDate]);
+
+const PassengerRequestsTable = () => {
+  const { t } = useTranslation();
+
+  const defaultStartDate = useMemo(() => dayjs().add(1, "day").startOf("day"), []);
+  const [startDate, setStartDate] = useState(() => defaultStartDate.toDate());
+  const [endDate, setEndDate] = useState(() => defaultStartDate.add(1, "day").toDate());
+  const [allowExtendedInterval, setAllowExtendedInterval] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [directionFilter, setDirectionFilter] = useState(DEFAULT_DIRECTION);
+
 
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -403,7 +415,9 @@ const PassengerRequestsTable = () => {
         )}
       </div>
 
-      <div className="ag-theme-alpine" style={{ height: "420px", marginTop: "20px" }}>
+
+      <div className="ag-theme-alpine" style={{ height: "420px", marginTop: "5px" }}>
+
         <AgGridReact
           rowData={filteredRequests}
           columnDefs={columnDefs}
@@ -420,4 +434,6 @@ const PassengerRequestsTable = () => {
   );
 };
 
+
 export default PassengerRequestsTable;
+
