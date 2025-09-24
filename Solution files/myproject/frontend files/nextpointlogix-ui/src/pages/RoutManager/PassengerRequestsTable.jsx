@@ -92,7 +92,7 @@ const PassengerRequestsTable = () => {
         start_date: formatDateForApi(startDate),
         end_date: formatDateForApi(endDate),
         search: searchQuery,
-        // Якщо бекенд фільтрує за напрямком — можеш додати:
+        // Якщо бекенд фільтрує за напрямком — можна додати:
         // direction: directionFilter === "ALL" ? undefined : directionFilter,
       };
 
@@ -116,7 +116,7 @@ const PassengerRequestsTable = () => {
     }
   }, [startDate, endDate, searchQuery /*, directionFilter*/]);
 
-  // 6) Дебаунс оновлення (перезапит через 300мс після зміни фільтрів)
+  // 6) Дебаунс перезапиту
   useEffect(() => {
     const timeoutId = setTimeout(fetchRequests, 300);
     return () => clearTimeout(timeoutId);
@@ -353,3 +353,4 @@ const PassengerRequestsTable = () => {
 };
 
 export default PassengerRequestsTable;
+
