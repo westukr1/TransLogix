@@ -20,6 +20,7 @@
 .rm-passenger-list li {
   margin-bottom: 5px;
 }
+
 .passenger-requests-controls {
   display: flex;
   flex-direction: column;
@@ -134,4 +135,4 @@
   margin-top: 4px;
   color: #ffb4b4;
   font-size: 0.9rem;
-}
+

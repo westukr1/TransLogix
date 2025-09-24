@@ -15,6 +15,72 @@ const DEFAULT_DIRECTION = "WORK_TO_HOME";
 
 const formatDateForApi = (date) => dayjs(date).format("YYYY-MM-DD HH:mm:ss");
 
+
+const FILTERS_STORAGE_KEY = "routeManager.passengerRequestsFilters";
+
+const PassengerRequestsTable = () => {
+  const { t } = useTranslation();
+
+  const savedFilters = useMemo(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    try {
+      const storedValue = localStorage.getItem(FILTERS_STORAGE_KEY);
+      return storedValue ? JSON.parse(storedValue) : null;
+    } catch (error) {
+      console.error("Failed to parse saved passenger request filters", error);
+      return null;
+    }
+  }, []);
+
+  const defaultStartDate = useMemo(() => dayjs().add(1, "day").startOf("day"), []);
+
+  const [startDate, setStartDate] = useState(() => {
+    if (savedFilters?.startDate && dayjs(savedFilters.startDate).isValid()) {
+      return dayjs(savedFilters.startDate).toDate();
+    }
+
+    return defaultStartDate.toDate();
+  });
+
+  const [endDate, setEndDate] = useState(() => {
+    if (savedFilters?.endDate && dayjs(savedFilters.endDate).isValid()) {
+      return dayjs(savedFilters.endDate).toDate();
+    }
+
+    return defaultStartDate.add(1, "day").toDate();
+  });
+
+  const [allowExtendedInterval, setAllowExtendedInterval] = useState(
+    savedFilters?.allowExtendedInterval ?? false
+  );
+  const [searchQuery, setSearchQuery] = useState(savedFilters?.searchQuery ?? "");
+  const [directionFilter, setDirectionFilter] = useState(
+    savedFilters?.directionFilter ?? DEFAULT_DIRECTION
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const payload = {
+      startDate: dayjs(startDate).toISOString(),
+      endDate: dayjs(endDate).toISOString(),
+      allowExtendedInterval,
+      searchQuery,
+      directionFilter,
+    };
+
+    try {
+      localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(payload));
+    } catch (error) {
+      console.error("Failed to persist passenger request filters", error);
+    }
+  }, [allowExtendedInterval, directionFilter, endDate, searchQuery, startDate]);
+
 const PassengerRequestsTable = () => {
   const { t } = useTranslation();
 
@@ -24,6 +90,7 @@ const PassengerRequestsTable = () => {
   const [allowExtendedInterval, setAllowExtendedInterval] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [directionFilter, setDirectionFilter] = useState(DEFAULT_DIRECTION);
+
 
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -348,7 +415,9 @@ const PassengerRequestsTable = () => {
         )}
       </div>
 
+
       <div className="ag-theme-alpine" style={{ height: "420px", marginTop: "5px" }}>
+
         <AgGridReact
           rowData={filteredRequests}
           columnDefs={columnDefs}
@@ -365,4 +434,6 @@ const PassengerRequestsTable = () => {
   );
 };
 
+
 export default PassengerRequestsTable;
+
