@@ -16,12 +16,11 @@ import dayjs from "dayjs";
 import DriverList from "./DriverList";
 
 import VehicleList from "./VehicleList";
-import PassengerList from "./PassengerList";
+import PassengerRequestsTable from "./PassengerRequestsTable";
 
 const RouteManagement = ({
   drivers = [],
   vehicles = [],
-  passengers = [],
   routes = [],
   copiedRoutes = [],
 }) => {
@@ -68,7 +67,7 @@ const RouteManagement = ({
             >
               {t("grouping_list_to_route")}
             </button>
-            <PassengerList passengers={passengers} />
+            <PassengerRequestsTable />
           </div>
           <div className="rm-middle-column">
             <button
