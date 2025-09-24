@@ -24,7 +24,6 @@ const PassengerRequestsTable = () => {
   const [allowExtendedInterval, setAllowExtendedInterval] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [directionFilter, setDirectionFilter] = useState(DEFAULT_DIRECTION);
-  const [allowMixedDirections, setAllowMixedDirections] = useState(false);
 
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -89,16 +88,6 @@ const PassengerRequestsTable = () => {
       const next = !prev;
       if (!next) {
         setEndDate(dayjs(startDate).add(1, "day").toDate());
-      }
-      return next;
-    });
-  };
-
-  const toggleAllowMixedDirections = () => {
-    setAllowMixedDirections((prev) => {
-      const next = !prev;
-      if (!next && directionFilter === "ALL") {
-        setDirectionFilter(DEFAULT_DIRECTION);
       }
       return next;
     });
@@ -300,22 +289,14 @@ const PassengerRequestsTable = () => {
         </div>
 
         <div className="passenger-requests-options">
-          {/* <label>
+          <label>
             <input
               type="checkbox"
               checked={allowExtendedInterval}
               onChange={toggleAllowExtendedInterval}
             />
             {t("allow_extended_interval")}
-          </label> */}
-          {/* <label>
-            <input
-              type="checkbox"
-              checked={allowMixedDirections}
-              onChange={toggleAllowMixedDirections}
-            />
-            {t("allow_mixed_directions")}
-          </label> */}
+          </label>
         </div>
 
         <div className="filters">
@@ -343,7 +324,6 @@ const PassengerRequestsTable = () => {
               name="directionFilter"
               checked={directionFilter === "ALL"}
               onChange={() => setDirectionFilter("ALL")}
-              disabled={!allowMixedDirections}
             />
             {t("show_all_requests")}
           </label>
@@ -368,7 +348,7 @@ const PassengerRequestsTable = () => {
         )}
       </div>
 
-      <div className="ag-theme-alpine" style={{ height: "420px", marginTop: "20px" }}>
+      <div className="ag-theme-alpine" style={{ height: "420px", marginTop: "5px" }}>
         <AgGridReact
           rowData={filteredRequests}
           columnDefs={columnDefs}
