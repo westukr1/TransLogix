@@ -12,19 +12,16 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./PassengerList.css";
 
 const DEFAULT_DIRECTION = "WORK_TO_HOME";
+const FILTERS_STORAGE_KEY = "routeManager.passengerRequestsFilters";
 
 const formatDateForApi = (date) => dayjs(date).format("YYYY-MM-DD HH:mm:ss");
 
-const FILTERS_STORAGE_KEY = "routeManager.passengerRequestsFilters";
-
-export default function PassengerRequestsTable() {
+const PassengerRequestsTable = () => {
   const { t } = useTranslation();
 
+  // 1) Завантажуємо збережені фільтри з localStorage (одноразово)
   const savedFilters = useMemo(() => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-
+    if (typeof window === "undefined") return null;
     try {
       const storedValue = localStorage.getItem(FILTERS_STORAGE_KEY);
       return storedValue ? JSON.parse(storedValue) : null;
@@ -34,13 +31,16 @@ export default function PassengerRequestsTable() {
     }
   }, []);
 
-  const defaultStartDate = useMemo(() => dayjs().add(1, "day").startOf("day"), []);
+  const defaultStartDate = useMemo(
+    () => dayjs().add(1, "day").startOf("day"),
+    []
+  );
 
+  // 2) Стани фільтрів (ініціалізуємо з savedFilters, якщо валідні)
   const [startDate, setStartDate] = useState(() => {
     if (savedFilters?.startDate && dayjs(savedFilters.startDate).isValid()) {
       return dayjs(savedFilters.startDate).toDate();
     }
-
     return defaultStartDate.toDate();
   });
 
@@ -48,23 +48,27 @@ export default function PassengerRequestsTable() {
     if (savedFilters?.endDate && dayjs(savedFilters.endDate).isValid()) {
       return dayjs(savedFilters.endDate).toDate();
     }
-
     return defaultStartDate.add(1, "day").toDate();
   });
 
   const [allowExtendedInterval, setAllowExtendedInterval] = useState(
     savedFilters?.allowExtendedInterval ?? false
   );
-  const [searchQuery, setSearchQuery] = useState(savedFilters?.searchQuery ?? "");
+  const [searchQuery, setSearchQuery] = useState(
+    savedFilters?.searchQuery ?? ""
+  );
   const [directionFilter, setDirectionFilter] = useState(
     savedFilters?.directionFilter ?? DEFAULT_DIRECTION
   );
 
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
+  // 3) Дані таблиці
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
+  // 4) Зберігаємо фільтри у localStorage при зміні
+  useEffect(() => {
+    if (typeof window === "undefined") return;
     const payload = {
       startDate: dayjs(startDate).toISOString(),
       endDate: dayjs(endDate).toISOString(),
@@ -72,32 +76,30 @@ export default function PassengerRequestsTable() {
       searchQuery,
       directionFilter,
     };
-
     try {
       localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(payload));
-    } catch (error) {
-      console.error("Failed to persist passenger request filters", error);
+    } catch (err) {
+      console.error("Failed to persist passenger request filters", err);
     }
-  }, [allowExtendedInterval, directionFilter, endDate, searchQuery, startDate]);
+  }, [startDate, endDate, allowExtendedInterval, searchQuery, directionFilter]);
 
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
+  // 5) Завантаження заявок
   const fetchRequests = useCallback(async () => {
     setLoading(true);
     setError(null);
-
     try {
       const params = {
         start_date: formatDateForApi(startDate),
         end_date: formatDateForApi(endDate),
         search: searchQuery,
+        // Якщо бекенд фільтрує за напрямком — можна додати:
+        // direction: directionFilter === "ALL" ? undefined : directionFilter,
       };
 
-      const response = await axios.get(API_ENDPOINTS.getFilteredTripRequests, {
-        params,
-      });
+      const response = await axios.get(
+        API_ENDPOINTS.getFilteredTripRequests,
+        { params }
+      );
 
       if (Array.isArray(response.data)) {
         setRequests(response.data);
@@ -112,24 +114,20 @@ export default function PassengerRequestsTable() {
     } finally {
       setLoading(false);
     }
-  }, [endDate, searchQuery, startDate]);
+  }, [startDate, endDate, searchQuery /*, directionFilter*/]);
 
+  // 6) Дебаунс перезапиту
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      fetchRequests();
-    }, 300);
-
+    const timeoutId = setTimeout(fetchRequests, 300);
     return () => clearTimeout(timeoutId);
   }, [fetchRequests]);
 
+  // 7) Обробники фільтрів
   const handleStartDateChange = (date) => {
     if (!date) return;
-
     setStartDate(date);
-
     if (!allowExtendedInterval) {
-      const adjustedEndDate = dayjs(date).add(1, "day").toDate();
-      setEndDate(adjustedEndDate);
+      setEndDate(dayjs(date).add(1, "day").toDate());
     }
   };
 
@@ -138,42 +136,26 @@ export default function PassengerRequestsTable() {
     setEndDate(date);
   };
 
-  const toggleAllowExtendedInterval = () => {
+  const toggleAllowExtendedInterval = () =>
     setAllowExtendedInterval((prev) => {
       const next = !prev;
-      if (!next) {
-        setEndDate(dayjs(startDate).add(1, "day").toDate());
-      }
+      if (!next) setEndDate(dayjs(startDate).add(1, "day").toDate());
       return next;
     });
-  };
 
+  // 8) Клієнтський фільтр за напрямком
   const filteredRequests = useMemo(() => {
-    if (directionFilter === "ALL") {
-      return requests;
-    }
+    if (directionFilter === "ALL") return requests;
+    return requests.filter((r) => r.direction === directionFilter);
+  }, [requests, directionFilter]);
 
-    return requests.filter((request) => request.direction === directionFilter);
-  }, [directionFilter, requests]);
-
+  // 9) Колонки AG Grid
   const columnDefs = useMemo(
     () => [
       { headerName: t("request_id"), field: "id", maxWidth: 100 },
-      {
-        headerName: t("passenger_first_name"),
-        field: "passenger_first_name",
-        minWidth: 140,
-      },
-      {
-        headerName: t("passenger_last_name"),
-        field: "passenger_last_name",
-        minWidth: 140,
-      },
-      {
-        headerName: t("passenger_phone"),
-        field: "passenger_phone",
-        minWidth: 160,
-      },
+      { headerName: t("passenger_first_name"), field: "passenger_first_name", minWidth: 140 },
+      { headerName: t("passenger_last_name"), field: "passenger_last_name", minWidth: 140 },
+      { headerName: t("passenger_phone"), field: "passenger_phone", minWidth: 160 },
       {
         headerName: t("direction"),
         field: "direction",
@@ -188,34 +170,14 @@ export default function PassengerRequestsTable() {
             headerName: t("departure_time"),
             field: "departure_time",
             minWidth: 170,
-            valueFormatter: (params) =>
-              params.value ? dayjs(params.value).format("DD-MM-YYYY HH:mm") : "",
+            valueFormatter: (p) =>
+              p.value ? dayjs(p.value).format("DD-MM-YYYY HH:mm") : "",
           },
-          {
-            headerName: t("pickup_city"),
-            field: "pickup_city",
-            minWidth: 120,
-          },
-          {
-            headerName: t("pickup_street"),
-            field: "pickup_street",
-            minWidth: 160,
-          },
-          {
-            headerName: t("pickup_house"),
-            field: "pickup_house",
-            maxWidth: 120,
-          },
-          {
-            headerName: t("pickup_latitude"),
-            field: "pickup_latitude",
-            maxWidth: 140,
-          },
-          {
-            headerName: t("pickup_longitude"),
-            field: "pickup_longitude",
-            maxWidth: 140,
-          },
+          { headerName: t("pickup_city"), field: "pickup_city", minWidth: 120 },
+          { headerName: t("pickup_street"), field: "pickup_street", minWidth: 160 },
+          { headerName: t("pickup_house"), field: "pickup_house", maxWidth: 120 },
+          { headerName: t("pickup_latitude"), field: "pickup_latitude", maxWidth: 140 },
+          { headerName: t("pickup_longitude"), field: "pickup_longitude", maxWidth: 140 },
         ],
       },
       {
@@ -226,34 +188,14 @@ export default function PassengerRequestsTable() {
             headerName: t("arrival_time"),
             field: "arrival_time",
             minWidth: 170,
-            valueFormatter: (params) =>
-              params.value ? dayjs(params.value).format("DD-MM-YYYY HH:mm") : "",
+            valueFormatter: (p) =>
+              p.value ? dayjs(p.value).format("DD-MM-YYYY HH:mm") : "",
           },
-          {
-            headerName: t("dropoff_city"),
-            field: "dropoff_city",
-            minWidth: 120,
-          },
-          {
-            headerName: t("dropoff_street"),
-            field: "dropoff_street",
-            minWidth: 160,
-          },
-          {
-            headerName: t("dropoff_house"),
-            field: "dropoff_house",
-            maxWidth: 120,
-          },
-          {
-            headerName: t("dropoff_latitude"),
-            field: "dropoff_latitude",
-            maxWidth: 140,
-          },
-          {
-            headerName: t("dropoff_longitude"),
-            field: "dropoff_longitude",
-            maxWidth: 140,
-          },
+          { headerName: t("dropoff_city"), field: "dropoff_city", minWidth: 120 },
+          { headerName: t("dropoff_street"), field: "dropoff_street", minWidth: 160 },
+          { headerName: t("dropoff_house"), field: "dropoff_house", maxWidth: 120 },
+          { headerName: t("dropoff_latitude"), field: "dropoff_latitude", maxWidth: 140 },
+          { headerName: t("dropoff_longitude"), field: "dropoff_longitude", maxWidth: 140 },
         ],
       },
       { headerName: t("passenger_id"), field: "passenger", maxWidth: 110 },
@@ -261,25 +203,15 @@ export default function PassengerRequestsTable() {
         headerName: t("is_active"),
         field: "is_active",
         maxWidth: 120,
-        valueFormatter: (params) =>
-          params.value ? t("yes") : t("no"),
+        valueFormatter: (p) => (p.value ? t("yes") : t("no")),
       },
-      {
-        headerName: t("comment"),
-        field: "comment",
-        minWidth: 260,
-        flex: 1,
-      },
+      { headerName: t("comment"), field: "comment", minWidth: 260, flex: 1 },
     ],
     [t]
   );
 
   const defaultColDef = useMemo(
-    () => ({
-      resizable: true,
-      sortable: true,
-      filter: true,
-    }),
+    () => ({ resizable: true, sortable: true, filter: true }),
     []
   );
 
@@ -304,13 +236,14 @@ export default function PassengerRequestsTable() {
   return (
     <div className="rm-passenger-list">
       <h3>{t("passenger_trip_requests", "Passenger requests")}</h3>
+
       <div className="passenger-requests-controls">
         <label htmlFor="passenger-request-search">{t("search_by_name")}</label>
         <input
           id="passenger-request-search"
           type="text"
           value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
+          onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={t("enter_name_or_last_name")}
         />
 
@@ -327,6 +260,7 @@ export default function PassengerRequestsTable() {
               className="date-picker-input"
             />
           </div>
+
           <div className="date-picker-field">
             <span>{t("end_date")}</span>
             <DatePicker
@@ -393,17 +327,15 @@ export default function PassengerRequestsTable() {
           </span>
           {loading && <span>{t("loading", "Loading...")}</span>}
         </div>
+
         {error && (
           <div className="passenger-requests-error">
-            {t(
-              "error_loading_requests",
-              "Failed to load passenger requests."
-            )}
+            {t("error_loading_requests", "Failed to load passenger requests.")}
           </div>
         )}
       </div>
 
-      <div className="ag-theme-alpine" style={{ height: "420px", marginTop: "20px" }}>
+      <div className="ag-theme-alpine" style={{ height: "420px", marginTop: "5px" }}>
         <AgGridReact
           rowData={filteredRequests}
           columnDefs={columnDefs}
@@ -418,4 +350,7 @@ export default function PassengerRequestsTable() {
       </div>
     </div>
   );
-}
+};
+
+export default PassengerRequestsTable;
+

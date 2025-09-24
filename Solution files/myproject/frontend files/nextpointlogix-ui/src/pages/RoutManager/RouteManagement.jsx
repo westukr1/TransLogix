@@ -1,22 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import TopNavBar from "./TopNavBar";
 import "./RouteManagement.css";
 
-import { useNavigate, useLocation } from "react-router-dom";
-import { AgGridReact } from "ag-grid-react";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
-import "./PassengersGroupingView/GroupingListToRoute";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import axios from "../../utils/axiosInstance";
-import { API_ENDPOINTS } from "../../config/apiConfig";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import dayjs from "dayjs";
-import DriverList from "./DriverList";
 
+import DriverList from "./DriverList";
 import VehicleList from "./VehicleList";
 import PassengerRequestsTable from "./PassengerRequestsTable";
+import PassengerList from "./PassengerList";
 
 const RouteManagement = ({
   drivers = [],
@@ -27,14 +19,11 @@ const RouteManagement = ({
   const [selectedRoutes, setSelectedRoutes] = useState([]);
   const { t } = useTranslation();
   const navigate = useNavigate();
+
   const handleSelectRoute = (route) => {
-    setSelectedRoutes((prev) => {
-      if (prev.includes(route)) {
-        return prev.filter((r) => r !== route);
-      } else {
-        return [...prev, route];
-      }
-    });
+    setSelectedRoutes((prev) =>
+      prev.includes(route) ? prev.filter((r) => r !== route) : [...prev, route]
+    );
   };
 
   const handleGenerateRoutes = () => {
@@ -57,6 +46,7 @@ const RouteManagement = ({
             <VehicleList />
           </div>
         </div>
+
         <div className="rm-middle-column">
           <div className="rm-passenger-list">
             <button
@@ -67,8 +57,10 @@ const RouteManagement = ({
             >
               {t("grouping_list_to_route")}
             </button>
+
             <PassengerRequestsTable />
           </div>
+
           <div className="rm-middle-column">
             <button
               onClick={() =>
@@ -78,8 +70,10 @@ const RouteManagement = ({
             >
               {t("ordered_passenger_list")}
             </button>
+            <PassengerList />
           </div>
         </div>
+
         <div className="rm-center-column">
           <button
             className="rm-route-button"
@@ -87,6 +81,7 @@ const RouteManagement = ({
           >
             Copy and Edit Route
           </button>
+
           <div className="rm-copied-routes">
             <h3>Copied Routes</h3>
             <ul>
@@ -115,11 +110,11 @@ const RouteManagement = ({
             </button>
           </div>
         </div>
+
         <div className="rm-right-column">
           <div className="rm-today-routes">
             <h3>Today's Routes</h3>
             <ul>
-              {/* Placeholder for today's routes */}
               <li>
                 <span>Status: Confirmed</span> - Route details
                 <button className="rm-route-button">Fix</button>
@@ -128,10 +123,10 @@ const RouteManagement = ({
               </li>
             </ul>
           </div>
+
           <div className="rm-assigned-passengers">
             <h3>Assigned Passengers</h3>
             <ul>
-              {/* Placeholder for assigned passengers */}
               <li>
                 <input type="checkbox" defaultChecked />
                 <label>Passenger Name - Pickup Point</label>
@@ -152,3 +147,4 @@ const RouteManagement = ({
 };
 
 export default RouteManagement;
+
