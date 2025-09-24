@@ -764,23 +764,30 @@ class PassengerAddressesView(APIView):
         """
         Отримання всіх адрес для певного пасажира.
         """
-        passenger = get_object_or_404(Passenger, id=passenger_id)
-        addresses = CoordinatePoint.objects.filter(owner_id=passenger.id, owner_type='passenger')
-        serializer = CoordinatePointSerializer(addresses, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        addresses = CoordinatePoint.objects.filter(owner_id=passenger_id, owner_type='passenger')
+
+        if addresses.exists():
+            serializer = CoordinatePointSerializer(addresses, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        if Passenger.objects.filter(id=passenger_id).exists():
+            return Response([], status=status.HTTP_200_OK)
+
+        return Response({"detail": "Passenger not found."}, status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, passenger_id):
         """
         Оновлення існуючих адрес для пасажира.
         """
-        passenger = get_object_or_404(Passenger, id=passenger_id)
+        if not Passenger.objects.filter(id=passenger_id).exists():
+            return Response({"detail": "Passenger not found."}, status=status.HTTP_404_NOT_FOUND)
         address_data = request.data.get('addresses', [])
 
         for address in address_data:
             address_id = address.get('id')
             if address_id:
                 # Оновлення існуючої адреси
-                coordinate_point = get_object_or_404(CoordinatePoint, id=address_id, owner_id=passenger.id,
+                coordinate_point = get_object_or_404(CoordinatePoint, id=address_id, owner_id=passenger_id,
                                                      owner_type='passenger')
                 serializer = CoordinatePointSerializer(coordinate_point, data=address, partial=True)
                 if serializer.is_valid():
@@ -794,7 +801,9 @@ class PassengerAddressesView(APIView):
         """
         Додавання нових адрес для пасажира.
         """
-        passenger = get_object_or_404(Passenger, id=passenger_id)
+        passenger = Passenger.objects.filter(id=passenger_id).first()
+        if not passenger:
+            return Response({"detail": "Passenger not found."}, status=status.HTTP_404_NOT_FOUND)
         new_addresses = request.data.get('new_addresses', [])
 
         for address in new_addresses:

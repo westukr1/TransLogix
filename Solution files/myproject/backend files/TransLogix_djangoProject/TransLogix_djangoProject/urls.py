@@ -129,13 +129,20 @@ urlpatterns = [
     path('api/passengers/', views.get_passengers, name='get_passengers'),
     path('api/passengers/<int:id>/update/', views.update_passenger, name='update_passenger'),
     path('api/passenger/<int:passenger_id>/addresses/', PassengerAddressesView.as_view(), name='passenger_addresses'),
-    path('api/passengers/<int:id>/', views.get_passenger, name='get_passenger'),
+    # path('api/passengers/<int:id>/', views.get_passenger, name='get_passenger'),
     path('api/passenger/<int:passenger_id>/addresses/update/', UpdatePassengerAddressesView.as_view(), name='update_passenger_addresses'),
+    path('api/passengers/<int:passenger_id>/addresses/', PassengerAddressesView.as_view(),
+         name='passenger_addresses_plural'),
+    path('api/passengers/<int:passenger_id>/addresses/update/', UpdatePassengerAddressesView.as_view(),
+         name='update_passenger_addresses_plural'),
+    path('api/passengers/<int:id>/', views.get_passenger, name='get_passenger'),
+
+
     path('api/coordinate-point/<int:coordinate_point_id>/house-number/', GetHouseNumberView.as_view(), name='get_house_number'),
     path('api/coordinate-points/<int:id>/toggle-active/', ToggleCoordinatePointActiveView.as_view(), name='toggle-coordinate-active'),
     path('api/coordinate-points/<int:id>/', CoordinatePointUpdateView.as_view(), name='update-coordinate-point'),
     path('api/coordinate-points/<int:id>/update-coordinates/', UpdateCoordinatesView.as_view(), name='update-coordinates'),
-    path('api/passenger/<int:passenger_id>/addresses/', PassengerAddressesView.as_view(), name='passenger_addresses'),
+    # path('api/passenger/<int:passenger_id>/addresses/', PassengerAddressesView.as_view(), name='passenger_addresses'),
 
 
     path('api/passengers/<int:passenger_id>/has-pickup-address/', HasPickupAddressView.as_view(), name='has-pickup-address'),
