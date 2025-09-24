@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-# TransLogix_djangoProject/urls.py (основний файл, не у додатку (тест від 24 09)
+# TransLogix_djangoProject/urls.py (основний файл, не у додатку (тест №2 від 24 09)
 
 # TransLogix_djangoProject/urls.py
 from django.contrib import admin
