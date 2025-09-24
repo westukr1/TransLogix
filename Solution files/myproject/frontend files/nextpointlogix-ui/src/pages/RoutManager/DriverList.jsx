@@ -81,7 +81,7 @@ const saveDriversBulk = () => {
 
   return (
     <div className="driver-list">
-      <h2>{t("drivers")}</h2>
+      <h3>{t("drivers")}</h3>
       <button className="save-button" onClick={saveDriversBulk}>
         {t("save_driver_data")}
       </button>

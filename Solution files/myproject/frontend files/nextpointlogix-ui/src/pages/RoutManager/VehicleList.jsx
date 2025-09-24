@@ -178,7 +178,7 @@ const VehicleList = () => {
 
   return (
     <div className="vehicle-list">
-      <h2>{t("vehicles")}</h2>
+      <h3>{t("vehicles")}</h3>
       <button className="save-button" onClick={saveVehiclesBulk}>
         {t("save_vehicle_data")}
       </button>
