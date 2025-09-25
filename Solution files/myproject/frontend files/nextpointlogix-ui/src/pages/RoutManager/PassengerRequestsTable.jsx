@@ -335,13 +335,14 @@ const PassengerRequestsTable = () => {
         )}
       </div>
 
-      <div className="ag-theme-alpine" style={{ height: "420px", marginTop: "5px" }}>
+      <div className="ag-theme-alpine" style={{ marginTop: "5px" }}>
         <AgGridReact
           rowData={filteredRequests}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           pagination
           paginationPageSize={10}
+          domLayout="autoHeight"
           animateRows
           overlayNoRowsTemplate={overlayNoRowsTemplate}
           overlayLoadingTemplate={overlayLoadingTemplate}
