@@ -1,3 +1,4 @@
+
 import React, {
   forwardRef,
   useCallback,
@@ -6,16 +7,15 @@ import React, {
   useMemo,
   useState,
 } from "react";
+
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 
 import axios from "../../utils/axiosInstance";
 import { API_ENDPOINTS } from "../../config/apiConfig";
-
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-
 import "./OrderedPassengerListsTable.css";
 
 const FILTER_STORAGE_KEY = "orderedPassengerListsFilters";
@@ -64,7 +64,9 @@ const formatForRequest = (value) =>
     ? dayjs(value).format("YYYY-MM-DD HH:mm:ss")
     : null;
 
+
 const OrderedPassengerListsTable = forwardRef((_, ref) => {
+
   const { t } = useTranslation();
 
   const [filters, setFilters] = useState(() => readStoredFilters());
@@ -196,6 +198,7 @@ const OrderedPassengerListsTable = forwardRef((_, ref) => {
     }
   }, [filters]);
 
+
   const fetchOrderedPassengerLists = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -229,6 +232,7 @@ const OrderedPassengerListsTable = forwardRef((_, ref) => {
   useEffect(() => {
     fetchOrderedPassengerLists();
   }, [fetchOrderedPassengerLists]);
+
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -265,6 +269,7 @@ const OrderedPassengerListsTable = forwardRef((_, ref) => {
     <div className="ordered-passenger-lists">
       <div className="ordered-passenger-lists__filters">
         <div className="ordered-passenger-lists__filter-group">
+
           <label htmlFor="start_date">
             {t("start_date", { defaultValue: "Start date" })}
           </label>
@@ -288,6 +293,7 @@ const OrderedPassengerListsTable = forwardRef((_, ref) => {
             value={filters.end_date}
             onChange={handleInputChange}
           />
+
         </div>
 
         <div className="ordered-passenger-lists__filter-group">
@@ -319,6 +325,7 @@ const OrderedPassengerListsTable = forwardRef((_, ref) => {
         </div>
 
         <div className="ordered-passenger-lists__filter-group">
+
           <label htmlFor="direction">
             {t("direction", { defaultValue: "Direction" })}
           </label>
@@ -360,6 +367,7 @@ const OrderedPassengerListsTable = forwardRef((_, ref) => {
               {t("inactive", { defaultValue: "Inactive" })}
             </option>
           </select>
+
         </div>
 
         <button
@@ -397,12 +405,15 @@ const OrderedPassengerListsTable = forwardRef((_, ref) => {
               overlayNoRowsTemplate={noRowsOverlayTemplate}
             />
           </div>
+
         )}
       </div>
     </div>
   );
+
 });
 
 OrderedPassengerListsTable.displayName = "OrderedPassengerListsTable";
+
 
 export default OrderedPassengerListsTable;

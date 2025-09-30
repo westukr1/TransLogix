@@ -50,6 +50,7 @@ const RouteManagement = ({
 
         <div className="rm-middle-column-table">
           <PassengerRequestsTable />
+
           <div className="rm-middle-column-buttons">
             <button
               onClick={() =>
@@ -68,9 +69,12 @@ const RouteManagement = ({
             </button>
           </div>
 
+
           <OrderedPassengerListsTable ref={orderedPassengerListsRef} />
 
+
         </div>
+
 
         <div className="rm-center-column">
           <button
