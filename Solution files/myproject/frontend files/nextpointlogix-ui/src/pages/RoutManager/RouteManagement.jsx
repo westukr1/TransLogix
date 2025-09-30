@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import TopNavBar from "./TopNavBar";
 import "./RouteManagement.css";
 
@@ -17,6 +17,7 @@ const RouteManagement = ({
   copiedRoutes = [],
 }) => {
   const [selectedRoutes, setSelectedRoutes] = useState([]);
+  const orderedPassengerListsRef = useRef(null);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -60,16 +61,17 @@ const RouteManagement = ({
               {t("grouping_list_to_route")}
             </button>
             <button
-              onClick={() =>
-                navigate("/ordered-passenger-list/ordered-passenger-list")
-              }
+              type="button"
+              onClick={() => orderedPassengerListsRef.current?.refresh()}
               className="nav-button"
             >
-              {t("ordered_passenger_list")}
+              {t("refresh", { defaultValue: "Refresh" })}
             </button>
           </div>
 
-          <OrderedPassengerListsTable />
+
+          <OrderedPassengerListsTable ref={orderedPassengerListsRef} />
+
 
         </div>
 

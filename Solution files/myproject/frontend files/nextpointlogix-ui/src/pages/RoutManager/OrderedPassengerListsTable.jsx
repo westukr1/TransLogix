@@ -1,4 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react";
+
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from "react";
+
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 
@@ -55,13 +64,16 @@ const formatForRequest = (value) =>
     ? dayjs(value).format("YYYY-MM-DD HH:mm:ss")
     : null;
 
-const OrderedPassengerListsTable = () => {
+
+const OrderedPassengerListsTable = forwardRef((_, ref) => {
+
   const { t } = useTranslation();
 
   const [filters, setFilters] = useState(() => readStoredFilters());
   const [orderedLists, setOrderedLists] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
   const defaultColDef = useMemo(
     () => ({
       flex: 1,
@@ -163,6 +175,7 @@ const OrderedPassengerListsTable = () => {
       })}</span>`,
     [t]
   );
+
   const filterRequestParams = useMemo(() => {
     const parsedIsActive =
       filters.is_active === ""
@@ -185,31 +198,41 @@ const OrderedPassengerListsTable = () => {
     }
   }, [filters]);
 
-  useEffect(() => {
-    const fetchOrderedPassengerLists = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await axios.get(
-          API_ENDPOINTS.getOrderedPassengerLists,
-          {
-            params: filterRequestParams,
-          }
-        );
 
-        const data = Array.isArray(response.data) ? response.data : [];
-        setOrderedLists(data);
-      } catch (err) {
-        console.error("Failed to load ordered passenger lists", err);
-        setError(err);
-        setOrderedLists([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchOrderedPassengerLists = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(
+        API_ENDPOINTS.getOrderedPassengerLists,
+        {
+          params: filterRequestParams,
+        }
+      );
 
-    fetchOrderedPassengerLists();
+      const data = Array.isArray(response.data) ? response.data : [];
+      setOrderedLists(data);
+    } catch (err) {
+      console.error("Failed to load ordered passenger lists", err);
+      setError(err);
+      setOrderedLists([]);
+    } finally {
+      setLoading(false);
+    }
   }, [filterRequestParams]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      refresh: fetchOrderedPassengerLists,
+    }),
+    [fetchOrderedPassengerLists]
+  );
+
+  useEffect(() => {
+    fetchOrderedPassengerLists();
+  }, [fetchOrderedPassengerLists]);
+
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -387,6 +410,10 @@ const OrderedPassengerListsTable = () => {
       </div>
     </div>
   );
-};
+
+});
+
+OrderedPassengerListsTable.displayName = "OrderedPassengerListsTable";
+
 
 export default OrderedPassengerListsTable;
