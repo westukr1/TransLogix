@@ -203,7 +203,7 @@ const PassengerRequestsTable = () => {
         maxWidth: 120,
         valueFormatter: (p) => (p.value ? t("yes") : t("no")),
       },
-      { headerName: t("comment"), field: "comment", minWidth: 260, flex: 1 },
+      { headerName: t("comment"), field: "comment", minWidth: 260 },
     ],
     [t]
   );
@@ -333,13 +333,13 @@ const PassengerRequestsTable = () => {
         )}
       </div>
 
-      <div className="ag-theme-alpine" style={{ marginTop: "5px" }}>
+      <div className="ag-theme-alpine-rm" style={{ width: "100%", marginTop: "5px" }}>
         <AgGridReact
           rowData={filteredRequests}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           pagination
-          paginationPageSize={20}
+          paginationPageSize={10}
           domLayout="autoHeight"
           animateRows
           overlayNoRowsTemplate={overlayNoRowsTemplate}
