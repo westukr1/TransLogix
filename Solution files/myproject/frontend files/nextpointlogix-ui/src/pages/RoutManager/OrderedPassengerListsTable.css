@@ -19,7 +19,9 @@
 
 .ordered-passenger-lists__filter-group label {
   font-weight: 600;
-  color: #2c3e50;
+
+  color: #ffffff;
+
 }
 
 .ordered-passenger-lists__filter-group input,
@@ -67,7 +69,6 @@
   --ag-odd-row-background-color: #fbfdff;
   --ag-borders: solid 1px #e5e9f0;
   font-size: 14px;
-
 }
 
 .ordered-passenger-lists__empty {

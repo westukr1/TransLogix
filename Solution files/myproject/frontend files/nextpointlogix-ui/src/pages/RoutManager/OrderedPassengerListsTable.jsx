@@ -4,13 +4,9 @@ import dayjs from "dayjs";
 
 import axios from "../../utils/axiosInstance";
 import { API_ENDPOINTS } from "../../config/apiConfig";
-
-
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-
-
 import "./OrderedPassengerListsTable.css";
 
 const FILTER_STORAGE_KEY = "orderedPassengerListsFilters";
@@ -66,8 +62,6 @@ const OrderedPassengerListsTable = () => {
   const [orderedLists, setOrderedLists] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-
   const defaultColDef = useMemo(
     () => ({
       flex: 1,
@@ -169,8 +163,6 @@ const OrderedPassengerListsTable = () => {
       })}</span>`,
     [t]
   );
-
-
   const filterRequestParams = useMemo(() => {
     const parsedIsActive =
       filters.is_active === ""
@@ -254,6 +246,63 @@ const OrderedPassengerListsTable = () => {
     <div className="ordered-passenger-lists">
       <div className="ordered-passenger-lists__filters">
         <div className="ordered-passenger-lists__filter-group">
+
+          <label htmlFor="start_date">
+            {t("start_date", { defaultValue: "Start date" })}
+          </label>
+          <input
+            id="start_date"
+            type="datetime-local"
+            name="start_date"
+            value={filters.start_date}
+            onChange={handleInputChange}
+          />
+        </div>
+
+        <div className="ordered-passenger-lists__filter-group">
+          <label htmlFor="end_date">
+            {t("end_date", { defaultValue: "End date" })}
+          </label>
+          <input
+            id="end_date"
+            type="datetime-local"
+            name="end_date"
+            value={filters.end_date}
+            onChange={handleInputChange}
+          />
+
+        </div>
+
+        <div className="ordered-passenger-lists__filter-group">
+          <label htmlFor="start_city">
+            {t("start_city", { defaultValue: "Start city" })}
+          </label>
+          <input
+            id="start_city"
+            type="text"
+            name="start_city"
+            value={filters.start_city}
+            onChange={handleInputChange}
+            placeholder={t("enter_city", { defaultValue: "Enter city" })}
+          />
+        </div>
+
+        <div className="ordered-passenger-lists__filter-group">
+          <label htmlFor="search_query">
+            {t("search", { defaultValue: "Search" })}
+          </label>
+          <input
+            id="search_query"
+            type="text"
+            name="search_query"
+            value={filters.search_query}
+            onChange={handleInputChange}
+            placeholder={t("search_passengers", { defaultValue: "Search passengers" })}
+          />
+        </div>
+
+        <div className="ordered-passenger-lists__filter-group">
+
           <label htmlFor="direction">
             {t("direction", { defaultValue: "Direction" })}
           </label>
@@ -295,60 +344,7 @@ const OrderedPassengerListsTable = () => {
               {t("inactive", { defaultValue: "Inactive" })}
             </option>
           </select>
-        </div>
 
-        <div className="ordered-passenger-lists__filter-group">
-          <label htmlFor="start_city">
-            {t("start_city", { defaultValue: "Start city" })}
-          </label>
-          <input
-            id="start_city"
-            type="text"
-            name="start_city"
-            value={filters.start_city}
-            onChange={handleInputChange}
-            placeholder={t("enter_city", { defaultValue: "Enter city" })}
-          />
-        </div>
-
-        <div className="ordered-passenger-lists__filter-group">
-          <label htmlFor="search_query">
-            {t("search", { defaultValue: "Search" })}
-          </label>
-          <input
-            id="search_query"
-            type="text"
-            name="search_query"
-            value={filters.search_query}
-            onChange={handleInputChange}
-            placeholder={t("search_passengers", { defaultValue: "Search passengers" })}
-          />
-        </div>
-
-        <div className="ordered-passenger-lists__filter-group">
-          <label htmlFor="start_date">
-            {t("start_date", { defaultValue: "Start date" })}
-          </label>
-          <input
-            id="start_date"
-            type="datetime-local"
-            name="start_date"
-            value={filters.start_date}
-            onChange={handleInputChange}
-          />
-        </div>
-
-        <div className="ordered-passenger-lists__filter-group">
-          <label htmlFor="end_date">
-            {t("end_date", { defaultValue: "End date" })}
-          </label>
-          <input
-            id="end_date"
-            type="datetime-local"
-            name="end_date"
-            value={filters.end_date}
-            onChange={handleInputChange}
-          />
         </div>
 
         <button
@@ -374,7 +370,6 @@ const OrderedPassengerListsTable = () => {
             })}
           </div>
         )}
-
 
         {!error && (
           <div className="ag-theme-alpine ordered-passenger-lists__grid">
