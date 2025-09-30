@@ -68,7 +68,7 @@ const RouteManagement = ({
             </button>
           </div>
           
-            <PassengerList  />
+            <PassengerList passengers={[]} />
           
         </div>
 
