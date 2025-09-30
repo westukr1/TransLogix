@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import DriverList from "./DriverList";
 import VehicleList from "./VehicleList";
 import PassengerRequestsTable from "./PassengerRequestsTable";
-import PassengerList from "./PassengerList";
+import OrderedPassengerListsTable from "./OrderedPassengerListsTable";
 
 const RouteManagement = ({
   drivers = [],
@@ -67,9 +67,15 @@ const RouteManagement = ({
               {t("ordered_passenger_list")}
             </button>
           </div>
+<<<<<<< HEAD
           
             <PassengerList passengers={[]} />
           
+=======
+
+          <OrderedPassengerListsTable />
+
+>>>>>>> 3c3480d93107364f50e0b766ef33dd91f02ef0df
         </div>
 
         <div className="rm-center-column">
