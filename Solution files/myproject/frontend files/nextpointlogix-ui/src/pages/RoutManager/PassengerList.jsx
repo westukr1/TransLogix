@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -11,21 +11,18 @@ import axios from "../../utils/axiosInstance";
 import { API_ENDPOINTS } from "../../config/apiConfig";
 
 import dayjs from "dayjs";
+import { DAY_IN_MS, getInitialDateRange } from "../../utils/dateRange";
 
 import "./PassengerList.css";
 
 const PassengerList = ({ passengers }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
+  const initialDateRange = useMemo(() => getInitialDateRange(), []);
   const userLanguage = localStorage.getItem("i18nextLng") || "en"; // Задайте за замовчуванням "en"
 
-  const [startDate, setStartDate] = useState(tomorrow);
-  const [endDate, setEndDate] = useState(
-    new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000)
-  );
+  const [startDate, setStartDate] = useState(initialDateRange.start);
+  const [endDate, setEndDate] = useState(initialDateRange.end);
   const [passengerData, setPassengerData] = useState([]);
   const [requests, setRequests] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -124,7 +121,7 @@ useEffect(() => {
   const handleStartDateChange = (date) => {
     setStartDate(date);
     if (!allowExtendedInterval) {
-      setEndDate(new Date(date.getTime() + 24 * 60 * 60 * 1000));
+      setEndDate(new Date(date.getTime() + DAY_IN_MS));
     }
   };
 
