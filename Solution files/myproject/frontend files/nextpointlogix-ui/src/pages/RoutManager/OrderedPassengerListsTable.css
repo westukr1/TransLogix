@@ -19,7 +19,9 @@
 
 .ordered-passenger-lists__filter-group label {
   font-weight: 600;
+
   color: #ffffff;
+
 }
 
 .ordered-passenger-lists__filter-group input,
@@ -49,6 +51,7 @@
   border: 1px solid #e0e6ed;
   border-radius: 8px;
   overflow: hidden;
+
   display: flex;
   flex-direction: column;
 }

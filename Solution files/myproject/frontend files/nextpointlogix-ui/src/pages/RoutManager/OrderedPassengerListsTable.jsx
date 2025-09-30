@@ -4,11 +4,9 @@ import dayjs from "dayjs";
 
 import axios from "../../utils/axiosInstance";
 import { API_ENDPOINTS } from "../../config/apiConfig";
-
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-
 import "./OrderedPassengerListsTable.css";
 
 const FILTER_STORAGE_KEY = "orderedPassengerListsFilters";
@@ -64,7 +62,6 @@ const OrderedPassengerListsTable = () => {
   const [orderedLists, setOrderedLists] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
   const defaultColDef = useMemo(
     () => ({
       flex: 1,
@@ -166,7 +163,6 @@ const OrderedPassengerListsTable = () => {
       })}</span>`,
     [t]
   );
-
   const filterRequestParams = useMemo(() => {
     const parsedIsActive =
       filters.is_active === ""
@@ -250,6 +246,7 @@ const OrderedPassengerListsTable = () => {
     <div className="ordered-passenger-lists">
       <div className="ordered-passenger-lists__filters">
         <div className="ordered-passenger-lists__filter-group">
+
           <label htmlFor="start_date">
             {t("start_date", { defaultValue: "Start date" })}
           </label>
@@ -273,6 +270,7 @@ const OrderedPassengerListsTable = () => {
             value={filters.end_date}
             onChange={handleInputChange}
           />
+
         </div>
 
         <div className="ordered-passenger-lists__filter-group">
@@ -304,6 +302,7 @@ const OrderedPassengerListsTable = () => {
         </div>
 
         <div className="ordered-passenger-lists__filter-group">
+
           <label htmlFor="direction">
             {t("direction", { defaultValue: "Direction" })}
           </label>
@@ -345,6 +344,7 @@ const OrderedPassengerListsTable = () => {
               {t("inactive", { defaultValue: "Inactive" })}
             </option>
           </select>
+
         </div>
 
         <button
@@ -382,6 +382,7 @@ const OrderedPassengerListsTable = () => {
               overlayNoRowsTemplate={noRowsOverlayTemplate}
             />
           </div>
+
         )}
       </div>
     </div>
