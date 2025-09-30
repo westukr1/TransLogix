@@ -14,6 +14,8 @@ import dayjs from "dayjs";
 
 import "./PassengerList.css";
 
+const DATE_RANGE_STORAGE_KEY = "passengerListDateRange";
+
 const PassengerList = ({ passengers }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -26,6 +28,7 @@ const PassengerList = ({ passengers }) => {
   const [endDate, setEndDate] = useState(
     new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000)
   );
+  const [datesInitialized, setDatesInitialized] = useState(false);
   const [passengerData, setPassengerData] = useState([]);
   const [requests, setRequests] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -47,19 +50,51 @@ const PassengerList = ({ passengers }) => {
     startAddress: null,
     endAddress: null,
   });
-// 🔄 Отримання налаштувань маршруту
-useEffect(() => {
-  const fetchRouteSettings = async () => {
-    try {
-      const response = await axios.get(API_ENDPOINTS.getSettings);
-      setRouteSettings(response.data);
-    } catch (error) {
-      console.error("Error fetching route settings:", error);
-    }
-  };
+  useEffect(() => {
+    const storedRange = sessionStorage.getItem(DATE_RANGE_STORAGE_KEY);
 
-  fetchRouteSettings();
-}, []);
+    if (storedRange) {
+      try {
+        const parsedRange = JSON.parse(storedRange);
+        if (parsedRange.startDate && parsedRange.endDate) {
+          setStartDate(new Date(parsedRange.startDate));
+          setEndDate(new Date(parsedRange.endDate));
+        }
+      } catch (error) {
+        console.error("Failed to parse stored date range:", error);
+      }
+    }
+
+    setDatesInitialized(true);
+  }, []);
+
+  useEffect(() => {
+    if (!datesInitialized || !startDate || !endDate) {
+      return;
+    }
+
+    sessionStorage.setItem(
+      DATE_RANGE_STORAGE_KEY,
+      JSON.stringify({
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+      })
+    );
+  }, [startDate, endDate, datesInitialized]);
+
+  // 🔄 Отримання налаштувань маршруту
+  useEffect(() => {
+    const fetchRouteSettings = async () => {
+      try {
+        const response = await axios.get(API_ENDPOINTS.getSettings);
+        setRouteSettings(response.data);
+      } catch (error) {
+        console.error("Error fetching route settings:", error);
+      }
+    };
+
+    fetchRouteSettings();
+  }, []);
 
   const fetchRequests = () => {
     const start = dayjs(startDate).format("YYYY-MM-DD HH:mm:ss");
@@ -70,25 +105,25 @@ useEffect(() => {
       end_date: end,
     });
     axios
-    .get(API_ENDPOINTS.getFilteredTripRequests, {
-      params: {
-        start_date: start,
-        end_date: end,
-        search: searchQuery,
-      },
-    })
-    .then((response) => {
-      const data = response.data.map((item) => ({
-        ...item,
-        is_selected: false,
-      }));
-      setAllRequests(data);
-      setUnselectedRequests(data);
-      setSelectedRequests([]);
-      applyFilters(data);
-    })
-    .catch((error) => console.error("Error fetching requests data:", error));
-};
+      .get(API_ENDPOINTS.getFilteredTripRequests, {
+        params: {
+          start_date: start,
+          end_date: end,
+          search: searchQuery,
+        },
+      })
+      .then((response) => {
+        const data = response.data.map((item) => ({
+          ...item,
+          is_selected: false,
+        }));
+        setAllRequests(data);
+        setUnselectedRequests(data);
+        setSelectedRequests([]);
+        applyFilters(data);
+      })
+      .catch((error) => console.error("Error fetching requests data:", error));
+  };
 
  
   const applyFilters = (data) => {
@@ -122,6 +157,10 @@ useEffect(() => {
   ]);
 
   const handleStartDateChange = (date) => {
+    if (!date) {
+      return;
+    }
+
     setStartDate(date);
     if (!allowExtendedInterval) {
       setEndDate(new Date(date.getTime() + 24 * 60 * 60 * 1000));
@@ -129,6 +168,10 @@ useEffect(() => {
   };
 
   const handleEndDateChange = (date) => {
+    if (!date) {
+      return;
+    }
+
     setEndDate(date);
   };
 
@@ -246,6 +289,39 @@ useEffect(() => {
         className="form-control"
         style={{ marginBottom: "20px" }}
       />
+      <div className="date-range-picker">
+        <div className="date-picker-field">
+          <label>{t("start_date")}</label>
+          <DatePicker
+            selected={startDate}
+            onChange={handleStartDateChange}
+            selectsStart
+            startDate={startDate}
+            endDate={endDate}
+            showTimeSelect
+            timeIntervals={15}
+            timeFormat="HH:mm"
+            dateFormat="dd.MM.yyyy HH:mm"
+            className="date-picker-input"
+          />
+        </div>
+        <div className="date-picker-field">
+          <label>{t("end_date")}</label>
+          <DatePicker
+            selected={endDate}
+            onChange={handleEndDateChange}
+            selectsEnd
+            startDate={startDate}
+            endDate={endDate}
+            minDate={startDate}
+            showTimeSelect
+            timeIntervals={15}
+            timeFormat="HH:mm"
+            dateFormat="dd.MM.yyyy HH:mm"
+            className="date-picker-input"
+          />
+        </div>
+      </div>
       <div className="filters">
         <label>
           <input
