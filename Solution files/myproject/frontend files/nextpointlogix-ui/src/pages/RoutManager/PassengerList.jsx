@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
 
+import React, { useEffect, useMemo, useState } from "react";
 
 
 import { useTranslation } from "react-i18next";
@@ -39,6 +39,7 @@ import { API_ENDPOINTS } from "../../config/apiConfig";
 
 
 import dayjs from "dayjs";
+import { DAY_IN_MS, getInitialDateRange } from "../../utils/dateRange";
 
 
 
@@ -55,26 +56,12 @@ const PassengerList = ({ passengers }) => {
 
 
   const navigate = useNavigate();
-
-
-
   const initialDateRange = useMemo(() => getInitialDateRange(), []);
+  const userLanguage = localStorage.getItem("i18nextLng") || "en"; // Задайте за замовчуванням "en"
 
+  const [startDate, setStartDate] = useState(initialDateRange.start);
+  const [endDate, setEndDate] = useState(initialDateRange.end);
 
-
-  const userLanguage =
-
-
-
-    (typeof window !== "undefined" && localStorage.getItem("i18nextLng")) || "en";
-
-
-
-  const [startDate, setStartDate] = useState(tomorrow);
-  const [endDate, setEndDate] = useState(
-    new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000)
-  );
-  const [datesInitialized, setDatesInitialized] = useState(false);
   const [passengerData, setPassengerData] = useState([]);
 
 
@@ -368,19 +355,7 @@ const PassengerList = ({ passengers }) => {
 
     if (!allowExtendedInterval) {
 
-
-
       setEndDate(new Date(date.getTime() + DAY_IN_MS));
-
-
-
-    } else if (endDate < date) {
-
-
-
-      setEndDate(date);
-
-
 
     }
 

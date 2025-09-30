@@ -26,6 +26,12 @@
   min-width: 0; /* Забезпечує правильне масштабування колонок */
 }
 
+.rm-middle-column {
+  align-self: flex-start;
+  height: auto;
+  overflow: visible;
+}
+
 .rm-route-button {
   width: 100%;
   padding: 10px;

@@ -5,6 +5,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import dayjs from "dayjs";
 import axios from "../../utils/axiosInstance";
 import { API_ENDPOINTS } from "../../config/apiConfig";
+import { DAY_IN_MS, getInitialDateRange } from "../../utils/dateRange";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -31,24 +32,21 @@ const PassengerRequestsTable = () => {
     }
   }, []);
 
-  const defaultStartDate = useMemo(
-    () => dayjs().add(1, "day").startOf("day"),
-    []
-  );
+  const initialDateRange = useMemo(() => getInitialDateRange(), []);
 
   // 2) Стани фільтрів (ініціалізуємо з savedFilters, якщо валідні)
   const [startDate, setStartDate] = useState(() => {
     if (savedFilters?.startDate && dayjs(savedFilters.startDate).isValid()) {
       return dayjs(savedFilters.startDate).toDate();
     }
-    return defaultStartDate.toDate();
+    return initialDateRange.start;
   });
 
   const [endDate, setEndDate] = useState(() => {
     if (savedFilters?.endDate && dayjs(savedFilters.endDate).isValid()) {
       return dayjs(savedFilters.endDate).toDate();
     }
-    return defaultStartDate.add(1, "day").toDate();
+    return initialDateRange.end;
   });
 
   const [allowExtendedInterval, setAllowExtendedInterval] = useState(
@@ -127,7 +125,7 @@ const PassengerRequestsTable = () => {
     if (!date) return;
     setStartDate(date);
     if (!allowExtendedInterval) {
-      setEndDate(dayjs(date).add(1, "day").toDate());
+      setEndDate(new Date(date.getTime() + DAY_IN_MS));
     }
   };
 
@@ -139,7 +137,7 @@ const PassengerRequestsTable = () => {
   const toggleAllowExtendedInterval = () =>
     setAllowExtendedInterval((prev) => {
       const next = !prev;
-      if (!next) setEndDate(dayjs(startDate).add(1, "day").toDate());
+      if (!next) setEndDate(new Date(startDate.getTime() + DAY_IN_MS));
       return next;
     });
 
