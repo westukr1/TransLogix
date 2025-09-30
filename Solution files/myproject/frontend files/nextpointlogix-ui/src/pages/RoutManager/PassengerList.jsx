@@ -358,7 +358,7 @@ const PassengerList = ({ passengers }) => {
       </div>
       <div
         className="ag-theme-alpine-rm"
-        style={{ width: "100%", height: "50%", marginTop: "5px" }}
+        style={{ width: "100%", height: "70%", marginTop: "5px" }}
       >
         <AgGridReact
           key={JSON.stringify(unselectedRequests)}

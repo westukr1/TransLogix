@@ -49,6 +49,7 @@
   border: 1px solid #e0e6ed;
   border-radius: 8px;
   overflow: hidden;
+
   display: flex;
   flex-direction: column;
 }
@@ -66,6 +67,7 @@
   --ag-odd-row-background-color: #fbfdff;
   --ag-borders: solid 1px #e5e9f0;
   font-size: 14px;
+
 }
 
 .ordered-passenger-lists__empty {
