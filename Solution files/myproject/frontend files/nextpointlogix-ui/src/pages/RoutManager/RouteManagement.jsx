@@ -49,27 +49,30 @@ const RouteManagement = ({
 
         <div className="rm-middle-column-table">
           <PassengerRequestsTable />
-  <div className="rm-middle-column-buttons">
-    <button
-      onClick={() =>
-        navigate("/passengers-grouping-view/grouping-list-to-route")
-      }
-      className="nav-button"
-    >
-      {t("grouping_list_to_route")}
-    </button>
-    <button
-      onClick={() =>
-        navigate("/ordered-passenger-list/ordered-passenger-list")
-      }
-      className="nav-button"
-    >
-      {t("ordered_passenger_list")}
-    </button>
-  </div>
 
-  <OrderedPassengerListsTable />
-</div>
+          <div className="rm-middle-column-buttons">
+            <button
+              onClick={() =>
+                navigate("/passengers-grouping-view/grouping-list-to-route")
+              }
+              className="nav-button"
+            >
+              {t("grouping_list_to_route")}
+            </button>
+            <button
+              onClick={() =>
+                navigate("/ordered-passenger-list/ordered-passenger-list")
+              }
+              className="nav-button"
+            >
+              {t("ordered_passenger_list")}
+            </button>
+          </div>
+
+          <OrderedPassengerListsTable />
+
+        </div>
+
 
         <div className="rm-center-column">
           <button

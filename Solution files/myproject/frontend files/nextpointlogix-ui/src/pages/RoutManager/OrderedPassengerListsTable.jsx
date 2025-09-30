@@ -5,6 +5,12 @@ import dayjs from "dayjs";
 import axios from "../../utils/axiosInstance";
 import { API_ENDPOINTS } from "../../config/apiConfig";
 
+
+import { AgGridReact } from "ag-grid-react";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+
+
 import "./OrderedPassengerListsTable.css";
 
 const FILTER_STORAGE_KEY = "orderedPassengerListsFilters";
@@ -60,6 +66,110 @@ const OrderedPassengerListsTable = () => {
   const [orderedLists, setOrderedLists] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+
+  const defaultColDef = useMemo(
+    () => ({
+      flex: 1,
+      minWidth: 120,
+      sortable: true,
+      filter: true,
+      resizable: true,
+    }),
+    []
+  );
+
+  const dateValueFormatter = useMemo(
+    () =>
+      ({ value }) =>
+        value && dayjs(value).isValid()
+          ? dayjs(value).format("YYYY-MM-DD HH:mm")
+          : "-",
+    []
+  );
+
+  const statusValueFormatter = useMemo(
+    () =>
+      ({ value }) => {
+        if (typeof value !== "boolean") {
+          return "-";
+        }
+        return value
+          ? t("active", { defaultValue: "Active" })
+          : t("inactive", { defaultValue: "Inactive" });
+      },
+    [t]
+  );
+
+  const columnDefs = useMemo(
+    () => [
+      {
+        headerName: t("ID", { defaultValue: "ID" }),
+        field: "id",
+        filter: "agNumberColumnFilter",
+        maxWidth: 120,
+      },
+      {
+        headerName: t("direction", { defaultValue: "Direction" }),
+        field: "direction",
+        filter: "agTextColumnFilter",
+      },
+      {
+        headerName: t("estimated_start_time", { defaultValue: "Start time" }),
+        field: "estimated_start_time",
+        valueFormatter: dateValueFormatter,
+        filter: false,
+        minWidth: 180,
+      },
+      {
+        headerName: t("estimated_end_time", { defaultValue: "End time" }),
+        field: "estimated_end_time",
+        valueFormatter: dateValueFormatter,
+        filter: false,
+        minWidth: 180,
+      },
+      {
+        headerName: t("start_city", { defaultValue: "Start city" }),
+        field: "start_city",
+        valueFormatter: ({ value }) => value || "-",
+      },
+      {
+        headerName: t("end_city", { defaultValue: "End city" }),
+        field: "end_city",
+        valueFormatter: ({ value }) => value || "-",
+      },
+      {
+        headerName: t("start_passenger_last_name", {
+          defaultValue: "Start passenger",
+        }),
+        field: "start_passenger_last_name",
+        valueFormatter: ({ value }) => value || "-",
+      },
+      {
+        headerName: t("end_passenger_last_name", {
+          defaultValue: "End passenger",
+        }),
+        field: "end_passenger_last_name",
+        valueFormatter: ({ value }) => value || "-",
+      },
+      {
+        headerName: t("status", { defaultValue: "Status" }),
+        field: "is_active",
+        valueFormatter: statusValueFormatter,
+        filter: "agSetColumnFilter",
+      },
+    ],
+    [t, dateValueFormatter, statusValueFormatter]
+  );
+
+  const noRowsOverlayTemplate = useMemo(
+    () =>
+      `<span class="ordered-passenger-lists__empty">${t("no_data", {
+        defaultValue: "No data available",
+      })}</span>`,
+    [t]
+  );
+
 
   const filterRequestParams = useMemo(() => {
     const parsedIsActive =
@@ -265,59 +375,19 @@ const OrderedPassengerListsTable = () => {
           </div>
         )}
 
-        {!loading && !error && (
-          <table className="ordered-passenger-lists__table">
-            <thead>
-              <tr>
-                <th>{t("ID", { defaultValue: "ID" })}</th>
-                <th>{t("direction", { defaultValue: "Direction" })}</th>
-                <th>{t("estimated_start_time", { defaultValue: "Start time" })}</th>
-                <th>{t("estimated_end_time", { defaultValue: "End time" })}</th>
-                <th>{t("start_city", { defaultValue: "Start city" })}</th>
-                <th>{t("end_city", { defaultValue: "End city" })}</th>
-                <th>{t("start_passenger_last_name", { defaultValue: "Start passenger" })}</th>
-                <th>{t("end_passenger_last_name", { defaultValue: "End passenger" })}</th>
-                <th>{t("status", { defaultValue: "Status" })}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orderedLists.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="ordered-passenger-lists__empty">
-                    {t("no_data", { defaultValue: "No data available" })}
-                  </td>
-                </tr>
-              ) : (
-                orderedLists.map((list) => (
-                  <tr key={list.id}>
-                    <td>{list.id}</td>
-                    <td>{list.direction}</td>
-                    <td>
-                      {list.estimated_start_time
-                        ? dayjs(list.estimated_start_time).format("YYYY-MM-DD HH:mm")
-                        : "-"}
-                    </td>
-                    <td>
-                      {list.estimated_end_time
-                        ? dayjs(list.estimated_end_time).format("YYYY-MM-DD HH:mm")
-                        : "-"}
-                    </td>
-                    <td>{list.start_city || "-"}</td>
-                    <td>{list.end_city || "-"}</td>
-                    <td>{list.start_passenger_last_name || "-"}</td>
-                    <td>{list.end_passenger_last_name || "-"}</td>
-                    <td>
-                      {typeof list.is_active === "boolean"
-                        ? list.is_active
-                          ? t("active", { defaultValue: "Active" })
-                          : t("inactive", { defaultValue: "Inactive" })
-                        : "-"}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+
+        {!error && (
+          <div className="ag-theme-alpine ordered-passenger-lists__grid">
+            <AgGridReact
+              rowData={orderedLists}
+              columnDefs={columnDefs}
+              defaultColDef={defaultColDef}
+              animateRows
+              suppressCellFocus
+              overlayNoRowsTemplate={noRowsOverlayTemplate}
+            />
+          </div>
+
         )}
       </div>
     </div>
