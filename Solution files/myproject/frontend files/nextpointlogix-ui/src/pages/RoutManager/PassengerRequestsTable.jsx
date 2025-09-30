@@ -150,14 +150,14 @@ const PassengerRequestsTable = () => {
   // 9) Колонки AG Grid
   const columnDefs = useMemo(
     () => [
-      { headerName: t("request_id"), field: "id", maxWidth: 100 },
-      { headerName: t("passenger_first_name"), field: "passenger_first_name", minWidth: 140 },
-      { headerName: t("passenger_last_name"), field: "passenger_last_name", minWidth: 140 },
-      { headerName: t("passenger_phone"), field: "passenger_phone", minWidth: 160 },
+      { headerName: t("request_id"), field: "id", maxWidth: 50 },
+      { headerName: t("passenger_first_name"), field: "passenger_first_name", width: 80 },
+      { headerName: t("passenger_last_name"), field: "passenger_last_name", width: 80 },
+      { headerName: t("passenger_phone"), field: "passenger_phone", width: 120 },
       {
         headerName: t("direction"),
         field: "direction",
-        minWidth: 140,
+        minWidth: 100,
         cellStyle: { fontWeight: "bold" },
       },
       {
@@ -232,7 +232,7 @@ const PassengerRequestsTable = () => {
   );
 
   return (
-    <div className="rm-passenger-list">
+    <div className="rm-passenger-list" style={{ height: "630px", width: "97%" }}>
       <h3>{t("passenger_trip_requests", "Passenger requests")}</h3>
 
       <div className="passenger-requests-controls">
@@ -339,12 +339,13 @@ const PassengerRequestsTable = () => {
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           pagination
-          paginationPageSize={10}
+          paginationPageSize={20}
           domLayout="autoHeight"
           animateRows
           overlayNoRowsTemplate={overlayNoRowsTemplate}
           overlayLoadingTemplate={overlayLoadingTemplate}
           suppressCellFocus
+          loadingOverlayComponentParams={{ loadingMessage: t("loading") }}
         />
       </div>
     </div>

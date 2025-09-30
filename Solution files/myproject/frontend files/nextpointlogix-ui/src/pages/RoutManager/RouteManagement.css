@@ -48,13 +48,17 @@
   background-color: #3a3a3a;
 }
 
-.rm-passenger-list,
+rm-passenger-list,
 .rm-drivers-list,
 .rm-vehicles-list {
   list-style-type: none;
   padding: 0;
 }
+.rm-middle-column-table {
+  height: auto;
 
+  overflow-y: auto;
+}
 .rm-passenger-list li,
 .rm-drivers-list li,
 .rm-vehicles-list li {
