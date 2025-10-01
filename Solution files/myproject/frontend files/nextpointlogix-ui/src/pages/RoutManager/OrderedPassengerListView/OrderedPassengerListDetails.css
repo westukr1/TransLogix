@@ -61,6 +61,7 @@
   color: #fecaca;
 }
 
+
 .ordered-passenger-list-details__content {
   display: grid;
   grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
@@ -89,11 +90,13 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+
   min-height: 360px;
 }
 
 .ordered-passenger-list-details__map-wrapper {
   flex: 1;
+
 }
 
 .ordered-passenger-list-details__grid {
@@ -121,6 +124,7 @@
   font-size: 1rem;
 }
 
+
 @media (max-width: 1280px) {
   .ordered-passenger-list-details__content {
     grid-template-columns: 1fr;
@@ -131,3 +135,4 @@
     min-height: 280px;
   }
 }
+

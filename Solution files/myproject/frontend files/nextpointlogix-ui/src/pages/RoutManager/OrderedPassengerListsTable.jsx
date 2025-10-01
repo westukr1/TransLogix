@@ -11,7 +11,6 @@ import dayjs from "dayjs";
 
 import axios from "../../utils/axiosInstance";
 import { API_ENDPOINTS } from "../../config/apiConfig";
-
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -134,6 +133,17 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
 
   const columnDefs = useMemo(
     () => [
+
+       {
+        headerName: t("actions", { defaultValue: "Actions" }),
+        colId: "actions",
+        filter: false,
+        sortable: false,
+        minWidth: 140,
+        maxWidth: 160,
+        cellRenderer: "selectButtonRenderer",
+      },
+
       {
         headerName: t("ID", { defaultValue: "ID" }),
         field: "id",
@@ -189,15 +199,7 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
         valueFormatter: statusValueFormatter,
         filter: "agSetColumnFilter",
       },
-      {
-        headerName: t("actions", { defaultValue: "Actions" }),
-        colId: "actions",
-        filter: false,
-        sortable: false,
-        minWidth: 140,
-        maxWidth: 160,
-        cellRenderer: "selectButtonRenderer",
-      },
+
     ],
     [t, dateValueFormatter, statusValueFormatter]
   );
@@ -398,13 +400,23 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
           </select>
         </div>
 
-        <button
+        <button style={{ backgroundColor: "black", color: "white", width: "180px", height: "30px", fontSize: "14px", marginLeft: "5px" }}
+
           type="button"
           className="ordered-passenger-lists__reset"
           onClick={handleResetFilters}
         >
           {t("reset_filters", { defaultValue: "Reset filters" })}
         </button>
+
+        <button style={{ backgroundColor: "#007bff", width: "90px", height: "30px", fontSize: "14px", marginLeft: "5px" }}
+              type="button"
+              onClick={fetchOrderedPassengerLists} 
+              className="nav-button"
+            >
+              {t("refresh", { defaultValue: "Refresh" })}
+            </button>
+
       </div>
 
       <div className="ordered-passenger-lists__table-wrapper">
@@ -422,16 +434,23 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
           </div>
         )}
 
-        {!error && (
+        {!error && !loading && (
+
+
           <div className="ag-theme-alpine ordered-passenger-lists__grid">
             <AgGridReact
               rowData={orderedLists}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
-              frameworkComponents={frameworkComponents}
+
               animateRows
               suppressCellFocus
               overlayNoRowsTemplate={noRowsOverlayTemplate}
+              components={frameworkComponents}            // ✅ для AG Grid v28+
+              pagination={true}
+              paginationPageSize={20}
+              domLayout="autoHeight"
+              
             />
           </div>
         )}
