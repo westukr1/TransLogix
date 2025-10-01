@@ -37,7 +37,7 @@
 
 .ordered-passenger-list-details__summary {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1rem;
   background: rgba(255, 255, 255, 0.08);
   padding: 1rem;
@@ -110,7 +110,7 @@
 }
 
 .ordered-passenger-list-details__grid .ag-header-cell-label {
-  color: #f2f3f6;
+  color: #fafafb;
   font-weight: 600;
 }
 
