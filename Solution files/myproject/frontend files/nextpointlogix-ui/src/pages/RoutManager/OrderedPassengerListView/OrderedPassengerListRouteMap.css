@@ -1,0 +1,44 @@
+.ordered-passenger-list-route-map__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  padding: 1rem;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.65);
+  color: #e2e8f0;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.ordered-passenger-list-route-map__status--error {
+  background: rgba(220, 38, 38, 0.2);
+  color: #fecaca;
+}
+
+.ordered-passenger-list-details__map-section .ordered-passenger-list-route-map__status {
+  min-height: 100%;
+}
+
+.ordered-passenger-list-details__map-wrapper {
+  position: relative;
+  flex: 1;
+  min-height: 360px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.ordered-passenger-list-details__map-wrapper > div {
+  height: 100%;
+}
+
+@media (max-width: 1024px) {
+  .ordered-passenger-list-route-map__status {
+    min-height: 240px;
+  }
+
+  .ordered-passenger-list-details__map-wrapper {
+    min-height: 280px;
+  }
+}
