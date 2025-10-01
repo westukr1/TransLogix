@@ -35,6 +35,16 @@ const RouteManagement = ({
     console.log("Submitting routes...");
   };
 
+  const handleOpenOrderedListDetails = (orderedList) => {
+    if (!orderedList?.id) {
+      return;
+    }
+
+    navigate(`/ordered-passenger-lists/${orderedList.id}`, {
+      state: { orderedList },
+    });
+  };
+
   return (
     <div className="rm-route-management-container">
       <TopNavBar />
@@ -58,10 +68,20 @@ const RouteManagement = ({
             >
               {t("grouping_list_to_route")}
             </button>
-         
 
-          <OrderedPassengerListsTable ref={orderedPassengerListsRef} />
+            <button
+              type="button"
+              onClick={() => orderedPassengerListsRef.current?.refresh()}
+              className="nav-button"
+            >
+              {t("refresh", { defaultValue: "Refresh" })}
+            </button>
+          </div>
 
+          <OrderedPassengerListsTable
+            ref={orderedPassengerListsRef}
+            onSelectOrderedList={handleOpenOrderedListDetails}
+          />
         </div>
 
 
