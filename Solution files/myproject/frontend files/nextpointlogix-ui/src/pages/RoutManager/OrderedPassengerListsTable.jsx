@@ -1,4 +1,4 @@
-
+﻿
 import React, {
   forwardRef,
   useCallback,
@@ -363,6 +363,7 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
           />
         </div>
 
+        <div className="ordered-passenger-lists__filter-group">
           <label htmlFor="direction">
             {t("direction", { defaultValue: "Direction" })}
           </label>
@@ -415,7 +416,7 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
         </button>
         <button style={{ backgroundColor: "#007bff", width: "90px", height: "30px", fontSize: "14px", marginLeft: "5px" }}
               type="button"
-              onClick={() => fetchOrderedPassengerLists.current?.refresh()}
+              onClick={fetchOrderedPassengerLists} 
               className="nav-button"
             >
               {t("refresh", { defaultValue: "Refresh" })}
@@ -437,7 +438,7 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
           </div>
         )}
 
-        {!error && (
+        {!error && !loading && (
           <div className="ag-theme-alpine ordered-passenger-lists__grid">
             <AgGridReact
               rowData={orderedLists}
@@ -457,3 +458,4 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
 OrderedPassengerListsTable.displayName = "OrderedPassengerListsTable";
 
 export default OrderedPassengerListsTable;
+
