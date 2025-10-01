@@ -16,6 +16,8 @@ import { API_ENDPOINTS } from "../../config/apiConfig";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+
+
 import "./OrderedPassengerListsTable.css";
 
 const FILTER_STORAGE_KEY = "orderedPassengerListsFilters";
@@ -65,7 +67,7 @@ const formatForRequest = (value) =>
     : null;
 
 
-const OrderedPassengerListsTable = forwardRef((_, ref) => {
+const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => {
 
   const { t } = useTranslation();
 
@@ -106,6 +108,35 @@ const OrderedPassengerListsTable = forwardRef((_, ref) => {
       },
     [t]
   );
+
+
+  const handleSelectOrderedList = useCallback(
+    (list) => {
+      if (typeof onSelectOrderedList === "function") {
+        onSelectOrderedList(list);
+        return;
+      }
+
+      console.log("Ordered passenger list selected", list);
+    },
+    [onSelectOrderedList]
+  );
+
+  const frameworkComponents = useMemo(
+    () => ({
+      selectButtonRenderer: (params) => (
+        <button
+          type="button"
+          className="ordered-passenger-lists__select-button"
+          onClick={() => handleSelectOrderedList(params.data)}
+        >
+          {t("select", { defaultValue: "Select" })}
+        </button>
+      ),
+    }),
+    [handleSelectOrderedList, t]
+  );
+
 
   const columnDefs = useMemo(
     () => [
@@ -164,6 +195,16 @@ const OrderedPassengerListsTable = forwardRef((_, ref) => {
         valueFormatter: statusValueFormatter,
         filter: "agSetColumnFilter",
       },
+      {
+        headerName: t("actions", { defaultValue: "Actions" }),
+        colId: "actions",
+        filter: false,
+        sortable: false,
+        minWidth: 140,
+        maxWidth: 160,
+        cellRenderer: "selectButtonRenderer",
+      },
+
     ],
     [t, dateValueFormatter, statusValueFormatter]
   );
@@ -233,7 +274,6 @@ const OrderedPassengerListsTable = forwardRef((_, ref) => {
     fetchOrderedPassengerLists();
   }, [fetchOrderedPassengerLists]);
 
-
   const handleInputChange = (event) => {
     const { name, value } = event.target;
 
@@ -293,7 +333,6 @@ const OrderedPassengerListsTable = forwardRef((_, ref) => {
             value={filters.end_date}
             onChange={handleInputChange}
           />
-
         </div>
 
         <div className="ordered-passenger-lists__filter-group">
@@ -323,8 +362,6 @@ const OrderedPassengerListsTable = forwardRef((_, ref) => {
             placeholder={t("search_passengers", { defaultValue: "Search passengers" })}
           />
         </div>
-
-        <div className="ordered-passenger-lists__filter-group">
 
           <label htmlFor="direction">
             {t("direction", { defaultValue: "Direction" })}
@@ -367,7 +404,6 @@ const OrderedPassengerListsTable = forwardRef((_, ref) => {
               {t("inactive", { defaultValue: "Inactive" })}
             </option>
           </select>
-
         </div>
 
         <button
@@ -405,15 +441,12 @@ const OrderedPassengerListsTable = forwardRef((_, ref) => {
               overlayNoRowsTemplate={noRowsOverlayTemplate}
             />
           </div>
-
         )}
       </div>
     </div>
   );
-
 });
 
 OrderedPassengerListsTable.displayName = "OrderedPassengerListsTable";
-
 
 export default OrderedPassengerListsTable;

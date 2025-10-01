@@ -69,9 +69,7 @@ const RouteManagement = ({
             </button>
           </div>
 
-
           <OrderedPassengerListsTable ref={orderedPassengerListsRef} />
-
 
         </div>
 
