@@ -70,3 +70,5 @@ coverage.xml
 *.bak
 *.tmp
 *.swp
+
+**/node_modules/
