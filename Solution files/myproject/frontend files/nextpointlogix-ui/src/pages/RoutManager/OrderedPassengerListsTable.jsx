@@ -449,8 +449,10 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
               suppressCellFocus
               overlayNoRowsTemplate={noRowsOverlayTemplate}
               components={frameworkComponents}            // ✅ для AG Grid v28+
-              // або, якщо у тебе стара версія:
-              // frameworkComponents={frameworkComponents} // ✅ для старіших версій
+              pagination={true}
+              paginationPageSize={20}
+              domLayout="autoHeight"
+              
             />
           </div>
         )}

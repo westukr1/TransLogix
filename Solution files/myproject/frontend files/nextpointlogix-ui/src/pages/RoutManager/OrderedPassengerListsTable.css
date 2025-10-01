@@ -66,6 +66,10 @@
   --ag-odd-row-background-color: #fbfdff;
   --ag-borders: solid 1px #e5e9f0;
   font-size: 14px;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  overflow-x: hidden;
 }
 
 .ordered-passenger-lists__select-button {
