@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import TopNavBar from "./TopNavBar";
 import "./RouteManagement.css";
 
@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import DriverList from "./DriverList";
 import VehicleList from "./VehicleList";
 import PassengerRequestsTable from "./PassengerRequestsTable";
-import PassengerList from "./PassengerList";
+import OrderedPassengerListsTable from "./OrderedPassengerListsTable";
 
 const RouteManagement = ({
   drivers = [],
@@ -17,6 +17,7 @@ const RouteManagement = ({
   copiedRoutes = [],
 }) => {
   const [selectedRoutes, setSelectedRoutes] = useState([]);
+  const orderedPassengerListsRef = useRef(null);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -32,6 +33,16 @@ const RouteManagement = ({
 
   const handleSubmitRoutes = () => {
     console.log("Submitting routes...");
+  };
+
+  const handleOpenOrderedListDetails = (orderedList) => {
+    if (!orderedList?.id) {
+      return;
+    }
+
+    navigate(`/ordered-passenger-lists/${orderedList.id}`, {
+      state: { orderedList },
+    });
   };
 
   return (
@@ -59,17 +70,19 @@ const RouteManagement = ({
               {t("grouping_list_to_route")}
             </button>
             <button
-              onClick={() =>
-                navigate("/ordered-passenger-list/ordered-passenger-list")
-              }
+              type="button"
+              onClick={() => orderedPassengerListsRef.current?.refresh()}
               className="nav-button"
             >
-              {t("ordered_passenger_list")}
+              {t("refresh", { defaultValue: "Refresh" })}
             </button>
           </div>
-          
-            <PassengerList  />
-          
+
+          <OrderedPassengerListsTable
+            ref={orderedPassengerListsRef}
+            onSelectOrderedList={handleOpenOrderedListDetails}
+          />
+
         </div>
 
         <div className="rm-center-column">

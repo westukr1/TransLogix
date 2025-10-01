@@ -1,0 +1,103 @@
+.ordered-passenger-lists {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ordered-passenger-lists__filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.ordered-passenger-lists__filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ordered-passenger-lists__filter-group label {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.ordered-passenger-lists__filter-group input,
+.ordered-passenger-lists__filter-group select {
+  padding: 8px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.ordered-passenger-lists__reset {
+  padding: 10px 16px;
+  background-color: #f0f4f8;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.ordered-passenger-lists__reset:hover {
+  background-color: #dfe8f3;
+}
+
+.ordered-passenger-lists__table-wrapper {
+  background: #ffffff;
+  border: 1px solid #e0e6ed;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ordered-passenger-lists__grid {
+  width: 100%;
+  min-height: 420px;
+  height: 100%;
+}
+
+.ordered-passenger-lists__grid.ag-theme-alpine {
+  --ag-foreground-color: #1f2933;
+  --ag-background-color: #ffffff;
+  --ag-header-background-color: #1f2933;
+  --ag-header-foreground-color: #ffffff;
+  --ag-odd-row-background-color: #fbfdff;
+  --ag-borders: solid 1px #e5e9f0;
+  font-size: 14px;
+}
+
+.ordered-passenger-lists__select-button {
+  padding: 6px 12px;
+  background-color: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.ordered-passenger-lists__select-button:hover {
+  background-color: #1d4ed8;
+}
+
+.ordered-passenger-lists__empty {
+  text-align: center;
+  padding: 20px 0;
+  color: #6b7280;
+}
+
+.ordered-passenger-lists__status {
+  padding: 16px;
+  text-align: center;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+.ordered-passenger-lists__status--error {
+  color: #c53030;
+  background-color: #fff5f5;
+}
