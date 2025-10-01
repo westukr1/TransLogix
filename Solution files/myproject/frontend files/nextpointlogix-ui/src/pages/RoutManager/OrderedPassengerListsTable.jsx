@@ -370,13 +370,20 @@ const OrderedPassengerListsTable = forwardRef((_, ref) => {
 
         </div>
 
-        <button
+        <button style={{ backgroundColor: "black", color: "white", width: "180px", height: "30px", fontSize: "14px", marginLeft: "5px" }}
           type="button"
           className="ordered-passenger-lists__reset"
           onClick={handleResetFilters}
         >
           {t("reset_filters", { defaultValue: "Reset filters" })}
         </button>
+        <button style={{ backgroundColor: "#007bff", width: "90px", height: "30px", fontSize: "14px", marginLeft: "5px" }}
+              type="button"
+              onClick={() => fetchOrderedPassengerLists.current?.refresh()}
+              className="nav-button"
+            >
+              {t("refresh", { defaultValue: "Refresh" })}
+            </button>
       </div>
 
       <div className="ordered-passenger-lists__table-wrapper">
