@@ -62,6 +62,7 @@
 .ordered-passenger-lists__grid.ag-theme-alpine {
   --ag-foreground-color: #1f2933;
   --ag-background-color: #ffffff;
+
   --ag-header-background-color: #f7f9fc;
   --ag-odd-row-background-color: #fbfdff;
   --ag-borders: solid 1px #e5e9f0;

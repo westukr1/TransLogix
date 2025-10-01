@@ -400,6 +400,7 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
           </select>
         </div>
 
+
         <button style={{ backgroundColor: "black", color: "white", width: "180px", height: "30px", fontSize: "14px", marginLeft: "5px" }}
 
           type="button"
@@ -408,6 +409,7 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
         >
           {t("reset_filters", { defaultValue: "Reset filters" })}
         </button>
+
 
         <button style={{ backgroundColor: "#007bff", width: "90px", height: "30px", fontSize: "14px", marginLeft: "5px" }}
               type="button"
@@ -434,15 +436,14 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
           </div>
         )}
 
-        {!error && !loading && (
 
+        {!error && !loading && (
 
           <div className="ag-theme-alpine ordered-passenger-lists__grid">
             <AgGridReact
               rowData={orderedLists}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
-
               animateRows
               suppressCellFocus
               overlayNoRowsTemplate={noRowsOverlayTemplate}
@@ -450,7 +451,7 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
               pagination={true}
               paginationPageSize={20}
               domLayout="autoHeight"
-              
+
             />
           </div>
         )}
