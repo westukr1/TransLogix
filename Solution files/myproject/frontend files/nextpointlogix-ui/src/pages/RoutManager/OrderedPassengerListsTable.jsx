@@ -1,3 +1,4 @@
+
 import React, {
   forwardRef,
   useCallback,
@@ -6,15 +7,16 @@ import React, {
   useMemo,
   useState,
 } from "react";
+
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 
 import axios from "../../utils/axiosInstance";
 import { API_ENDPOINTS } from "../../config/apiConfig";
-
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+
 
 import "./OrderedPassengerListsTable.css";
 
@@ -64,7 +66,9 @@ const formatForRequest = (value) =>
     ? dayjs(value).format("YYYY-MM-DD HH:mm:ss")
     : null;
 
+
 const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => {
+
   const { t } = useTranslation();
 
   const [filters, setFilters] = useState(() => readStoredFilters());
@@ -105,6 +109,7 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
     [t]
   );
 
+
   const handleSelectOrderedList = useCallback(
     (list) => {
       if (typeof onSelectOrderedList === "function") {
@@ -131,6 +136,7 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
     }),
     [handleSelectOrderedList, t]
   );
+
 
   const columnDefs = useMemo(
     () => [
@@ -198,6 +204,7 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
         maxWidth: 160,
         cellRenderer: "selectButtonRenderer",
       },
+
     ],
     [t, dateValueFormatter, statusValueFormatter]
   );
@@ -231,6 +238,7 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
       sessionStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(filters));
     }
   }, [filters]);
+
 
   const fetchOrderedPassengerLists = useCallback(async () => {
     setLoading(true);
@@ -301,6 +309,7 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
     <div className="ordered-passenger-lists">
       <div className="ordered-passenger-lists__filters">
         <div className="ordered-passenger-lists__filter-group">
+
           <label htmlFor="start_date">
             {t("start_date", { defaultValue: "Start date" })}
           </label>
@@ -354,7 +363,6 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
           />
         </div>
 
-        <div className="ordered-passenger-lists__filter-group">
           <label htmlFor="direction">
             {t("direction", { defaultValue: "Direction" })}
           </label>
@@ -428,7 +436,6 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
               rowData={orderedLists}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
-              frameworkComponents={frameworkComponents}
               animateRows
               suppressCellFocus
               overlayNoRowsTemplate={noRowsOverlayTemplate}
