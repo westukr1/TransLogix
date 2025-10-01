@@ -264,6 +264,26 @@ const OrderedPassengerListDetails = () => {
               />
             </div>
           </div>
+          <div className="ordered-passenger-list-details__actions">
+            <button
+              type="button"
+              className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
+            >
+              {t("ordered_passenger_list_disband", { defaultValue: "Розформувати" })}
+            </button>
+            <button
+              type="button"
+              className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
+            >
+              {t("ordered_passenger_list_edit", { defaultValue: "Редагувати" })}
+            </button>
+            <button
+              type="button"
+              className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--primary"
+            >
+              {t("ordered_passenger_list_create_route", { defaultValue: "Створити Маршрут" })}
+            </button>
+          </div>
         </div>
 
         <div className="ordered-passenger-list-details__section ordered-passenger-list-details__map-section">
