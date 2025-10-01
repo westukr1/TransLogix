@@ -1,0 +1,16 @@
+--- a/Solution files/myproject/backend files/TransLogix_djangoProject/TransLogix_djangoProject/models.py
++++ b/Solution files/myproject/backend files/TransLogix_djangoProject/TransLogix_djangoProject/models.py
+@@
+-class CoordinatePoint(models.Model):
+-    objects = None
++class CoordinatePoint(models.Model):
++    objects = models.Manager()
+@@
+-    owner = GenericForeignKey('content_type', 'object_id')
+-
+-def __str__(self):
+-        return f"{self.get_point_type_display()} at {self.latitude}, {self.longitude}"
++    owner = GenericForeignKey('content_type', 'object_id')
++
++    def __str__(self):
++        return f"{self.get_point_type_display()} at {self.latitude}, {self.longitude}"
