@@ -140,6 +140,16 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
 
   const columnDefs = useMemo(
     () => [
+       {
+        headerName: t("actions", { defaultValue: "Actions" }),
+        colId: "actions",
+        filter: false,
+        sortable: false,
+        minWidth: 140,
+        maxWidth: 160,
+        cellRenderer: "selectButtonRenderer",
+      },
+
       {
         headerName: t("ID", { defaultValue: "ID" }),
         field: "id",
@@ -195,16 +205,7 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
         valueFormatter: statusValueFormatter,
         filter: "agSetColumnFilter",
       },
-      {
-        headerName: t("actions", { defaultValue: "Actions" }),
-        colId: "actions",
-        filter: false,
-        sortable: false,
-        minWidth: 140,
-        maxWidth: 160,
-        cellRenderer: "selectButtonRenderer",
-      },
-
+     
     ],
     [t, dateValueFormatter, statusValueFormatter]
   );
@@ -447,6 +448,9 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
               animateRows
               suppressCellFocus
               overlayNoRowsTemplate={noRowsOverlayTemplate}
+              components={frameworkComponents}            // ✅ для AG Grid v28+
+              // або, якщо у тебе стара версія:
+              // frameworkComponents={frameworkComponents} // ✅ для старіших версій
             />
           </div>
         )}
