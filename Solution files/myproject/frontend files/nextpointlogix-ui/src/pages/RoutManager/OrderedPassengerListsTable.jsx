@@ -16,6 +16,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
 import "./OrderedPassengerListsTable.css";
+import { BorderAll } from "@mui/icons-material";
 
 const FILTER_STORAGE_KEY = "orderedPassengerListsFilters";
 
@@ -440,7 +441,7 @@ const OrderedPassengerListsTable = forwardRef(({ onSelectOrderedList }, ref) => 
         {!error && !loading && (
 
           <div className="ag-theme-alpine ordered-passenger-lists__grid">
-            <AgGridReact
+            <AgGridReact 
               rowData={orderedLists}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
