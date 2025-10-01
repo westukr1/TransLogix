@@ -62,12 +62,19 @@
 .ordered-passenger-lists__grid.ag-theme-alpine {
   --ag-foreground-color: #1f2933;
   --ag-background-color: #ffffff;
-  --ag-header-background-color: #1f2933;
-  --ag-header-foreground-color: #ffffff;
+
+  --ag-header-background-color: #f7f9fc;
   --ag-odd-row-background-color: #fbfdff;
   --ag-borders: solid 1px #e5e9f0;
   font-size: 14px;
+
+
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  overflow-x: hidden;
 }
+
 
 .ordered-passenger-lists__select-button {
   padding: 6px 12px;

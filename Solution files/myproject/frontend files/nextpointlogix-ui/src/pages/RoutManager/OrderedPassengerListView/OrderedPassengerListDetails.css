@@ -61,6 +61,7 @@
   color: #fecaca;
 }
 
+
 .ordered-passenger-list-details__content {
   display: grid;
   grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);

@@ -59,8 +59,8 @@ const RouteManagement = ({
         </div>
 
         <div className="rm-middle-column-table">
-          <PassengerRequestsTable />
-          <div className="rm-middle-column-buttons">
+           <PassengerRequestsTable />
+           <div className="rm-middle-column-buttons">
             <button
               onClick={() =>
                 navigate("/passengers-grouping-view/grouping-list-to-route")
@@ -69,6 +69,7 @@ const RouteManagement = ({
             >
               {t("grouping_list_to_route")}
             </button>
+
             <button
               type="button"
               onClick={() => orderedPassengerListsRef.current?.refresh()}
@@ -76,6 +77,7 @@ const RouteManagement = ({
             >
               {t("refresh", { defaultValue: "Refresh" })}
             </button>
+
           </div>
 
           <OrderedPassengerListsTable
@@ -84,6 +86,7 @@ const RouteManagement = ({
           />
 
         </div>
+
 
         <div className="rm-center-column">
           <button
