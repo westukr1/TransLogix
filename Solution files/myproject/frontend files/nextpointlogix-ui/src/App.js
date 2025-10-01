@@ -49,6 +49,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import OrderedPassengerList from "./pages/RoutManager/OrderedPassengerListView/OrderedPassengerList";
+import OrderedPassengerListDetails from "./pages/RoutManager/OrderedPassengerListView/OrderedPassengerListDetails";
 
 function App() {
   return (
@@ -131,6 +132,10 @@ function App() {
           <Route
             path="/ordered-passenger-list/ordered-passenger-list"
             element={<OrderedPassengerList />}
+          />
+          <Route
+            path="/ordered-passenger-lists/:listId"
+            element={<OrderedPassengerListDetails />}
           />
           <Route path="/route-map" element={<RouteMapModal />} />
          
