@@ -60,7 +60,6 @@ const RouteManagement = ({
 
         <div className="rm-middle-column-table">
           <PassengerRequestsTable />
-          <div className="rm-middle-column-buttons">
             <button
               onClick={() =>
                 navigate("/passengers-grouping-view/grouping-list-to-route")
@@ -69,6 +68,7 @@ const RouteManagement = ({
             >
               {t("grouping_list_to_route")}
             </button>
+
             <button
               type="button"
               onClick={() => orderedPassengerListsRef.current?.refresh()}
@@ -82,8 +82,8 @@ const RouteManagement = ({
             ref={orderedPassengerListsRef}
             onSelectOrderedList={handleOpenOrderedListDetails}
           />
-
         </div>
+
 
         <div className="rm-center-column">
           <button
