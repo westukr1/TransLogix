@@ -14,7 +14,6 @@ import "./OrderedPassengerListDetails.css";
 
 import OrderedPassengerListRouteMap from "./OrderedPassengerListRouteMap";
 
-
 const formatDateTime = (value) =>
   value && dayjs(value).isValid() ? dayjs(value).format("YYYY-MM-DD HH:mm") : "-";
 
@@ -249,7 +248,6 @@ const OrderedPassengerListDetails = () => {
         </div>
       )}
 
-
       <div className="ordered-passenger-list-details__content">
         <div className="ordered-passenger-list-details__section ordered-passenger-list-details__table-section">
           <h2 className="ordered-passenger-list-details__section-title">
@@ -275,7 +273,6 @@ const OrderedPassengerListDetails = () => {
           <div className="ordered-passenger-list-details__map-wrapper">
             <OrderedPassengerListRouteMap tripRequests={passengers} />
           </div>
-
         </div>
       </div>
     </div>
