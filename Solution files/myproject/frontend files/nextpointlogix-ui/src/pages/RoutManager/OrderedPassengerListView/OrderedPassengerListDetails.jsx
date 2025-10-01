@@ -12,6 +12,9 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 
 import "./OrderedPassengerListDetails.css";
 
+import OrderedPassengerListRouteMap from "./OrderedPassengerListRouteMap";
+
+
 const formatDateTime = (value) =>
   value && dayjs(value).isValid() ? dayjs(value).format("YYYY-MM-DD HH:mm") : "-";
 
@@ -246,15 +249,33 @@ const OrderedPassengerListDetails = () => {
         </div>
       )}
 
-      <div className="ordered-passenger-list-details__grid-wrapper">
-        <div className="ag-theme-alpine ordered-passenger-list-details__grid">
-          <AgGridReact
-            rowData={passengers}
-            columnDefs={passengerColumnDefs}
-            defaultColDef={defaultColDef}
-            suppressCellFocus
-            overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
-          />
+
+      <div className="ordered-passenger-list-details__content">
+        <div className="ordered-passenger-list-details__section ordered-passenger-list-details__table-section">
+          <h2 className="ordered-passenger-list-details__section-title">
+            {t("passenger_list", { defaultValue: "Passenger list" })}
+          </h2>
+          <div className="ordered-passenger-list-details__grid-wrapper">
+            <div className="ag-theme-alpine ordered-passenger-list-details__grid">
+              <AgGridReact
+                rowData={passengers}
+                columnDefs={passengerColumnDefs}
+                defaultColDef={defaultColDef}
+                suppressCellFocus
+                overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="ordered-passenger-list-details__section ordered-passenger-list-details__map-section">
+          <h2 className="ordered-passenger-list-details__section-title">
+            {t("route_map", { defaultValue: "Route map" })}
+          </h2>
+          <div className="ordered-passenger-list-details__map-wrapper">
+            <OrderedPassengerListRouteMap tripRequests={passengers} />
+          </div>
+
         </div>
       </div>
     </div>

@@ -70,6 +70,13 @@ const RouteManagement = ({
               {t("grouping_list_to_route")}
             </button>
 
+            <button
+              type="button"
+              onClick={() => orderedPassengerListsRef.current?.refresh()}
+              className="nav-button"
+            >
+              {t("refresh", { defaultValue: "Refresh" })}
+            </button>
 
           </div>
 
@@ -77,6 +84,7 @@ const RouteManagement = ({
             ref={orderedPassengerListsRef}
             onSelectOrderedList={handleOpenOrderedListDetails}
           />
+
         </div>
 
 
