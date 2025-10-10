@@ -104,6 +104,24 @@
   color: #1dc530;
 }
 
+.ordered-passenger-list-details__vehicles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ordered-passenger-list-details__vehicles-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.ordered-passenger-list-details__vehicles-grid {
+  width: 100%;
+  min-height: 200px;
+  height: 100%;
+}
+
 .ordered-passenger-list-details__actions {
   display: flex;
   justify-content: flex-end;
@@ -140,17 +158,20 @@
   background: #1d4ed8;
 }
 
-.ordered-passenger-list-details__grid .ag-root-wrapper {
+.ordered-passenger-list-details__grid .ag-root-wrapper,
+.ordered-passenger-list-details__vehicles-grid .ag-root-wrapper {
   border-radius: 8px;
   overflow: hidden;
 }
 
-.ordered-passenger-list-details__grid .ag-header-cell-label {
+.ordered-passenger-list-details__grid .ag-header-cell-label,
+.ordered-passenger-list-details__vehicles-grid .ag-header-cell-label {
   color: #fafafb;
   font-weight: 600;
 }
 
-.ordered-passenger-list-details__grid .ag-cell {
+.ordered-passenger-list-details__grid .ag-cell,
+.ordered-passenger-list-details__vehicles-grid .ag-cell {
   color: #111827;
 }
 

@@ -562,6 +562,7 @@
   "Request {{status}} successfully.": "Заявка {{status}} успішно.",
   "Error during {{status}} of the request.": "Помилка під час {{status}} заявки.",
   "ordered_passenger_list": "Впорядковані списки пасажирів",
+  "ordered_passenger_list_vehicles": "Транспортні засоби",
   "passenger_list_for_route": "Список пасажирів для маршруту",
 
   "id": "ID",
