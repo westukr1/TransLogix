@@ -563,10 +563,6 @@
   "Error during {{status}} of the request.": "Помилка під час {{status}} заявки.",
   "ordered_passenger_list": "Впорядковані списки пасажирів",
   "ordered_passenger_list_vehicles": "Транспортні засоби",
-  "ordered_passenger_list_drivers": "Водії",
-  "ordered_passenger_list_driver_filter_label": "Показати",
-  "ordered_passenger_list_driver_filter_available": "Доступні на момент поїздки",
-  "ordered_passenger_list_driver_filter_all": "Всі водії",
   "passenger_list_for_route": "Список пасажирів для маршруту",
 
   "id": "ID",

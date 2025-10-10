@@ -237,16 +237,6 @@ const OrderedPassengerListDetails = () => {
     Array.isArray(initialList?.trip_requests) ? initialList.trip_requests : []
   );
   const [vehicles, setVehicles] = useState(() => extractVehiclesFromDetails(initialList));
-  const [drivers, setDrivers] = useState(() => extractDriversFromDetails(initialList));
-  const [availableDrivers, setAvailableDrivers] = useState(
-    initialAvailableDriversResult.data
-  );
-  const [hasExplicitAvailableDrivers, setHasExplicitAvailableDrivers] = useState(
-    initialAvailableDriversResult.found
-  );
-  const [driverFilter, setDriverFilter] = useState(
-    initialAvailableDriversResult.found ? "available" : "all"
-  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -727,6 +717,22 @@ const OrderedPassengerListDetails = () => {
                 defaultColDef={defaultColDef}
                 suppressCellFocus
                 suppressBrowserResizeObserver
+                overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
+              />
+            </div>
+          </div>
+          <div className="ordered-passenger-list-details__vehicles">
+            <h3 className="ordered-passenger-list-details__vehicles-title">
+              {t("ordered_passenger_list_vehicles", {
+                defaultValue: "Transport vehicles",
+              })}
+            </h3>
+            <div className="ag-theme-alpine ordered-passenger-list-details__vehicles-grid">
+              <AgGridReact
+                rowData={vehicles}
+                columnDefs={vehicleColumnDefs}
+                defaultColDef={defaultColDef}
+                suppressCellFocus
                 overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
               />
             </div>
