@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import dayjs from "dayjs";
 
 import axios from "../../../utils/axiosInstance";
 import { API_ENDPOINTS } from "../../../config/apiConfig";
@@ -13,9 +12,14 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./OrderedPassengerListDetails.css";
 
 import OrderedPassengerListRouteMap from "./OrderedPassengerListRouteMap";
-
-const formatDateTime = (value) =>
-  value && dayjs(value).isValid() ? dayjs(value).format("YYYY-MM-DD HH:mm") : "-";
+import {
+  extractVehiclesFromDetails,
+  extractDriversFromDetails,
+  extractAvailableDriversFromDetails,
+  getDriverAvailabilityFromFields,
+  isDriverAvailableForTrip,
+  formatDateTime,
+} from "./helpers";
 
 const OrderedPassengerListDetails = () => {
   const { listId } = useParams();
@@ -24,10 +28,22 @@ const OrderedPassengerListDetails = () => {
   const { t } = useTranslation();
 
   const initialList = location.state?.orderedList || null;
+  const initialAvailableDriversResult = extractAvailableDriversFromDetails(initialList);
 
   const [listDetails, setListDetails] = useState(initialList);
   const [passengers, setPassengers] = useState(
     Array.isArray(initialList?.trip_requests) ? initialList.trip_requests : []
+  );
+  const [vehicles, setVehicles] = useState(() => extractVehiclesFromDetails(initialList));
+  const [drivers, setDrivers] = useState(() => extractDriversFromDetails(initialList));
+  const [availableDrivers, setAvailableDrivers] = useState(
+    initialAvailableDriversResult.data
+  );
+  const [hasExplicitAvailableDrivers, setHasExplicitAvailableDrivers] = useState(
+    initialAvailableDriversResult.found
+  );
+  const [driverFilter, setDriverFilter] = useState(
+    initialAvailableDriversResult.found ? "available" : "all"
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -124,6 +140,127 @@ const OrderedPassengerListDetails = () => {
     [t]
   );
 
+  const vehicleColumnDefs = useMemo(
+    () => [
+      {
+        headerName: t("vehicle_id", { defaultValue: "ID" }),
+        field: "vehicle_id",
+        maxWidth: 140,
+        filter: "agNumberColumnFilter",
+      },
+      {
+        headerName: t("license_plate", { defaultValue: "License plate" }),
+        field: "license_plate",
+        minWidth: 160,
+      },
+      {
+        headerName: t("make", { defaultValue: "Make" }),
+        field: "make",
+      },
+      {
+        headerName: t("model", { defaultValue: "Model" }),
+        field: "model",
+      },
+      {
+        headerName: t("year", { defaultValue: "Year" }),
+        field: "year",
+        maxWidth: 140,
+        filter: "agNumberColumnFilter",
+      },
+      {
+        headerName: t("capacity", { defaultValue: "Capacity" }),
+        field: "capacity",
+        maxWidth: 140,
+        filter: "agNumberColumnFilter",
+      },
+      {
+        headerName: t("fuel_type", { defaultValue: "Fuel type" }),
+        field: "fuel_type",
+        minWidth: 160,
+        valueGetter: ({ data }) =>
+          data?.fuel_type?.type ?? data?.fuel_type ?? "-",
+      },
+      {
+        headerName: t("status", { defaultValue: "Status" }),
+        field: "active",
+        minWidth: 140,
+        valueFormatter: ({ value }) => {
+          if (value === true) {
+            return t("active", { defaultValue: "Active" });
+          }
+
+          if (value === false) {
+            return t("inactive", { defaultValue: "Inactive" });
+          }
+
+          return "-";
+        },
+      },
+    ],
+    [t]
+  );
+
+  const driverColumnDefs = useMemo(
+    () => [
+      {
+        headerName: t("driver_id", { defaultValue: "Driver ID" }),
+        field: "driver_id",
+        maxWidth: 140,
+        filter: "agNumberColumnFilter",
+      },
+      {
+        headerName: t("last_name", { defaultValue: "Last name" }),
+        field: "last_name",
+      },
+      {
+        headerName: t("first_name", { defaultValue: "First name" }),
+        field: "first_name",
+      },
+      {
+        headerName: t("phone_number", { defaultValue: "Phone" }),
+        field: "phone_number",
+        minWidth: 160,
+      },
+      {
+        headerName: t("email", { defaultValue: "Email" }),
+        field: "email",
+        minWidth: 200,
+      },
+      {
+        headerName: t("license_number", { defaultValue: "License number" }),
+        field: "license_number",
+        minWidth: 180,
+      },
+      {
+        headerName: t("status", { defaultValue: "Status" }),
+        field: "active",
+        minWidth: 160,
+        valueFormatter: ({ data }) => {
+          const availability = getDriverAvailabilityFromFields(data);
+          if (availability === true) {
+            return t("active", { defaultValue: "Active" });
+          }
+
+          if (availability === false) {
+            return t("inactive", { defaultValue: "Inactive" });
+          }
+
+          if (typeof data?.status === "string" && data.status.trim().length > 0) {
+            return data.status;
+          }
+
+          return "-";
+        },
+      },
+    ],
+    [t]
+  );
+
+  const driverRowData = useMemo(
+    () => (driverFilter === "available" ? availableDrivers : drivers),
+    [driverFilter, availableDrivers, drivers]
+  );
+
   useEffect(() => {
     if (!listId) {
       return;
@@ -141,6 +278,24 @@ const OrderedPassengerListDetails = () => {
         const details = response.data;
         setListDetails(details);
         setPassengers(Array.isArray(details?.trip_requests) ? details.trip_requests : []);
+        setVehicles(extractVehiclesFromDetails(details));
+        const extractedDrivers = extractDriversFromDetails(details);
+        if (extractedDrivers.length) {
+          setDrivers(extractedDrivers);
+        }
+
+        const availableDriversFromDetails = extractAvailableDriversFromDetails(details);
+        setHasExplicitAvailableDrivers(availableDriversFromDetails.found);
+
+        if (availableDriversFromDetails.found) {
+          setAvailableDrivers(
+            Array.isArray(availableDriversFromDetails.data)
+              ? availableDriversFromDetails.data
+              : []
+          );
+        } else {
+          setAvailableDrivers([]);
+        }
       } catch (err) {
         console.error("Failed to load ordered passenger list details", err);
         setError(err);
@@ -151,6 +306,58 @@ const OrderedPassengerListDetails = () => {
 
     fetchListDetails();
   }, [listId]);
+
+  useEffect(() => {
+    if (hasExplicitAvailableDrivers) {
+      return;
+    }
+
+    if (!drivers.length) {
+      setAvailableDrivers((current) => (current.length ? [] : current));
+      return;
+    }
+
+    const computedAvailableDrivers = drivers.filter((driver) =>
+      isDriverAvailableForTrip(driver, listDetails)
+    );
+
+    setAvailableDrivers((current) => {
+      if (
+        current.length === computedAvailableDrivers.length &&
+        current.every((item, index) => item === computedAvailableDrivers[index])
+      ) {
+        return current;
+      }
+
+      return computedAvailableDrivers;
+    });
+  }, [drivers, listDetails, hasExplicitAvailableDrivers]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchDrivers = async () => {
+      try {
+        const response = await axios.get(API_ENDPOINTS.getDrivers);
+        if (!isMounted) {
+          return;
+        }
+
+        const driverData = Array.isArray(response.data) ? response.data : [];
+        if (driverData.length) {
+          setDrivers(driverData);
+        }
+      } catch (err) {
+        console.error("Failed to load drivers", err);
+      }
+    };
+
+    fetchDrivers();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const listSummary = useMemo(() => {
     if (!listDetails) {
@@ -260,6 +467,64 @@ const OrderedPassengerListDetails = () => {
                 columnDefs={passengerColumnDefs}
                 defaultColDef={defaultColDef}
                 suppressCellFocus
+                suppressBrowserResizeObserver
+                overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
+              />
+            </div>
+          </div>
+          <div className="ordered-passenger-list-details__vehicles">
+            <h3 className="ordered-passenger-list-details__vehicles-title">
+              {t("ordered_passenger_list_vehicles", {
+                defaultValue: "Transport vehicles",
+              })}
+            </h3>
+            <div className="ag-theme-alpine ordered-passenger-list-details__vehicles-grid">
+              <AgGridReact
+                rowData={vehicles}
+                columnDefs={vehicleColumnDefs}
+                defaultColDef={defaultColDef}
+                suppressCellFocus
+                suppressBrowserResizeObserver
+                overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
+              />
+            </div>
+          </div>
+          <div className="ordered-passenger-list-details__drivers">
+            <div className="ordered-passenger-list-details__drivers-header">
+              <h3 className="ordered-passenger-list-details__drivers-title">
+                {t("ordered_passenger_list_drivers", { defaultValue: "Drivers" })}
+              </h3>
+              <label className="ordered-passenger-list-details__drivers-filter">
+                <span className="ordered-passenger-list-details__drivers-filter-label">
+                  {t("ordered_passenger_list_driver_filter_label", { defaultValue: "Show" })}
+                </span>
+                <select
+                  className="ordered-passenger-list-details__drivers-filter-select"
+                  value={driverFilter}
+                  onChange={(event) =>
+                    setDriverFilter(event.target.value === "available" ? "available" : "all")
+                  }
+                >
+                  <option value="available">
+                    {t("ordered_passenger_list_driver_filter_available", {
+                      defaultValue: "Available for the trip",
+                    })}
+                  </option>
+                  <option value="all">
+                    {t("ordered_passenger_list_driver_filter_all", {
+                      defaultValue: "All drivers",
+                    })}
+                  </option>
+                </select>
+              </label>
+            </div>
+            <div className="ag-theme-alpine ordered-passenger-list-details__drivers-grid">
+              <AgGridReact
+                rowData={driverRowData}
+                columnDefs={driverColumnDefs}
+                defaultColDef={defaultColDef}
+                suppressCellFocus
+                suppressBrowserResizeObserver
                 overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
               />
             </div>
