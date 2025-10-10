@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import dayjs from "dayjs";
 
 import axios from "../../../utils/axiosInstance";
 import { API_ENDPOINTS } from "../../../config/apiConfig";
@@ -13,35 +12,14 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./OrderedPassengerListDetails.css";
 
 import OrderedPassengerListRouteMap from "./OrderedPassengerListRouteMap";
-
-const extractVehiclesFromDetails = (details) => {
-  if (!details) {
-    return [];
-  }
-
-  if (Array.isArray(details)) {
-    return details;
-  }
-
-  const candidates = [
-    details.transport_vehicles,
-    details.vehicles,
-    details.assigned_vehicles,
-    details.assignedVehicles,
-    details.transportVehicles,
-  ];
-
-  for (const candidate of candidates) {
-    if (Array.isArray(candidate)) {
-      return candidate;
-    }
-  }
-
-  return [];
-};
-
-const formatDateTime = (value) =>
-  value && dayjs(value).isValid() ? dayjs(value).format("YYYY-MM-DD HH:mm") : "-";
+import {
+  extractVehiclesFromDetails,
+  extractDriversFromDetails,
+  extractAvailableDriversFromDetails,
+  getDriverAvailabilityFromFields,
+  isDriverAvailableForTrip,
+  formatDateTime,
+} from "./helpers";
 
 const OrderedPassengerListDetails = () => {
   const { listId } = useParams();
@@ -57,6 +35,16 @@ const OrderedPassengerListDetails = () => {
     Array.isArray(initialList?.trip_requests) ? initialList.trip_requests : []
   );
   const [vehicles, setVehicles] = useState(() => extractVehiclesFromDetails(initialList));
+  const [drivers, setDrivers] = useState(() => extractDriversFromDetails(initialList));
+  const [availableDrivers, setAvailableDrivers] = useState(
+    initialAvailableDriversResult.data
+  );
+  const [hasExplicitAvailableDrivers, setHasExplicitAvailableDrivers] = useState(
+    initialAvailableDriversResult.found
+  );
+  const [driverFilter, setDriverFilter] = useState(
+    initialAvailableDriversResult.found ? "available" : "all"
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -210,6 +198,67 @@ const OrderedPassengerListDetails = () => {
       },
     ],
     [t]
+  );
+
+  const driverColumnDefs = useMemo(
+    () => [
+      {
+        headerName: t("driver_id", { defaultValue: "Driver ID" }),
+        field: "driver_id",
+        maxWidth: 140,
+        filter: "agNumberColumnFilter",
+      },
+      {
+        headerName: t("last_name", { defaultValue: "Last name" }),
+        field: "last_name",
+      },
+      {
+        headerName: t("first_name", { defaultValue: "First name" }),
+        field: "first_name",
+      },
+      {
+        headerName: t("phone_number", { defaultValue: "Phone" }),
+        field: "phone_number",
+        minWidth: 160,
+      },
+      {
+        headerName: t("email", { defaultValue: "Email" }),
+        field: "email",
+        minWidth: 200,
+      },
+      {
+        headerName: t("license_number", { defaultValue: "License number" }),
+        field: "license_number",
+        minWidth: 180,
+      },
+      {
+        headerName: t("status", { defaultValue: "Status" }),
+        field: "active",
+        minWidth: 160,
+        valueFormatter: ({ data }) => {
+          const availability = getDriverAvailabilityFromFields(data);
+          if (availability === true) {
+            return t("active", { defaultValue: "Active" });
+          }
+
+          if (availability === false) {
+            return t("inactive", { defaultValue: "Inactive" });
+          }
+
+          if (typeof data?.status === "string" && data.status.trim().length > 0) {
+            return data.status;
+          }
+
+          return "-";
+        },
+      },
+    ],
+    [t]
+  );
+
+  const driverRowData = useMemo(
+    () => (driverFilter === "available" ? availableDrivers : drivers),
+    [driverFilter, availableDrivers, drivers]
   );
 
   useEffect(() => {
@@ -476,22 +525,6 @@ const OrderedPassengerListDetails = () => {
                 defaultColDef={defaultColDef}
                 suppressCellFocus
                 suppressBrowserResizeObserver
-                overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
-              />
-            </div>
-          </div>
-          <div className="ordered-passenger-list-details__vehicles">
-            <h3 className="ordered-passenger-list-details__vehicles-title">
-              {t("ordered_passenger_list_vehicles", {
-                defaultValue: "Transport vehicles",
-              })}
-            </h3>
-            <div className="ag-theme-alpine ordered-passenger-list-details__vehicles-grid">
-              <AgGridReact
-                rowData={vehicles}
-                columnDefs={vehicleColumnDefs}
-                defaultColDef={defaultColDef}
-                suppressCellFocus
                 overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
               />
             </div>

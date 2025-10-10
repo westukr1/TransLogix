@@ -122,6 +122,57 @@
   height: 100%;
 }
 
+.ordered-passenger-list-details__drivers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ordered-passenger-list-details__drivers-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ordered-passenger-list-details__drivers-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.ordered-passenger-list-details__drivers-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 0.35rem 0.6rem;
+}
+
+.ordered-passenger-list-details__drivers-filter-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.ordered-passenger-list-details__drivers-filter-select {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  color: #f8fafc;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.ordered-passenger-list-details__drivers-grid {
+  width: 100%;
+  min-height: 200px;
+  height: 100%;
+}
+
 .ordered-passenger-list-details__actions {
   display: flex;
   justify-content: flex-end;
