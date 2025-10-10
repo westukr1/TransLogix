@@ -581,6 +581,7 @@
   "Request {{status}} successfully.": "Request {{status}} successfully.",
   "Error during {{status}} of the request.": "Error during {{status}} of the request.",
   "ordered_passenger_list": "Ordered passenger lists",
+  "ordered_passenger_list_vehicles": "Transport vehicles",
   "route_start": "Route Start",
   "route_end": "Route End",
   "start_city": "Start City",
