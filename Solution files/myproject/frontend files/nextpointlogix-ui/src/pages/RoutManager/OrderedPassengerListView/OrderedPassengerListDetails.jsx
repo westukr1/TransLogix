@@ -364,7 +364,6 @@ const OrderedPassengerListDetails = () => {
                 columnDefs={vehicleColumnDefs}
                 defaultColDef={defaultColDef}
                 suppressCellFocus
-                domLayout="autoHeight"
                 overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
               />
             </div>
