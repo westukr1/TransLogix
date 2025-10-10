@@ -234,7 +234,7 @@ const PassengerRequestsTable = () => {
   return (
     <div className="rm-passenger-list" style={{ height: "630px", width: "97%" }}>
       <h3>{t("passenger_trip_requests", "Passenger requests")}</h3>
-
+      
       <div className="passenger-requests-controls">
         <label htmlFor="passenger-request-search">{t("search_by_name")}</label>
         <input

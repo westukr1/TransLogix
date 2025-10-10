@@ -51,6 +51,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  height: 450px;
 }
 
 .ordered-passenger-lists__grid {
@@ -108,3 +109,4 @@
   color: #c53030;
   background-color: #fff5f5;
 }
+

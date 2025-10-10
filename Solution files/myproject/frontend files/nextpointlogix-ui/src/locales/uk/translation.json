@@ -652,6 +652,6 @@
 "automatically_save": "Автоматично зберігати маршрут",
 "strategy.auto_vehicle_limit": "За доступною кількістю транспорту",
 "strategy.min_fuel_cost": "Мінімальні витрати пального",
-"optimized_sequence": "Оптимізована послідовність"
-
+"optimized_sequence": "Оптимізована послідовність",
+"Ordered_passengers_lists": "Впорядковані списки пасажирів"
 }

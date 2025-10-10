@@ -282,203 +282,206 @@ const PassengerList = ({ passengers }) => {
     }
   };
   return (
-    <div className="rm-passenger-list">
-      <div className="passenger-requests-controls">
-        <label htmlFor="passenger-list-search">{t("search_by_name")}</label>
-      <input
-        type="text"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder={t("enter_name_or_last_name")}
-        className="form-control"
-        style={{ marginBottom: "20px" }}
-      />
-      <div className="date-range-picker">
-        <div className="date-picker-field">
-          <label>{t("start_date")}</label>
-          <DatePicker
-            selected={startDate}
-            onChange={handleStartDateChange}
-            selectsStart
-            startDate={startDate}
-            endDate={endDate}
-            showTimeSelect
-            timeIntervals={15}
-            timeFormat="HH:mm"
-            dateFormat="dd.MM.yyyy HH:mm"
-            className="date-picker-input"
+    <div>
+
+      <div className="rm-passenger-list">
+        <div className="passenger-requests-controls">
+          <label htmlFor="passenger-list-search">{t("search_by_name")}</label>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t("enter_name_or_last_name")}
+            className="form-control"
+            style={{ marginBottom: "20px" }}
+          />
+          <div className="date-range-picker">
+            <div className="date-picker-field">
+              <label>{t("start_date")}</label>
+              <DatePicker
+                selected={startDate}
+                onChange={handleStartDateChange}
+                selectsStart
+                startDate={startDate}
+                endDate={endDate}
+                showTimeSelect
+                timeIntervals={15}
+                timeFormat="HH:mm"
+                dateFormat="dd.MM.yyyy HH:mm"
+                className="date-picker-input"
+              />
+            </div>
+            <div className="date-picker-field">
+              <label>{t("end_date")}</label>
+              <DatePicker
+                selected={endDate}
+                onChange={handleEndDateChange}
+                selectsEnd
+                startDate={startDate}
+                endDate={endDate}
+                minDate={startDate}
+                showTimeSelect
+                timeIntervals={15}
+                timeFormat="HH:mm"
+                dateFormat="dd.MM.yyyy HH:mm"
+                className="date-picker-input"
+              />
+            </div>
+          </div>
+          <div className="filters">
+            <label>
+              <input
+                type="radio"
+                name="directionFilter"
+                checked={directionFilter === "WORK_TO_HOME"}
+                onChange={() => setDirectionFilter("WORK_TO_HOME")}
+              />
+              {t("to_home")}
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="directionFilter"
+                checked={directionFilter === "HOME_TO_WORK"}
+                onChange={() => setDirectionFilter("HOME_TO_WORK")}
+              />
+              {t("to_work")}
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="directionFilter"
+                checked={directionFilter === "ALL"}
+                onChange={() => setDirectionFilter("ALL")}
+              />
+              {t("show_all_requests")}
+            </label>
+          </div>
+        </div>
+        <div
+          className="ag-theme-alpine-rm"
+          style={{ width: "100%", height: "70%", marginTop: "5px" }}
+        >
+          <AgGridReact
+            key={JSON.stringify(unselectedRequests)}
+            rowData={unselectedRequests}
+            columnDefs={[
+              { headerName: t("request_id"), field: "id", width: 60 },
+              {
+                headerName: t("passenger_first_name"),
+                field: "passenger_first_name",
+                width: 70,
+              },
+              {
+                headerName: t("passenger_last_name"),
+                field: "passenger_last_name",
+                width: 70,
+              },
+              {
+                headerName: t("direction"),
+                field: "direction",
+                cellStyle: { fontWeight: "bold" },
+                width: 120,
+              },
+              {
+                headerName: t("departure_info"), // 🔵 Блок ВІДПРАВКА
+                children: [
+                  {
+                    headerName: t("departure_time"),
+                    cellStyle: { fontWeight: "bold" },
+                    field: "departure_time",
+                    width: 120,
+                    valueFormatter: (params) =>
+                      params.value
+                        ? dayjs(params.value).format("DD-MM-YYYY HH:mm")
+                        : "",
+                  },
+                  {
+                    headerName: t("pickup_city"),
+                    cellStyle: { fontWeight: "bold" },
+                    field: "pickup_city",
+                    width: 70,
+                  },
+                  {
+                    headerName: t("pickup_street"),
+                    field: "pickup_street",
+                    width: 100,
+                  },
+                  {
+                    headerName: t("pickup_house"),
+                    field: "pickup_house",
+                    width: 40,
+                  },
+                  {
+                    headerName: t("pickup_latitude"),
+                    field: "pickup_latitude",
+                    width: 60,
+                  },
+                  {
+                    headerName: t("pickup_longitude"),
+                    field: "pickup_longitude",
+                    width: 60,
+                  },
+                ],
+              },
+              {
+                headerName: t("arrival_info"), // 🔵 Блок ПРИБУТТЯ
+                children: [
+                  {
+                    headerName: t("arrival_time"),
+                    cellStyle: { fontWeight: "bold" },
+                    field: "arrival_time",
+                    width: 120,
+                    valueFormatter: (params) =>
+                      params.value
+                        ? dayjs(params.value).format("DD-MM-YYYY HH:mm")
+                        : "",
+                  },
+                  {
+                    headerName: t("dropoff_city"),
+                    cellStyle: { fontWeight: "bold" },
+                    field: "dropoff_city",
+                    width: 70,
+                  },
+                  {
+                    headerName: t("dropoff_street"),
+                    field: "dropoff_street",
+                    width: 100,
+                  },
+                  {
+                    headerName: t("dropoff_house"),
+                    field: "dropoff_house",
+                    width: 40,
+                  },
+                  {
+                    headerName: t("dropoff_latitude"),
+                    field: "dropoff_latitude",
+                    width: 70,
+                  },
+                  {
+                    headerName: t("dropoff_longitude"),
+                    field: "dropoff_longitude",
+                    width: 70,
+                  },
+                ],
+              },
+              {
+                headerName: t("passenger_id"),
+                field: "passenger",
+                width: 40,
+              },
+              {
+                headerName: t("passenger_phone"),
+                field: "passenger_phone",
+                width: 120,
+              },
+              { headerName: t("is_active"), field: "is_active", width: 40 },
+              { headerName: t("comment"), field: "comment", width: 600 },
+            ]}
+            pagination
+            paginationPageSize={10}
           />
         </div>
-        <div className="date-picker-field">
-          <label>{t("end_date")}</label>
-          <DatePicker
-            selected={endDate}
-            onChange={handleEndDateChange}
-            selectsEnd
-            startDate={startDate}
-            endDate={endDate}
-            minDate={startDate}
-            showTimeSelect
-            timeIntervals={15}
-            timeFormat="HH:mm"
-            dateFormat="dd.MM.yyyy HH:mm"
-            className="date-picker-input"
-          />
-        </div>
-      </div>
-      <div className="filters">
-        <label>
-          <input
-            type="radio"
-            name="directionFilter"
-            checked={directionFilter === "WORK_TO_HOME"}
-            onChange={() => setDirectionFilter("WORK_TO_HOME")}
-          />
-          {t("to_home")}
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="directionFilter"
-            checked={directionFilter === "HOME_TO_WORK"}
-            onChange={() => setDirectionFilter("HOME_TO_WORK")}
-          />
-          {t("to_work")}
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="directionFilter"
-            checked={directionFilter === "ALL"}
-            onChange={() => setDirectionFilter("ALL")}
-          />
-          {t("show_all_requests")}
-        </label>
-        </div>
-      </div>
-      <div
-        className="ag-theme-alpine-rm"
-        style={{ width: "100%", height: "70%", marginTop: "5px" }}
-      >
-        <AgGridReact
-          key={JSON.stringify(unselectedRequests)}
-          rowData={unselectedRequests}
-          columnDefs={[
-            { headerName: t("request_id"), field: "id", width: 60 },
-            {
-              headerName: t("passenger_first_name"),
-              field: "passenger_first_name",
-              width: 70,
-            },
-            {
-              headerName: t("passenger_last_name"),
-              field: "passenger_last_name",
-              width: 70,
-            },
-            {
-              headerName: t("direction"),
-              field: "direction",
-              cellStyle: { fontWeight: "bold" },
-              width: 120,
-            },
-            {
-              headerName: t("departure_info"), // 🔵 Блок ВІДПРАВКА
-              children: [
-                {
-                  headerName: t("departure_time"),
-                  cellStyle: { fontWeight: "bold" },
-                  field: "departure_time",
-                  width: 120,
-                  valueFormatter: (params) =>
-                    params.value
-                      ? dayjs(params.value).format("DD-MM-YYYY HH:mm")
-                      : "",
-                },
-                {
-                  headerName: t("pickup_city"),
-                  cellStyle: { fontWeight: "bold" },
-                  field: "pickup_city",
-                  width: 70,
-                },
-                {
-                  headerName: t("pickup_street"),
-                  field: "pickup_street",
-                  width: 100,
-                },
-                {
-                  headerName: t("pickup_house"),
-                  field: "pickup_house",
-                  width: 40,
-                },
-                {
-                  headerName: t("pickup_latitude"),
-                  field: "pickup_latitude",
-                  width: 60,
-                },
-                {
-                  headerName: t("pickup_longitude"),
-                  field: "pickup_longitude",
-                  width: 60,
-                },
-              ],
-            },
-            {
-              headerName: t("arrival_info"), // 🔵 Блок ПРИБУТТЯ
-              children: [
-                {
-                  headerName: t("arrival_time"),
-                  cellStyle: { fontWeight: "bold" },
-                  field: "arrival_time",
-                  width: 120,
-                  valueFormatter: (params) =>
-                    params.value
-                      ? dayjs(params.value).format("DD-MM-YYYY HH:mm")
-                      : "",
-                },
-                {
-                  headerName: t("dropoff_city"),
-                  cellStyle: { fontWeight: "bold" },
-                  field: "dropoff_city",
-                  width: 70,
-                },
-                {
-                  headerName: t("dropoff_street"),
-                  field: "dropoff_street",
-                  width: 100,
-                },
-                {
-                  headerName: t("dropoff_house"),
-                  field: "dropoff_house",
-                  width: 40,
-                },
-                {
-                  headerName: t("dropoff_latitude"),
-                  field: "dropoff_latitude",
-                  width: 70,
-                },
-                {
-                  headerName: t("dropoff_longitude"),
-                  field: "dropoff_longitude",
-                  width: 70,
-                },
-              ],
-            },
-            {
-              headerName: t("passenger_id"),
-              field: "passenger",
-              width: 40,
-            },
-            {
-              headerName: t("passenger_phone"),
-              field: "passenger_phone",
-              width: 120,
-            },
-            { headerName: t("is_active"), field: "is_active", width: 40 },
-            { headerName: t("comment"), field: "comment", width: 600 },
-          ]}
-          pagination
-          paginationPageSize={10}
-        />
       </div>
     </div>
   );
