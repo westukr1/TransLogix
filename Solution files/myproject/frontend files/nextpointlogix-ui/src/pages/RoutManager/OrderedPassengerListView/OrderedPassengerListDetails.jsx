@@ -50,6 +50,7 @@ const OrderedPassengerListDetails = () => {
   const { t } = useTranslation();
 
   const initialList = location.state?.orderedList || null;
+  const initialAvailableDriversResult = extractAvailableDriversFromDetails(initialList);
 
   const [listDetails, setListDetails] = useState(initialList);
   const [passengers, setPassengers] = useState(
@@ -229,6 +230,23 @@ const OrderedPassengerListDetails = () => {
         setListDetails(details);
         setPassengers(Array.isArray(details?.trip_requests) ? details.trip_requests : []);
         setVehicles(extractVehiclesFromDetails(details));
+        const extractedDrivers = extractDriversFromDetails(details);
+        if (extractedDrivers.length) {
+          setDrivers(extractedDrivers);
+        }
+
+        const availableDriversFromDetails = extractAvailableDriversFromDetails(details);
+        setHasExplicitAvailableDrivers(availableDriversFromDetails.found);
+
+        if (availableDriversFromDetails.found) {
+          setAvailableDrivers(
+            Array.isArray(availableDriversFromDetails.data)
+              ? availableDriversFromDetails.data
+              : []
+          );
+        } else {
+          setAvailableDrivers([]);
+        }
       } catch (err) {
         console.error("Failed to load ordered passenger list details", err);
         setError(err);
@@ -239,6 +257,58 @@ const OrderedPassengerListDetails = () => {
 
     fetchListDetails();
   }, [listId]);
+
+  useEffect(() => {
+    if (hasExplicitAvailableDrivers) {
+      return;
+    }
+
+    if (!drivers.length) {
+      setAvailableDrivers((current) => (current.length ? [] : current));
+      return;
+    }
+
+    const computedAvailableDrivers = drivers.filter((driver) =>
+      isDriverAvailableForTrip(driver, listDetails)
+    );
+
+    setAvailableDrivers((current) => {
+      if (
+        current.length === computedAvailableDrivers.length &&
+        current.every((item, index) => item === computedAvailableDrivers[index])
+      ) {
+        return current;
+      }
+
+      return computedAvailableDrivers;
+    });
+  }, [drivers, listDetails, hasExplicitAvailableDrivers]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchDrivers = async () => {
+      try {
+        const response = await axios.get(API_ENDPOINTS.getDrivers);
+        if (!isMounted) {
+          return;
+        }
+
+        const driverData = Array.isArray(response.data) ? response.data : [];
+        if (driverData.length) {
+          setDrivers(driverData);
+        }
+      } catch (err) {
+        console.error("Failed to load drivers", err);
+      }
+    };
+
+    fetchDrivers();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const listSummary = useMemo(() => {
     if (!listDetails) {
@@ -366,6 +436,62 @@ const OrderedPassengerListDetails = () => {
                 defaultColDef={defaultColDef}
                 suppressCellFocus
                 suppressBrowserResizeObserver
+                overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
+              />
+            </div>
+          </div>
+          <div className="ordered-passenger-list-details__drivers">
+            <div className="ordered-passenger-list-details__drivers-header">
+              <h3 className="ordered-passenger-list-details__drivers-title">
+                {t("ordered_passenger_list_drivers", { defaultValue: "Drivers" })}
+              </h3>
+              <label className="ordered-passenger-list-details__drivers-filter">
+                <span className="ordered-passenger-list-details__drivers-filter-label">
+                  {t("ordered_passenger_list_driver_filter_label", { defaultValue: "Show" })}
+                </span>
+                <select
+                  className="ordered-passenger-list-details__drivers-filter-select"
+                  value={driverFilter}
+                  onChange={(event) =>
+                    setDriverFilter(event.target.value === "available" ? "available" : "all")
+                  }
+                >
+                  <option value="available">
+                    {t("ordered_passenger_list_driver_filter_available", {
+                      defaultValue: "Available for the trip",
+                    })}
+                  </option>
+                  <option value="all">
+                    {t("ordered_passenger_list_driver_filter_all", {
+                      defaultValue: "All drivers",
+                    })}
+                  </option>
+                </select>
+              </label>
+            </div>
+            <div className="ag-theme-alpine ordered-passenger-list-details__drivers-grid">
+              <AgGridReact
+                rowData={driverRowData}
+                columnDefs={driverColumnDefs}
+                defaultColDef={defaultColDef}
+                suppressCellFocus
+                suppressBrowserResizeObserver
+                overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
+              />
+            </div>
+          </div>
+          <div className="ordered-passenger-list-details__vehicles">
+            <h3 className="ordered-passenger-list-details__vehicles-title">
+              {t("ordered_passenger_list_vehicles", {
+                defaultValue: "Transport vehicles",
+              })}
+            </h3>
+            <div className="ag-theme-alpine ordered-passenger-list-details__vehicles-grid">
+              <AgGridReact
+                rowData={vehicles}
+                columnDefs={vehicleColumnDefs}
+                defaultColDef={defaultColDef}
+                suppressCellFocus
                 overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
               />
             </div>
