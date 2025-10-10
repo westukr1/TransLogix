@@ -14,6 +14,32 @@ import "./OrderedPassengerListDetails.css";
 
 import OrderedPassengerListRouteMap from "./OrderedPassengerListRouteMap";
 
+const extractVehiclesFromDetails = (details) => {
+  if (!details) {
+    return [];
+  }
+
+  if (Array.isArray(details)) {
+    return details;
+  }
+
+  const candidates = [
+    details.transport_vehicles,
+    details.vehicles,
+    details.assigned_vehicles,
+    details.assignedVehicles,
+    details.transportVehicles,
+  ];
+
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) {
+      return candidate;
+    }
+  }
+
+  return [];
+};
+
 const formatDateTime = (value) =>
   value && dayjs(value).isValid() ? dayjs(value).format("YYYY-MM-DD HH:mm") : "-";
 
@@ -29,6 +55,7 @@ const OrderedPassengerListDetails = () => {
   const [passengers, setPassengers] = useState(
     Array.isArray(initialList?.trip_requests) ? initialList.trip_requests : []
   );
+  const [vehicles, setVehicles] = useState(() => extractVehiclesFromDetails(initialList));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -124,6 +151,66 @@ const OrderedPassengerListDetails = () => {
     [t]
   );
 
+  const vehicleColumnDefs = useMemo(
+    () => [
+      {
+        headerName: t("vehicle_id", { defaultValue: "ID" }),
+        field: "vehicle_id",
+        maxWidth: 140,
+        filter: "agNumberColumnFilter",
+      },
+      {
+        headerName: t("license_plate", { defaultValue: "License plate" }),
+        field: "license_plate",
+        minWidth: 160,
+      },
+      {
+        headerName: t("make", { defaultValue: "Make" }),
+        field: "make",
+      },
+      {
+        headerName: t("model", { defaultValue: "Model" }),
+        field: "model",
+      },
+      {
+        headerName: t("year", { defaultValue: "Year" }),
+        field: "year",
+        maxWidth: 140,
+        filter: "agNumberColumnFilter",
+      },
+      {
+        headerName: t("capacity", { defaultValue: "Capacity" }),
+        field: "capacity",
+        maxWidth: 140,
+        filter: "agNumberColumnFilter",
+      },
+      {
+        headerName: t("fuel_type", { defaultValue: "Fuel type" }),
+        field: "fuel_type",
+        minWidth: 160,
+        valueGetter: ({ data }) =>
+          data?.fuel_type?.type ?? data?.fuel_type ?? "-",
+      },
+      {
+        headerName: t("status", { defaultValue: "Status" }),
+        field: "active",
+        minWidth: 140,
+        valueFormatter: ({ value }) => {
+          if (value === true) {
+            return t("active", { defaultValue: "Active" });
+          }
+
+          if (value === false) {
+            return t("inactive", { defaultValue: "Inactive" });
+          }
+
+          return "-";
+        },
+      },
+    ],
+    [t]
+  );
+
   useEffect(() => {
     if (!listId) {
       return;
@@ -141,6 +228,7 @@ const OrderedPassengerListDetails = () => {
         const details = response.data;
         setListDetails(details);
         setPassengers(Array.isArray(details?.trip_requests) ? details.trip_requests : []);
+        setVehicles(extractVehiclesFromDetails(details));
       } catch (err) {
         console.error("Failed to load ordered passenger list details", err);
         setError(err);
@@ -258,6 +346,22 @@ const OrderedPassengerListDetails = () => {
               <AgGridReact
                 rowData={passengers}
                 columnDefs={passengerColumnDefs}
+                defaultColDef={defaultColDef}
+                suppressCellFocus
+                overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
+              />
+            </div>
+          </div>
+          <div className="ordered-passenger-list-details__vehicles">
+            <h3 className="ordered-passenger-list-details__vehicles-title">
+              {t("ordered_passenger_list_vehicles", {
+                defaultValue: "Transport vehicles",
+              })}
+            </h3>
+            <div className="ag-theme-alpine ordered-passenger-list-details__vehicles-grid">
+              <AgGridReact
+                rowData={vehicles}
+                columnDefs={vehicleColumnDefs}
                 defaultColDef={defaultColDef}
                 suppressCellFocus
                 overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
