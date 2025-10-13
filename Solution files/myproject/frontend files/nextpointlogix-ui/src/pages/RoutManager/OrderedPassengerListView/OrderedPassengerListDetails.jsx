@@ -278,7 +278,16 @@ const OrderedPassengerListDetails = () => {
         const details = response.data;
         setListDetails(details);
         setPassengers(Array.isArray(details?.trip_requests) ? details.trip_requests : []);
-        setVehicles(extractVehiclesFromDetails(details));
+         // 2️⃣ Робимо додатковий запит для отримання всіх транспортних засобів
+    const vehiclesResponse = await axios.get("http://localhost:8000/api/vehicles/", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
+    });
+
+    // 3️⃣ Зберігаємо отримані транспортні засоби в стан
+    setVehicles(vehiclesResponse.data);
+    
         const extractedDrivers = extractDriversFromDetails(details);
         if (extractedDrivers.length) {
           setDrivers(extractedDrivers);
