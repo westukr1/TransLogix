@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -45,6 +45,16 @@ const OrderedPassengerListDetails = () => {
   const [routeDetails, setRouteDetails] = useState(() =>
     extractAssignedRouteFromDetails(initialList)
   );
+  const [resolvedRouteId, setResolvedRouteId] = useState(() => {
+    const explicitRoute = extractAssignedRouteFromDetails(initialList);
+    const explicitRouteId = extractRouteIdentifier(explicitRoute);
+    if (explicitRouteId) {
+      return explicitRouteId;
+    }
+
+    const fromList = extractAssignedRouteIdFromDetails(initialList);
+    return fromList || null;
+  });
   const [availableDrivers, setAvailableDrivers] = useState(
     initialAvailableDriversResult.data
   );
@@ -59,6 +69,7 @@ const OrderedPassengerListDetails = () => {
   const [routeInfoLoading, setRouteInfoLoading] = useState(false);
   const [assigningVehicleId, setAssigningVehicleId] = useState(null);
   const [assignmentError, setAssignmentError] = useState(null);
+  const routeResolutionAttemptRef = useRef(false);
 
   const defaultColDef = useMemo(
     () => ({
@@ -152,7 +163,7 @@ const OrderedPassengerListDetails = () => {
     [t]
   );
 
-  const assignedRouteId = useMemo(() => {
+  const derivedRouteId = useMemo(() => {
     const directRouteId = extractRouteIdentifier(routeDetails);
     if (directRouteId) {
       return directRouteId;
@@ -160,6 +171,18 @@ const OrderedPassengerListDetails = () => {
 
     return extractAssignedRouteIdFromDetails(listDetails);
   }, [routeDetails, listDetails]);
+
+  const assignedRouteId = useMemo(() => {
+    if (derivedRouteId) {
+      return derivedRouteId;
+    }
+
+    if (resolvedRouteId) {
+      return resolvedRouteId;
+    }
+
+    return null;
+  }, [derivedRouteId, resolvedRouteId]);
 
   const routeVehicleId = useMemo(() => {
     const fromRouteDetails = getRouteVehicleId(routeDetails);
@@ -193,6 +216,13 @@ const OrderedPassengerListDetails = () => {
         );
 
         const updatedRoute = response.data;
+
+        const updatedRouteId = extractRouteIdentifier(updatedRoute);
+        if (updatedRouteId) {
+          setResolvedRouteId((current) =>
+            current === updatedRouteId ? current : updatedRouteId
+          );
+        }
 
         setRouteDetails((current) => {
           if (updatedRoute && typeof updatedRoute === "object") {
@@ -238,6 +268,84 @@ const OrderedPassengerListDetails = () => {
     },
     [assignedRouteId]
   );
+
+  useEffect(() => {
+    if (derivedRouteId) {
+      setResolvedRouteId((current) =>
+        current === derivedRouteId ? current : derivedRouteId
+      );
+    }
+  }, [derivedRouteId]);
+
+  useEffect(() => {
+    routeResolutionAttemptRef.current = false;
+  }, [listId]);
+
+  useEffect(() => {
+    if (!listId) {
+      return;
+    }
+
+    if (assignedRouteId) {
+      return;
+    }
+
+    if (routeResolutionAttemptRef.current) {
+      return;
+    }
+
+    routeResolutionAttemptRef.current = true;
+
+    let isMounted = true;
+    setRouteInfoLoading(true);
+
+    axios
+      .get(API_ENDPOINTS.getRouteByOrderedList(listId))
+      .then((response) => {
+        if (!isMounted) {
+          return;
+        }
+
+        const routeData = response.data;
+
+        if (routeData && typeof routeData === "object") {
+          setRouteDetails((current) => {
+            if (!current) {
+              return routeData;
+            }
+
+            const merged = { ...current, ...routeData };
+            return merged;
+          });
+
+          const fetchedRouteId = extractRouteIdentifier(routeData);
+          if (fetchedRouteId) {
+            setResolvedRouteId((current) =>
+              current === fetchedRouteId ? current : fetchedRouteId
+            );
+          }
+        }
+      })
+      .catch((err) => {
+        if (!isMounted) {
+          return;
+        }
+
+        console.error(
+          "Failed to resolve route for ordered passenger list",
+          err
+        );
+      })
+      .finally(() => {
+        if (isMounted) {
+          setRouteInfoLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [listId, assignedRouteId]);
 
   const vehicleColumnDefs = useMemo(
     () => [
