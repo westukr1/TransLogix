@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import axios from "../../../utils/axiosInstance";
 import { API_ENDPOINTS } from "../../../config/apiConfig";
+import { toast } from "react-toastify";
 
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
@@ -19,6 +20,11 @@ import {
   getDriverAvailabilityFromFields,
   isDriverAvailableForTrip,
   formatDateTime,
+  extractAssignedRouteFromDetails,
+  extractAssignedRouteIdFromDetails,
+  extractRouteIdentifier,
+  getRouteDriverName,
+  getRouteVehicleName,
 } from "./helpers";
 
 const OrderedPassengerListDetails = () => {
@@ -36,6 +42,19 @@ const OrderedPassengerListDetails = () => {
   );
   const [vehicles, setVehicles] = useState(() => extractVehiclesFromDetails(initialList));
   const [drivers, setDrivers] = useState(() => extractDriversFromDetails(initialList));
+  const [routeDetails, setRouteDetails] = useState(() =>
+    extractAssignedRouteFromDetails(initialList)
+  );
+  const [resolvedRouteId, setResolvedRouteId] = useState(() => {
+    const explicitRoute = extractAssignedRouteFromDetails(initialList);
+    const explicitRouteId = extractRouteIdentifier(explicitRoute);
+    if (explicitRouteId) {
+      return explicitRouteId;
+    }
+
+    const fromList = extractAssignedRouteIdFromDetails(initialList);
+    return fromList || null;
+  });
   const [availableDrivers, setAvailableDrivers] = useState(
     initialAvailableDriversResult.data
   );
@@ -47,6 +66,12 @@ const OrderedPassengerListDetails = () => {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [routeInfoLoading, setRouteInfoLoading] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [selectedDriver, setSelectedDriver] = useState(null);
+  const [canCreateRoute, setCanCreateRoute] = useState(false);
+  const [isCreatingRoute, setIsCreatingRoute] = useState(false);
+  const routeResolutionAttemptRef = useRef(false);
 
   const defaultColDef = useMemo(
     () => ({
@@ -140,6 +165,190 @@ const OrderedPassengerListDetails = () => {
     [t]
   );
 
+  const derivedRouteId = useMemo(() => {
+    const directRouteId = extractRouteIdentifier(routeDetails);
+    if (directRouteId) {
+      return directRouteId;
+    }
+
+    return extractAssignedRouteIdFromDetails(listDetails);
+  }, [routeDetails, listDetails]);
+
+  const assignedRouteId = useMemo(() => {
+    if (derivedRouteId) {
+      return derivedRouteId;
+    }
+
+    if (resolvedRouteId) {
+      return resolvedRouteId;
+    }
+
+    return null;
+  }, [derivedRouteId, resolvedRouteId]);
+
+  const handleSelectVehicle = useCallback((vehicle) => {
+    if (!vehicle) {
+      return;
+    }
+
+    const vehicleId =
+      vehicle.vehicle_id ?? vehicle.id ?? vehicle.vehicleId ?? vehicle?.vehicle?.id;
+
+    if (vehicleId === null || vehicleId === undefined) {
+      return;
+    }
+
+    setSelectedVehicle({
+      id: vehicleId,
+      license_plate: vehicle.license_plate ?? vehicle.licensePlate ?? "",
+      make: vehicle.make ?? vehicle.brand ?? "",
+      model: vehicle.model ?? "",
+    });
+  }, []);
+
+  const handleSelectDriver = useCallback((driver) => {
+    if (!driver) {
+      return;
+    }
+
+    const driverId = driver.driver_id ?? driver.id ?? driver.driverId;
+
+    if (driverId === null || driverId === undefined) {
+      return;
+    }
+
+    setSelectedDriver({
+      id: driverId,
+      first_name: driver.first_name ?? driver.firstName ?? "",
+      last_name: driver.last_name ?? driver.lastName ?? "",
+    });
+  }, []);
+
+  const selectedListId = useMemo(() => {
+    if (listDetails?.id !== undefined && listDetails?.id !== null) {
+      return listDetails.id;
+    }
+
+    if (!listId) {
+      return null;
+    }
+
+    const numericId = Number(listId);
+    return Number.isNaN(numericId) ? listId : numericId;
+  }, [listDetails, listId]);
+
+  const handleCreateRoute = useCallback(async () => {
+    if (!selectedListId || !selectedVehicle || !selectedDriver) {
+      return;
+    }
+
+    setIsCreatingRoute(true);
+
+    try {
+      await axios.post(API_ENDPOINTS.createRoute, {
+        list_id: selectedListId,
+        vehicle_id: selectedVehicle.id,
+        driver_id: selectedDriver.id,
+      });
+
+      toast.success(
+        t("ordered_passenger_list_create_route_success", {
+          defaultValue: "Route created successfully",
+        })
+      );
+
+      setSelectedVehicle(null);
+      setSelectedDriver(null);
+    } catch (createError) {
+      console.error("Failed to create route", createError);
+      toast.error(
+        t("ordered_passenger_list_create_route_error", {
+          defaultValue: "Failed to create route",
+        })
+      );
+    } finally {
+      setIsCreatingRoute(false);
+    }
+  }, [selectedListId, selectedVehicle, selectedDriver, t]);
+
+  useEffect(() => {
+    if (derivedRouteId) {
+      setResolvedRouteId((current) =>
+        current === derivedRouteId ? current : derivedRouteId
+      );
+    }
+  }, [derivedRouteId]);
+
+  useEffect(() => {
+    routeResolutionAttemptRef.current = false;
+  }, [listId]);
+
+  useEffect(() => {
+    if (!listId) {
+      return;
+    }
+
+    if (assignedRouteId) {
+      return;
+    }
+
+    if (routeResolutionAttemptRef.current) {
+      return;
+    }
+
+    routeResolutionAttemptRef.current = true;
+
+    let isMounted = true;
+    setRouteInfoLoading(true);
+
+    axios
+      .get(API_ENDPOINTS.getRouteByOrderedList(listId))
+      .then((response) => {
+        if (!isMounted) {
+          return;
+        }
+
+        const routeData = response.data;
+
+        if (routeData && typeof routeData === "object") {
+          setRouteDetails((current) => {
+            if (!current) {
+              return routeData;
+            }
+
+            const merged = { ...current, ...routeData };
+            return merged;
+          });
+
+          const fetchedRouteId = extractRouteIdentifier(routeData);
+          if (fetchedRouteId) {
+            setResolvedRouteId((current) =>
+              current === fetchedRouteId ? current : fetchedRouteId
+            );
+          }
+        }
+      })
+      .catch((err) => {
+        if (!isMounted) {
+          return;
+        }
+
+        console.error(
+          "Failed to resolve route for ordered passenger list",
+          err
+        );
+      })
+      .finally(() => {
+        if (isMounted) {
+          setRouteInfoLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [listId, assignedRouteId]);
+
   const vehicleColumnDefs = useMemo(
     () => [
       {
@@ -196,8 +405,53 @@ const OrderedPassengerListDetails = () => {
           return "-";
         },
       },
+      {
+        headerName: t("ordered_passenger_list_vehicle_action", {
+          defaultValue: "Action",
+        }),
+        field: "action",
+        maxWidth: 160,
+        sortable: false,
+        filter: false,
+        cellRenderer: (params) => {
+          const vehicleId =
+            params?.data?.vehicle_id ?? params?.data?.id ?? params?.data?.vehicleId;
+
+          if (vehicleId === undefined || vehicleId === null) {
+            return "";
+          }
+
+          const normalizedVehicleId = String(vehicleId);
+          const isSelected =
+            selectedVehicle && String(selectedVehicle.id) === normalizedVehicleId;
+
+          const buttonText = isSelected
+            ? t("ordered_passenger_list_vehicle_selected", {
+                defaultValue: "Selected",
+              })
+            : t("ordered_passenger_list_vehicle_choose", {
+                defaultValue: "Select",
+              });
+
+          return (
+            <button
+              type="button"
+              className={
+                "ordered-passenger-list-details__vehicle-select" +
+                (isSelected
+                  ? " ordered-passenger-list-details__vehicle-select--selected"
+                  : "")
+              }
+              disabled={isSelected}
+              onClick={() => handleSelectVehicle(params.data)}
+            >
+              {buttonText}
+            </button>
+          );
+        },
+      },
     ],
-    [t]
+    [t, selectedVehicle, handleSelectVehicle]
   );
 
   const driverColumnDefs = useMemo(
@@ -252,8 +506,53 @@ const OrderedPassengerListDetails = () => {
           return "-";
         },
       },
+      {
+        headerName: t("ordered_passenger_list_driver_action", {
+          defaultValue: "Action",
+        }),
+        field: "action",
+        maxWidth: 160,
+        sortable: false,
+        filter: false,
+        cellRenderer: (params) => {
+          const driverId =
+            params?.data?.driver_id ?? params?.data?.id ?? params?.data?.driverId;
+
+          if (!driverId) {
+            return "";
+          }
+
+          const normalizedDriverId = String(driverId);
+          const isSelected =
+            selectedDriver && String(selectedDriver.id) === normalizedDriverId;
+
+          const buttonText = isSelected
+            ? t("ordered_passenger_list_driver_selected", {
+                defaultValue: "Selected",
+              })
+            : t("ordered_passenger_list_driver_choose", {
+                defaultValue: "Select",
+              });
+
+          return (
+            <button
+              type="button"
+              className={
+                "ordered-passenger-list-details__driver-select" +
+                (isSelected
+                  ? " ordered-passenger-list-details__driver-select--selected"
+                  : "")
+              }
+              disabled={isSelected}
+              onClick={() => handleSelectDriver(params.data)}
+            >
+              {buttonText}
+            </button>
+          );
+        },
+      },
     ],
-    [t]
+    [t, selectedDriver, handleSelectDriver]
   );
 
   const driverRowData = useMemo(
@@ -278,15 +577,12 @@ const OrderedPassengerListDetails = () => {
         const details = response.data;
         setListDetails(details);
         setPassengers(Array.isArray(details?.trip_requests) ? details.trip_requests : []);
-         // 2️⃣ Робимо додатковий запит для отримання всіх транспортних засобів
-    const vehiclesResponse = await axios.get("http://localhost:8000/api/vehicles/", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-      },
-    });
 
-    // 3️⃣ Зберігаємо отримані транспортні засоби в стан
-    setVehicles(vehiclesResponse.data);
+        const vehiclesResponse = await axios.get(API_ENDPOINTS.getVehicles);
+        const vehicleData = Array.isArray(vehiclesResponse.data)
+          ? vehiclesResponse.data
+          : [];
+        setVehicles(vehicleData);
     
         const extractedDrivers = extractDriversFromDetails(details);
         if (extractedDrivers.length) {
@@ -315,6 +611,85 @@ const OrderedPassengerListDetails = () => {
 
     fetchListDetails();
   }, [listId]);
+
+  useEffect(() => {
+    if (!listDetails) {
+      setRouteDetails(null);
+      setRouteInfoLoading(false);
+      return;
+    }
+
+    const explicitRoute = extractAssignedRouteFromDetails(listDetails);
+    if (explicitRoute) {
+      setRouteDetails((current) => {
+        if (!current) {
+          return explicitRoute;
+        }
+
+        if (current === explicitRoute) {
+          return current;
+        }
+
+        const currentId = extractRouteIdentifier(current);
+        const nextId = extractRouteIdentifier(explicitRoute);
+
+        if (currentId && nextId && currentId === nextId) {
+          const merged = { ...current, ...explicitRoute };
+          const hasChanges = Object.keys(merged).some(
+            (key) => merged[key] !== current[key]
+          );
+
+          return hasChanges ? merged : current;
+        }
+
+        return explicitRoute;
+      });
+      setRouteInfoLoading(false);
+      return;
+    }
+
+    const routeId = extractAssignedRouteIdFromDetails(listDetails);
+
+    if (!routeId) {
+      setRouteDetails(null);
+      setRouteInfoLoading(false);
+      return;
+    }
+
+    if (extractRouteIdentifier(routeDetails) === routeId) {
+      setRouteInfoLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    setRouteInfoLoading(true);
+
+    axios
+      .get(API_ENDPOINTS.getRouteDetails(routeId))
+      .then((response) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setRouteDetails(response.data);
+      })
+      .catch((err) => {
+        if (!isMounted) {
+          return;
+        }
+
+        console.error("Failed to load route details", err);
+      })
+      .finally(() => {
+        if (isMounted) {
+          setRouteInfoLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [listDetails, routeDetails]);
 
   useEffect(() => {
     if (hasExplicitAvailableDrivers) {
@@ -384,6 +759,51 @@ const OrderedPassengerListDetails = () => {
     };
   }, [listDetails]);
 
+  const routeVehicleName = useMemo(
+    () => getRouteVehicleName(routeDetails),
+    [routeDetails]
+  );
+
+  const routeDriverName = useMemo(
+    () => getRouteDriverName(routeDetails),
+    [routeDetails]
+  );
+
+  useEffect(() => {
+    setSelectedVehicle(null);
+    setSelectedDriver(null);
+  }, [listId]);
+
+  useEffect(() => {
+    setCanCreateRoute(Boolean(selectedVehicle) && Boolean(selectedDriver) && Boolean(listDetails));
+  }, [selectedVehicle, selectedDriver, listDetails]);
+
+  const selectedDriverName = useMemo(() => {
+    if (!selectedDriver) {
+      return "-";
+    }
+
+    const firstName = selectedDriver.first_name?.toString().trim();
+    const lastName = selectedDriver.last_name?.toString().trim();
+    const combined = [firstName, lastName].filter(Boolean).join(" ");
+    return combined.length ? combined : "-";
+  }, [selectedDriver]);
+
+  const selectedVehicleLabel = useMemo(() => {
+    if (!selectedVehicle) {
+      return "-";
+    }
+
+    const licensePlate = selectedVehicle.license_plate?.toString().trim();
+    const make = selectedVehicle.make?.toString().trim();
+    const combined = [licensePlate, make].filter(Boolean).join(" ");
+    return combined.length ? combined : "-";
+  }, [selectedVehicle]);
+
+  const createRouteButtonLabel = isCreatingRoute
+    ? `${t("loading", { defaultValue: "Loading" })}...`
+    : t("ordered_passenger_list_create_route", { defaultValue: "Створити Маршрут" });
+
   return (
     <div className="ordered-passenger-list-details">
       <div className="ordered-passenger-list-details__header">
@@ -446,6 +866,44 @@ const OrderedPassengerListDetails = () => {
                 ? t("inactive", { defaultValue: "Inactive" })
                 : "-"}
             </span>
+          </div>
+          <div>
+            <span className="ordered-passenger-list-details__label">
+              {t("ordered_passenger_list_assigned_vehicle", { defaultValue: "Vehicle" })}:
+            </span>
+            <span>
+              {routeInfoLoading
+                ? `${t("loading", { defaultValue: "Loading" })}...`
+                : routeVehicleName || "-"}
+            </span>
+          </div>
+          <div>
+            <span className="ordered-passenger-list-details__label">
+              {t("ordered_passenger_list_assigned_driver", { defaultValue: "Driver" })}:
+            </span>
+            <span>
+              {routeInfoLoading
+                ? `${t("loading", { defaultValue: "Loading" })}...`
+                : routeDriverName || "-"}
+            </span>
+          </div>
+          <div>
+            <span className="ordered-passenger-list-details__label">
+              {t("ordered_passenger_list_selected_driver_label", {
+                defaultValue: "Selected driver",
+              })}
+              :
+            </span>
+            <span>{selectedDriverName}</span>
+          </div>
+          <div>
+            <span className="ordered-passenger-list-details__label">
+              {t("ordered_passenger_list_selected_vehicle_label", {
+                defaultValue: "Selected vehicle",
+              })}
+              :
+            </span>
+            <span>{selectedVehicleLabel}</span>
           </div>
         </div>
       )}
@@ -554,8 +1012,10 @@ const OrderedPassengerListDetails = () => {
             <button
               type="button"
               className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--primary"
+              disabled={!canCreateRoute || isCreatingRoute}
+              onClick={handleCreateRoute}
             >
-              {t("ordered_passenger_list_create_route", { defaultValue: "Створити Маршрут" })}
+              {createRouteButtonLabel}
             </button>
           </div>
         </div>

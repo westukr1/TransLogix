@@ -32,7 +32,7 @@ from django.conf import settings
 from django.db.models import Q
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
@@ -347,9 +347,75 @@ def get_settings(request):
 class RouteListView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        routes = Route.objects.all().select_related('start_point__city', 'start_point__district', 'start_point__street', 'end_point__city', 'end_point__district', 'end_point__street')
+        routes = Route.objects.all().select_related(
+            'start_point__city',
+            'start_point__district',
+            'start_point__street',
+            'end_point__city',
+            'end_point__district',
+            'end_point__street',
+            'driver',
+            'vehicle',
+            'trip',
+            'ordered_passenger_list'
+        )
         serializer = RouteSerializer(routes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class RouteDetailView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RouteSerializer
+    lookup_field = 'route_id'
+    lookup_url_kwarg = 'route_id'
+
+    def get_queryset(self):
+        return Route.objects.select_related(
+            'start_point__city',
+            'start_point__district',
+            'start_point__street',
+            'end_point__city',
+            'end_point__district',
+            'end_point__street',
+            'driver',
+            'vehicle',
+            'trip',
+            'ordered_passenger_list'
+        )
+
+
+class RouteByOrderedPassengerListView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RouteSerializer
+    lookup_url_kwarg = 'list_id'
+
+    def get_queryset(self):
+        return Route.objects.select_related(
+            'start_point__city',
+            'start_point__district',
+            'start_point__street',
+            'end_point__city',
+            'end_point__district',
+            'end_point__street',
+            'driver',
+            'vehicle',
+            'trip',
+            'ordered_passenger_list'
+        )
+
+    def get_object(self):
+        ordered_list_id = self.kwargs.get(self.lookup_url_kwarg)
+
+        if not ordered_list_id:
+            raise Http404("Ordered passenger list identifier is required.")
+
+        queryset = self.get_queryset().filter(ordered_passenger_list_id=ordered_list_id)
+        route = queryset.order_by('-date').first()
+
+        if not route:
+            raise Http404("Route for the provided ordered passenger list was not found.")
+
+        return route
 
 
 class FilteredRouteListView(APIView):
@@ -361,7 +427,18 @@ class FilteredRouteListView(APIView):
             'route_id', flat=True)
 
         # Фільтруємо маршрути за обраними route_id
-        routes = Route.objects.filter(route_id__in=selected_route_ids)
+        routes = Route.objects.filter(route_id__in=selected_route_ids).select_related(
+            'start_point__city',
+            'start_point__district',
+            'start_point__street',
+            'end_point__city',
+            'end_point__district',
+            'end_point__street',
+            'driver',
+            'vehicle',
+            'trip',
+            'ordered_passenger_list'
+        )
 
         # Серіалізуємо і повертаємо маршрути
         route_serializer = RouteSerializer(routes, many=True)
