@@ -19,6 +19,11 @@ import {
   getDriverAvailabilityFromFields,
   isDriverAvailableForTrip,
   formatDateTime,
+  extractAssignedRouteFromDetails,
+  extractAssignedRouteIdFromDetails,
+  extractRouteIdentifier,
+  getRouteDriverName,
+  getRouteVehicleName,
 } from "./helpers";
 
 const OrderedPassengerListDetails = () => {
@@ -36,6 +41,9 @@ const OrderedPassengerListDetails = () => {
   );
   const [vehicles, setVehicles] = useState(() => extractVehiclesFromDetails(initialList));
   const [drivers, setDrivers] = useState(() => extractDriversFromDetails(initialList));
+  const [routeDetails, setRouteDetails] = useState(() =>
+    extractAssignedRouteFromDetails(initialList)
+  );
   const [availableDrivers, setAvailableDrivers] = useState(
     initialAvailableDriversResult.data
   );
@@ -47,6 +55,7 @@ const OrderedPassengerListDetails = () => {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [routeInfoLoading, setRouteInfoLoading] = useState(false);
 
   const defaultColDef = useMemo(
     () => ({
@@ -317,6 +326,85 @@ const OrderedPassengerListDetails = () => {
   }, [listId]);
 
   useEffect(() => {
+    if (!listDetails) {
+      setRouteDetails(null);
+      setRouteInfoLoading(false);
+      return;
+    }
+
+    const explicitRoute = extractAssignedRouteFromDetails(listDetails);
+    if (explicitRoute) {
+      setRouteDetails((current) => {
+        if (!current) {
+          return explicitRoute;
+        }
+
+        if (current === explicitRoute) {
+          return current;
+        }
+
+        const currentId = extractRouteIdentifier(current);
+        const nextId = extractRouteIdentifier(explicitRoute);
+
+        if (currentId && nextId && currentId === nextId) {
+          const merged = { ...current, ...explicitRoute };
+          const hasChanges = Object.keys(merged).some(
+            (key) => merged[key] !== current[key]
+          );
+
+          return hasChanges ? merged : current;
+        }
+
+        return explicitRoute;
+      });
+      setRouteInfoLoading(false);
+      return;
+    }
+
+    const routeId = extractAssignedRouteIdFromDetails(listDetails);
+
+    if (!routeId) {
+      setRouteDetails(null);
+      setRouteInfoLoading(false);
+      return;
+    }
+
+    if (extractRouteIdentifier(routeDetails) === routeId) {
+      setRouteInfoLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    setRouteInfoLoading(true);
+
+    axios
+      .get(API_ENDPOINTS.getRouteDetails(routeId))
+      .then((response) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setRouteDetails(response.data);
+      })
+      .catch((err) => {
+        if (!isMounted) {
+          return;
+        }
+
+        console.error("Failed to load route details", err);
+      })
+      .finally(() => {
+        if (isMounted) {
+          setRouteInfoLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [listDetails, routeDetails]);
+
+  useEffect(() => {
     if (hasExplicitAvailableDrivers) {
       return;
     }
@@ -384,6 +472,16 @@ const OrderedPassengerListDetails = () => {
     };
   }, [listDetails]);
 
+  const routeVehicleName = useMemo(
+    () => getRouteVehicleName(routeDetails),
+    [routeDetails]
+  );
+
+  const routeDriverName = useMemo(
+    () => getRouteDriverName(routeDetails),
+    [routeDetails]
+  );
+
   return (
     <div className="ordered-passenger-list-details">
       <div className="ordered-passenger-list-details__header">
@@ -445,6 +543,26 @@ const OrderedPassengerListDetails = () => {
                 : listSummary.isActive === false
                 ? t("inactive", { defaultValue: "Inactive" })
                 : "-"}
+            </span>
+          </div>
+          <div>
+            <span className="ordered-passenger-list-details__label">
+              {t("ordered_passenger_list_assigned_vehicle", { defaultValue: "Vehicle" })}:
+            </span>
+            <span>
+              {routeInfoLoading
+                ? `${t("loading", { defaultValue: "Loading" })}...`
+                : routeVehicleName || "-"}
+            </span>
+          </div>
+          <div>
+            <span className="ordered-passenger-list-details__label">
+              {t("ordered_passenger_list_assigned_driver", { defaultValue: "Driver" })}:
+            </span>
+            <span>
+              {routeInfoLoading
+                ? `${t("loading", { defaultValue: "Loading" })}...`
+                : routeDriverName || "-"}
             </span>
           </div>
         </div>
