@@ -955,6 +955,13 @@ const OrderedPassengerListDetails = () => {
                 overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
               />
             </div>
+            {assignmentError && (
+              <div className="ordered-passenger-list-details__status ordered-passenger-list-details__status--error">
+                {t("ordered_passenger_list_vehicle_assignment_error", {
+                  defaultValue: "Failed to assign vehicle",
+                })}
+              </div>
+            )}
           </div>
           <div className="ordered-passenger-list-details__drivers">
             <div className="ordered-passenger-list-details__drivers-header">
