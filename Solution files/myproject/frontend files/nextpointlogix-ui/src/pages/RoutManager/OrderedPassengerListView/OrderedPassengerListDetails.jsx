@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -19,6 +19,12 @@ import {
   getDriverAvailabilityFromFields,
   isDriverAvailableForTrip,
   formatDateTime,
+  extractAssignedRouteFromDetails,
+  extractAssignedRouteIdFromDetails,
+  extractRouteIdentifier,
+  getRouteDriverName,
+  getRouteVehicleName,
+  getRouteVehicleId,
 } from "./helpers";
 
 const OrderedPassengerListDetails = () => {
@@ -36,6 +42,9 @@ const OrderedPassengerListDetails = () => {
   );
   const [vehicles, setVehicles] = useState(() => extractVehiclesFromDetails(initialList));
   const [drivers, setDrivers] = useState(() => extractDriversFromDetails(initialList));
+  const [routeDetails, setRouteDetails] = useState(() =>
+    extractAssignedRouteFromDetails(initialList)
+  );
   const [availableDrivers, setAvailableDrivers] = useState(
     initialAvailableDriversResult.data
   );
@@ -47,6 +56,9 @@ const OrderedPassengerListDetails = () => {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [routeInfoLoading, setRouteInfoLoading] = useState(false);
+  const [assigningVehicleId, setAssigningVehicleId] = useState(null);
+  const [assignmentError, setAssignmentError] = useState(null);
 
   const defaultColDef = useMemo(
     () => ({
@@ -140,6 +152,93 @@ const OrderedPassengerListDetails = () => {
     [t]
   );
 
+  const assignedRouteId = useMemo(() => {
+    const directRouteId = extractRouteIdentifier(routeDetails);
+    if (directRouteId) {
+      return directRouteId;
+    }
+
+    return extractAssignedRouteIdFromDetails(listDetails);
+  }, [routeDetails, listDetails]);
+
+  const routeVehicleId = useMemo(() => {
+    const fromRouteDetails = getRouteVehicleId(routeDetails);
+    if (fromRouteDetails) {
+      return fromRouteDetails;
+    }
+
+    const assignedRoute = extractAssignedRouteFromDetails(listDetails);
+    return getRouteVehicleId(assignedRoute);
+  }, [routeDetails, listDetails]);
+
+  const handleSelectVehicle = useCallback(
+    async (vehicle) => {
+      if (!vehicle || typeof vehicle.vehicle_id === "undefined") {
+        return;
+      }
+
+      if (!assignedRouteId) {
+        return;
+      }
+
+      const normalizedVehicleId = String(vehicle.vehicle_id);
+      setAssignmentError(null);
+      setAssigningVehicleId(normalizedVehicleId);
+      setRouteInfoLoading(true);
+
+      try {
+        const response = await axios.patch(
+          API_ENDPOINTS.getRouteDetails(assignedRouteId),
+          { vehicle: vehicle.vehicle_id }
+        );
+
+        const updatedRoute = response.data;
+
+        setRouteDetails((current) => {
+          if (updatedRoute && typeof updatedRoute === "object") {
+            return current ? { ...current, ...updatedRoute } : updatedRoute;
+          }
+
+          return current;
+        });
+
+        setListDetails((current) => {
+          if (!current) {
+            return current;
+          }
+
+          const nextAssignedRoute =
+            updatedRoute && typeof updatedRoute === "object"
+              ? { ...(current.assigned_route ?? {}), ...updatedRoute }
+              : current.assigned_route;
+
+          const fallbackRouteId =
+            assignedRouteId && !Number.isNaN(Number(assignedRouteId))
+              ? Number(assignedRouteId)
+              : assignedRouteId ?? null;
+
+          const nextAssignedRouteId =
+            updatedRoute?.route_id ??
+            current?.assigned_route_id ??
+            fallbackRouteId;
+
+          return {
+            ...current,
+            assigned_route_id: nextAssignedRouteId ?? null,
+            assigned_route: nextAssignedRoute,
+          };
+        });
+      } catch (assignError) {
+        console.error("Failed to assign vehicle to route", assignError);
+        setAssignmentError(assignError);
+      } finally {
+        setAssigningVehicleId(null);
+        setRouteInfoLoading(false);
+      }
+    },
+    [assignedRouteId]
+  );
+
   const vehicleColumnDefs = useMemo(
     () => [
       {
@@ -196,8 +295,62 @@ const OrderedPassengerListDetails = () => {
           return "-";
         },
       },
+      {
+        headerName: t("ordered_passenger_list_vehicle_action", {
+          defaultValue: "Action",
+        }),
+        field: "action",
+        maxWidth: 160,
+        sortable: false,
+        filter: false,
+        cellRenderer: (params) => {
+          const vehicleId = params?.data?.vehicle_id;
+
+          if (!vehicleId) {
+            return "";
+          }
+
+          const normalizedVehicleId = String(vehicleId);
+          const isLoading = assigningVehicleId === normalizedVehicleId;
+          const isSelected =
+            routeVehicleId && String(routeVehicleId) === normalizedVehicleId;
+          const isDisabled = !assignedRouteId || isSelected || isLoading;
+
+          const buttonText = isSelected
+            ? t("ordered_passenger_list_vehicle_selected", {
+                defaultValue: "Selected",
+              })
+            : isLoading
+            ? `${t("loading", { defaultValue: "Loading" })}...`
+            : t("ordered_passenger_list_vehicle_choose", {
+                defaultValue: "Select",
+              });
+
+          return (
+            <button
+              type="button"
+              className={
+                "ordered-passenger-list-details__vehicle-select" +
+                (isSelected
+                  ? " ordered-passenger-list-details__vehicle-select--selected"
+                  : "")
+              }
+              disabled={isDisabled}
+              onClick={() => handleSelectVehicle(params.data)}
+            >
+              {buttonText}
+            </button>
+          );
+        },
+      },
     ],
-    [t]
+    [
+      t,
+      assignedRouteId,
+      assigningVehicleId,
+      routeVehicleId,
+      handleSelectVehicle,
+    ]
   );
 
   const driverColumnDefs = useMemo(
@@ -278,15 +431,12 @@ const OrderedPassengerListDetails = () => {
         const details = response.data;
         setListDetails(details);
         setPassengers(Array.isArray(details?.trip_requests) ? details.trip_requests : []);
-         // 2️⃣ Робимо додатковий запит для отримання всіх транспортних засобів
-    const vehiclesResponse = await axios.get("http://localhost:8000/api/vehicles/", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-      },
-    });
 
-    // 3️⃣ Зберігаємо отримані транспортні засоби в стан
-    setVehicles(vehiclesResponse.data);
+        const vehiclesResponse = await axios.get(API_ENDPOINTS.getVehicles);
+        const vehicleData = Array.isArray(vehiclesResponse.data)
+          ? vehiclesResponse.data
+          : [];
+        setVehicles(vehicleData);
     
         const extractedDrivers = extractDriversFromDetails(details);
         if (extractedDrivers.length) {
@@ -315,6 +465,85 @@ const OrderedPassengerListDetails = () => {
 
     fetchListDetails();
   }, [listId]);
+
+  useEffect(() => {
+    if (!listDetails) {
+      setRouteDetails(null);
+      setRouteInfoLoading(false);
+      return;
+    }
+
+    const explicitRoute = extractAssignedRouteFromDetails(listDetails);
+    if (explicitRoute) {
+      setRouteDetails((current) => {
+        if (!current) {
+          return explicitRoute;
+        }
+
+        if (current === explicitRoute) {
+          return current;
+        }
+
+        const currentId = extractRouteIdentifier(current);
+        const nextId = extractRouteIdentifier(explicitRoute);
+
+        if (currentId && nextId && currentId === nextId) {
+          const merged = { ...current, ...explicitRoute };
+          const hasChanges = Object.keys(merged).some(
+            (key) => merged[key] !== current[key]
+          );
+
+          return hasChanges ? merged : current;
+        }
+
+        return explicitRoute;
+      });
+      setRouteInfoLoading(false);
+      return;
+    }
+
+    const routeId = extractAssignedRouteIdFromDetails(listDetails);
+
+    if (!routeId) {
+      setRouteDetails(null);
+      setRouteInfoLoading(false);
+      return;
+    }
+
+    if (extractRouteIdentifier(routeDetails) === routeId) {
+      setRouteInfoLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    setRouteInfoLoading(true);
+
+    axios
+      .get(API_ENDPOINTS.getRouteDetails(routeId))
+      .then((response) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setRouteDetails(response.data);
+      })
+      .catch((err) => {
+        if (!isMounted) {
+          return;
+        }
+
+        console.error("Failed to load route details", err);
+      })
+      .finally(() => {
+        if (isMounted) {
+          setRouteInfoLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [listDetails, routeDetails]);
 
   useEffect(() => {
     if (hasExplicitAvailableDrivers) {
@@ -384,6 +613,21 @@ const OrderedPassengerListDetails = () => {
     };
   }, [listDetails]);
 
+  const routeVehicleName = useMemo(
+    () => getRouteVehicleName(routeDetails),
+    [routeDetails]
+  );
+
+  const routeDriverName = useMemo(
+    () => getRouteDriverName(routeDetails),
+    [routeDetails]
+  );
+
+  useEffect(() => {
+    setAssignmentError(null);
+    setAssigningVehicleId(null);
+  }, [listId]);
+
   return (
     <div className="ordered-passenger-list-details">
       <div className="ordered-passenger-list-details__header">
@@ -447,6 +691,26 @@ const OrderedPassengerListDetails = () => {
                 : "-"}
             </span>
           </div>
+          <div>
+            <span className="ordered-passenger-list-details__label">
+              {t("ordered_passenger_list_assigned_vehicle", { defaultValue: "Vehicle" })}:
+            </span>
+            <span>
+              {routeInfoLoading
+                ? `${t("loading", { defaultValue: "Loading" })}...`
+                : routeVehicleName || "-"}
+            </span>
+          </div>
+          <div>
+            <span className="ordered-passenger-list-details__label">
+              {t("ordered_passenger_list_assigned_driver", { defaultValue: "Driver" })}:
+            </span>
+            <span>
+              {routeInfoLoading
+                ? `${t("loading", { defaultValue: "Loading" })}...`
+                : routeDriverName || "-"}
+            </span>
+          </div>
         </div>
       )}
 
@@ -497,6 +761,13 @@ const OrderedPassengerListDetails = () => {
                 overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
               />
             </div>
+            {assignmentError && (
+              <div className="ordered-passenger-list-details__status ordered-passenger-list-details__status--error">
+                {t("ordered_passenger_list_vehicle_assignment_error", {
+                  defaultValue: "Failed to assign vehicle",
+                })}
+              </div>
+            )}
           </div>
           <div className="ordered-passenger-list-details__drivers">
             <div className="ordered-passenger-list-details__drivers-header">
