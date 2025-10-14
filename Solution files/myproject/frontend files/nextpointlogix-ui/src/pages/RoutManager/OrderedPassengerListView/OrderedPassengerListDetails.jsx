@@ -872,6 +872,7 @@ const OrderedPassengerListDetails = () => {
                   </span>
                 </div>
               </div>
+              <div className="ordered-passenger-list-details__section ordered-passenger-list-details__table-section">
               <div className="ordered-passenger-list-details__summary-bottom">
                 <div className="ordered-passenger-list-details__summary-bottom-item">
                   <span className="ordered-passenger-list-details__label">
@@ -895,6 +896,7 @@ const OrderedPassengerListDetails = () => {
                     {selectedVehicleLabel}
                   </span>
                 </div>
+              </div>
               </div>
               <div className="ordered-passenger-list-details__actions">
                 <button
@@ -940,14 +942,17 @@ const OrderedPassengerListDetails = () => {
             {t("passenger_list", { defaultValue: "Passenger list" })}
           </h2>
           <div className="ordered-passenger-list-details__grid-wrapper">
-            <div className="ag-theme-alpine ordered-passenger-list-details__grid">
+            <div className="ag-theme-alpine">
               <AgGridReact
+              
                 rowData={passengers}
                 columnDefs={passengerColumnDefs}
                 defaultColDef={defaultColDef}
                 suppressCellFocus
                 suppressBrowserResizeObserver
                 overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
+              pagination={true}
+              paginationPageSize={10}
               />
             </div>
           </div>
@@ -1016,7 +1021,7 @@ const OrderedPassengerListDetails = () => {
             </div>
           </div>
         </div>
-
+        </div>
         <div className="ordered-passenger-list-details__section ordered-passenger-list-details__map-section">
           <h2 className="ordered-passenger-list-details__section-title">
             {t("route_map", { defaultValue: "Route map" })}
