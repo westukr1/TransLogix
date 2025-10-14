@@ -818,123 +818,124 @@ const OrderedPassengerListDetails = () => {
         <h1>{t("ordered_passenger_list_details", { defaultValue: "Ordered passenger list" })}</h1>
       </div>
 
-      {listSummary && (
-        <div className="ordered-passenger-list-details__summary">
-          <div className="ordered-passenger-list-details__summary-top">
-            <div>
-              <span className="ordered-passenger-list-details__label">
-                {t("ID", { defaultValue: "ID" })}:
-              </span>
-              <span>{listSummary.id ?? "-"}</span>
-            </div>
-            <div>
-              <span className="ordered-passenger-list-details__label">
-                {t("direction", { defaultValue: "Direction" })}:
-              </span>
-              <span>{listSummary.direction || "-"}</span>
-            </div>
-            <div>
-              <span className="ordered-passenger-list-details__label">
-                {t("estimated_start_time", { defaultValue: "Start" })}:
-              </span>
-              <span>{listSummary.startTime}</span>
-            </div>
-            <div>
-              <span className="ordered-passenger-list-details__label">
-                {t("estimated_end_time", { defaultValue: "End" })}:
-              </span>
-              <span>{listSummary.endTime}</span>
-            </div>
-            <div>
-              <span className="ordered-passenger-list-details__label">
-                {t("start_city", { defaultValue: "Start city" })}:
-              </span>
-              <span>{listSummary.startCity || "-"}</span>
-            </div>
-            <div>
-              <span className="ordered-passenger-list-details__label">
-                {t("end_city", { defaultValue: "End city" })}:
-              </span>
-              <span>{listSummary.endCity || "-"}</span>
-            </div>
-            <div>
-              <span className="ordered-passenger-list-details__label">
-                {t("status", { defaultValue: "Status" })}:
-              </span>
-              <span>
-                {listSummary.isActive === true
-                  ? t("active", { defaultValue: "Active" })
-                  : listSummary.isActive === false
-                  ? t("inactive", { defaultValue: "Inactive" })
-                  : "-"}
-              </span>
-            </div>
-          </div>
-          <div className="ordered-passenger-list-details__summary-bottom">
-            <div className="ordered-passenger-list-details__summary-bottom-item">
-              <span className="ordered-passenger-list-details__label">
-                {t("ordered_passenger_list_selected_driver_label", {
-                  defaultValue: "Selected driver",
-                })}
-                :
-              </span>
-              <span className="ordered-passenger-list-details__value--highlight">
-                {selectedDriverName}
-              </span>
-            </div>
-            <div className="ordered-passenger-list-details__summary-bottom-item">
-              <span className="ordered-passenger-list-details__label">
-                {t("ordered_passenger_list_selected_vehicle_label", {
-                  defaultValue: "Selected vehicle",
-                })}
-                :
-              </span>
-              <span className="ordered-passenger-list-details__value--highlight">
-                {selectedVehicleLabel}
-              </span>
-            </div>
-          </div>
-          <div className="ordered-passenger-list-details__actions">
-            <button
-              type="button"
-              className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
-            >
-              {t("ordered_passenger_list_disband", { defaultValue: "Розформувати" })}
-            </button>
-            <button
-              type="button"
-              className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
-            >
-              {t("ordered_passenger_list_edit", { defaultValue: "Редагувати" })}
-            </button>
-            <button
-              type="button"
-              className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--primary"
-              disabled={!canCreateRoute || isCreatingRoute}
-              onClick={handleCreateRoute}
-            >
-              {createRouteButtonLabel}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {loading && (
-        <div className="ordered-passenger-list-details__status">
-          {t("loading", { defaultValue: "Loading" })}...
-        </div>
-      )}
-
-      {error && !loading && (
-        <div className="ordered-passenger-list-details__status ordered-passenger-list-details__status--error">
-          {t("error_loading_passenger_list", {
-            defaultValue: "Failed to load ordered passenger list",
-          })}
-        </div>
-      )}
-
       <div className="ordered-passenger-list-details__content">
-        <div className="ordered-passenger-list-details__section ordered-passenger-list-details__table-section">
+        <div className="ordered-passenger-list-details__main-column">
+          {listSummary && (
+            <div className="ordered-passenger-list-details__summary">
+              <div className="ordered-passenger-list-details__summary-top">
+                <div>
+                  <span className="ordered-passenger-list-details__label">
+                    {t("ID", { defaultValue: "ID" })}:
+                  </span>
+                  <span>{listSummary.id ?? "-"}</span>
+                </div>
+                <div>
+                  <span className="ordered-passenger-list-details__label">
+                    {t("direction", { defaultValue: "Direction" })}:
+                  </span>
+                  <span>{listSummary.direction || "-"}</span>
+                </div>
+                <div>
+                  <span className="ordered-passenger-list-details__label">
+                    {t("estimated_start_time", { defaultValue: "Start" })}:
+                  </span>
+                  <span>{listSummary.startTime}</span>
+                </div>
+                <div>
+                  <span className="ordered-passenger-list-details__label">
+                    {t("estimated_end_time", { defaultValue: "End" })}:
+                  </span>
+                  <span>{listSummary.endTime}</span>
+                </div>
+                <div>
+                  <span className="ordered-passenger-list-details__label">
+                    {t("start_city", { defaultValue: "Start city" })}:
+                  </span>
+                  <span>{listSummary.startCity || "-"}</span>
+                </div>
+                <div>
+                  <span className="ordered-passenger-list-details__label">
+                    {t("end_city", { defaultValue: "End city" })}:
+                  </span>
+                  <span>{listSummary.endCity || "-"}</span>
+                </div>
+                <div>
+                  <span className="ordered-passenger-list-details__label">
+                    {t("status", { defaultValue: "Status" })}:
+                  </span>
+                  <span>
+                    {listSummary.isActive === true
+                      ? t("active", { defaultValue: "Active" })
+                      : listSummary.isActive === false
+                      ? t("inactive", { defaultValue: "Inactive" })
+                      : "-"}
+                  </span>
+                </div>
+              </div>
+              <div className="ordered-passenger-list-details__summary-bottom">
+                <div className="ordered-passenger-list-details__summary-bottom-item">
+                  <span className="ordered-passenger-list-details__label">
+                    {t("ordered_passenger_list_selected_driver_label", {
+                      defaultValue: "Selected driver",
+                    })}
+                    :
+                  </span>
+                  <span className="ordered-passenger-list-details__value--highlight">
+                    {selectedDriverName}
+                  </span>
+                </div>
+                <div className="ordered-passenger-list-details__summary-bottom-item">
+                  <span className="ordered-passenger-list-details__label">
+                    {t("ordered_passenger_list_selected_vehicle_label", {
+                      defaultValue: "Selected vehicle",
+                    })}
+                    :
+                  </span>
+                  <span className="ordered-passenger-list-details__value--highlight">
+                    {selectedVehicleLabel}
+                  </span>
+                </div>
+              </div>
+              <div className="ordered-passenger-list-details__actions">
+                <button
+                  type="button"
+                  className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
+                >
+                  {t("ordered_passenger_list_disband", { defaultValue: "Розформувати" })}
+                </button>
+                <button
+                  type="button"
+                  className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
+                >
+                  {t("ordered_passenger_list_edit", { defaultValue: "Редагувати" })}
+                </button>
+                <button
+                  type="button"
+                  className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--primary"
+                  disabled={!canCreateRoute || isCreatingRoute}
+                  onClick={handleCreateRoute}
+                >
+                  {createRouteButtonLabel}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {loading && (
+            <div className="ordered-passenger-list-details__status">
+              {t("loading", { defaultValue: "Loading" })}...
+            </div>
+          )}
+
+          {error && !loading && (
+            <div className="ordered-passenger-list-details__status ordered-passenger-list-details__status--error">
+              {t("error_loading_passenger_list", {
+                defaultValue: "Failed to load ordered passenger list",
+              })}
+            </div>
+          )}
+
+          <div className="ordered-passenger-list-details__section ordered-passenger-list-details__table-section">
           <h2 className="ordered-passenger-list-details__section-title">
             {t("passenger_list", { defaultValue: "Passenger list" })}
           </h2>
