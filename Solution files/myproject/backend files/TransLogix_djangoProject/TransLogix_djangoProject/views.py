@@ -363,6 +363,27 @@ class RouteListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class RouteDetailView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RouteSerializer
+    lookup_field = 'route_id'
+    lookup_url_kwarg = 'route_id'
+
+    def get_queryset(self):
+        return Route.objects.select_related(
+            'start_point__city',
+            'start_point__district',
+            'start_point__street',
+            'end_point__city',
+            'end_point__district',
+            'end_point__street',
+            'driver',
+            'vehicle',
+            'trip',
+            'ordered_passenger_list'
+        )
+
+
 class FilteredRouteListView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):

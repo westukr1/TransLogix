@@ -204,6 +204,37 @@ const getRouteIdFromRouteObject = (route) => {
   return normalizeRouteIdValue(route);
 };
 
+const candidateRouteVehicleIdKeys = [
+  "vehicle",
+  "vehicle_id",
+  "vehicleId",
+];
+
+const normalizeVehicleIdValue = (value) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (isPlainObject(value)) {
+    for (const key of candidateRouteVehicleIdKeys) {
+      const nested = value[key];
+      const normalized = normalizeVehicleIdValue(nested);
+      if (normalized) {
+        return normalized;
+      }
+    }
+
+    if (value.id !== undefined && value.id !== null) {
+      return normalizeVehicleIdValue(value.id);
+    }
+
+    return null;
+  }
+
+  const normalized = String(value).trim();
+  return normalized.length ? normalized : null;
+};
+
 export const extractAssignedRouteFromDetails = (details) => {
   if (!isPlainObject(details)) {
     return null;
@@ -345,6 +376,29 @@ export const getRouteVehicleName = (route) => {
     vehicleCandidate.name.trim().length
   ) {
     return vehicleCandidate.name;
+  }
+
+  return null;
+};
+
+export const getRouteVehicleId = (route) => {
+  if (!isPlainObject(route)) {
+    return null;
+  }
+
+  for (const key of candidateRouteVehicleIdKeys) {
+    const normalized = normalizeVehicleIdValue(route[key]);
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  const nestedVehicle = route.vehicle_details ?? route.vehicleDetails ?? null;
+  if (nestedVehicle) {
+    const normalized = normalizeVehicleIdValue(nestedVehicle);
+    if (normalized) {
+      return normalized;
+    }
   }
 
   return null;

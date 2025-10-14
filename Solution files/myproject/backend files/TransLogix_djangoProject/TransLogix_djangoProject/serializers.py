@@ -102,6 +102,7 @@ class ChangePasswordSerializer(serializers.Serializer):
     confirm_new_password = serializers.CharField(required=True)
 
 class RouteSerializer(serializers.ModelSerializer):
+    route_id = serializers.IntegerField(read_only=True)
     date = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")  # Формат для дати і часу
     distance = serializers.DecimalField(max_digits=6, decimal_places=2, required=False, allow_null=True)
     estimated_time = serializers.IntegerField(required=False, allow_null=True)  # Час у хвилинах
@@ -131,7 +132,9 @@ class RouteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Route
-        fields = ['route_number',
+        fields = [
+                  'route_id',
+                  'route_number',
                   'distance',
                   'estimated_time',
                   'date',
