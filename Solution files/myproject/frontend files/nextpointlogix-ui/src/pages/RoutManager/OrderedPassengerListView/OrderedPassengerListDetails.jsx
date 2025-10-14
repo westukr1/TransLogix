@@ -70,6 +70,7 @@ const OrderedPassengerListDetails = () => {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [selectedDriver, setSelectedDriver] = useState(null);
   const [canCreateRoute, setCanCreateRoute] = useState(false);
+  const [assignmentError, setAssignmentError] = useState(null);
   const [isCreatingRoute, setIsCreatingRoute] = useState(false);
   const routeResolutionAttemptRef = useRef(false);
 
@@ -867,26 +868,8 @@ const OrderedPassengerListDetails = () => {
                 : "-"}
             </span>
           </div>
-          <div>
-            <span className="ordered-passenger-list-details__label">
-              {t("ordered_passenger_list_assigned_vehicle", { defaultValue: "Vehicle" })}:
-            </span>
-            <span>
-              {routeInfoLoading
-                ? `${t("loading", { defaultValue: "Loading" })}...`
-                : routeVehicleName || "-"}
-            </span>
-          </div>
-          <div>
-            <span className="ordered-passenger-list-details__label">
-              {t("ordered_passenger_list_assigned_driver", { defaultValue: "Driver" })}:
-            </span>
-            <span>
-              {routeInfoLoading
-                ? `${t("loading", { defaultValue: "Loading" })}...`
-                : routeDriverName || "-"}
-            </span>
-          </div>
+          
+          
           <div>
             <span className="ordered-passenger-list-details__label">
               {t("ordered_passenger_list_selected_driver_label", {
