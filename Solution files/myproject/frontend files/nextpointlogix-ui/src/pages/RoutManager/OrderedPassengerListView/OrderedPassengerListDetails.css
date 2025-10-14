@@ -151,6 +151,35 @@
   background: #059669;
 }
 
+.ordered-passenger-list-details__driver-select {
+  background: #f97316;
+  color: #0f172a;
+  border: none;
+  border-radius: 6px;
+  padding: 0.35rem 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+.ordered-passenger-list-details__driver-select:hover:not(:disabled) {
+  background: #ea580c;
+}
+
+.ordered-passenger-list-details__driver-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.ordered-passenger-list-details__driver-select--selected {
+  background: #22d3ee;
+  color: #0f172a;
+}
+
+.ordered-passenger-list-details__driver-select--selected:hover:not(:disabled) {
+  background: #0ea5e9;
+}
+
 .ordered-passenger-list-details__drivers {
   display: flex;
   flex-direction: column;
