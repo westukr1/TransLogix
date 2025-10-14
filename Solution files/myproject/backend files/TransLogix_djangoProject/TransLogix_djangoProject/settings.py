@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'import_export',
     'django_filters',
     'django_extensions',
-    'django_cron',
+    # 'django_cron',
+    'django_crontab',
 
 
 ]
