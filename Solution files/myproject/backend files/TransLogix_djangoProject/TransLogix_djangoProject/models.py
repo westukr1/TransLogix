@@ -231,6 +231,40 @@ class Route(models.Model):
     distance = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
     estimated_time = models.IntegerField(default=0)
     route_number = models.CharField(max_length=20, unique=True, blank=True)
+    is_actual = models.BooleanField(default=True, help_text="Актуальний (так/ні)")
+    ordered_passenger_list = models.ForeignKey(
+        'OrderedPassengerList',
+        related_name='routes',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Пов'язаний впорядкований список пасажирів (ID списку)"
+    )
+    trip = models.ForeignKey(
+        'Trip',
+        related_name='routes',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Пов'язана поїздка (ID поїздки)"
+    )
+    is_completed = models.BooleanField(default=False, help_text="Виконаний (так/ні)")
+    vehicle = models.ForeignKey(
+        'Vehicle',
+        related_name='routes',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Призначений транспортний засіб (ID)"
+    )
+    driver = models.ForeignKey(
+        'Driver',
+        related_name='routes',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Призначений водій (ID)"
+    )
     # Coordinate points related to this passenger
     coordinates = GenericRelation('CoordinatePoint')
 

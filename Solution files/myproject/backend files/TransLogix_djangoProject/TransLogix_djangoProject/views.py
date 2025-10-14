@@ -347,7 +347,18 @@ def get_settings(request):
 class RouteListView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        routes = Route.objects.all().select_related('start_point__city', 'start_point__district', 'start_point__street', 'end_point__city', 'end_point__district', 'end_point__street')
+        routes = Route.objects.all().select_related(
+            'start_point__city',
+            'start_point__district',
+            'start_point__street',
+            'end_point__city',
+            'end_point__district',
+            'end_point__street',
+            'driver',
+            'vehicle',
+            'trip',
+            'ordered_passenger_list'
+        )
         serializer = RouteSerializer(routes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -361,7 +372,18 @@ class FilteredRouteListView(APIView):
             'route_id', flat=True)
 
         # Фільтруємо маршрути за обраними route_id
-        routes = Route.objects.filter(route_id__in=selected_route_ids)
+        routes = Route.objects.filter(route_id__in=selected_route_ids).select_related(
+            'start_point__city',
+            'start_point__district',
+            'start_point__street',
+            'end_point__city',
+            'end_point__district',
+            'end_point__street',
+            'driver',
+            'vehicle',
+            'trip',
+            'ordered_passenger_list'
+        )
 
         # Серіалізуємо і повертаємо маршрути
         route_serializer = RouteSerializer(routes, many=True)

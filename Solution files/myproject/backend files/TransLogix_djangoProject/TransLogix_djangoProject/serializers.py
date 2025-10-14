@@ -4,7 +4,7 @@ import django_filters
 from .models import User, Route, CoordinatePoint, House, Driver, Vehicle
 from .models import  Country, Region, City, District, Street
 from .models import DriverVehicleAssignment, FuelType
-from .models import Passenger, PassengerTripRequest,OrderedPassengerList
+from .models import Passenger, PassengerTripRequest, OrderedPassengerList, Trip
 from .models import TemporaryPassengerList
 from .models import RoutePlanDraft, RouteDraftList
 from .models import UserSettings
@@ -106,6 +106,14 @@ class RouteSerializer(serializers.ModelSerializer):
     distance = serializers.DecimalField(max_digits=6, decimal_places=2, required=False, allow_null=True)
     estimated_time = serializers.IntegerField(required=False, allow_null=True)  # Час у хвилинах
     route_number = serializers.CharField(read_only=True)  # Номер маршруту
+    ordered_passenger_list = serializers.PrimaryKeyRelatedField(
+        queryset=OrderedPassengerList.objects.all(), required=False, allow_null=True
+    )
+    trip = serializers.PrimaryKeyRelatedField(queryset=Trip.objects.all(), required=False, allow_null=True)
+    vehicle = serializers.PrimaryKeyRelatedField(queryset=Vehicle.objects.all(), required=False, allow_null=True)
+    driver = serializers.PrimaryKeyRelatedField(queryset=Driver.objects.all(), required=False, allow_null=True)
+    driver_name = serializers.SerializerMethodField()
+    vehicle_name = serializers.SerializerMethodField()
     origin_city = serializers.SerializerMethodField()
     origin_region = serializers.SerializerMethodField()
     origin_district = serializers.SerializerMethodField()
@@ -127,6 +135,14 @@ class RouteSerializer(serializers.ModelSerializer):
                   'distance',
                   'estimated_time',
                   'date',
+                  'is_actual',
+                  'ordered_passenger_list',
+                  'trip',
+                  'is_completed',
+                  'vehicle',
+                  'vehicle_name',
+                  'driver',
+                  'driver_name',
                   'origin_city',
                   'origin_region',
                   'origin_district',
@@ -140,6 +156,14 @@ class RouteSerializer(serializers.ModelSerializer):
                   'start_point',
                   'end_point'
                   ]
+
+    def get_driver_name(self, obj):
+        return str(obj.driver) if obj.driver else None
+
+    def get_vehicle_name(self, obj):
+        if obj.vehicle:
+            return obj.vehicle.get_vehicle_info() if hasattr(obj.vehicle, 'get_vehicle_info') else str(obj.vehicle)
+        return None
 
     def get_origin_city(self, obj):
         return obj.start_point.city.name if obj.start_point and obj.start_point.city else None
@@ -175,28 +199,33 @@ class RouteSerializer(serializers.ModelSerializer):
 
     def get_start_point(self, obj):
         # Якщо хочете окремо відобразити точку старту
+        if not obj.start_point:
+            return None
+        start_point = obj.start_point
         return {
-            'latitude': obj.start_point.latitude,
-            'longitude': obj.start_point.longitude,
-            'city': obj.start_point.city.name if obj.start_point and obj.start_point.city else None,
-            'region': obj.start_point.region.name if obj.start_point and obj.start_point.region else None,
-            'district': obj.start_point.district.name if obj.start_point and obj.start_point.district else None,
-            'street': obj.start_point.street.name if obj.start_point and obj.start_point.street else None,
-            'house_number': obj.start_point.house.house_number if obj.start_point and obj.start_point.house else None
-        } if obj.start_point else None
+            'latitude': start_point.latitude,
+            'longitude': start_point.longitude,
+            'city': start_point.city.name if start_point.city else None,
+            'region': start_point.region.name if start_point.region else None,
+            'district': start_point.district.name if start_point.district else None,
+            'street': start_point.street.name if start_point.street else None,
+            'house_number': start_point.house.house_number if start_point.house else None
+        }
 
     def get_end_point(self, obj):
         # Якщо хочете окремо відобразити точку кінця
+        if not obj.end_point:
+            return None
+        end_point = obj.end_point
         return {
-            'latitude': obj.end_point.latitude,
-            'longitude': obj.end_point.longitude,
-
-            'city': obj.end_point.city.name if obj.end_point and obj.end_point.city else None,
-            'region': obj.end_point.region.name if obj.end_point and obj.end_point.region else None,
-            'district': obj.end_point.district.name if obj.end_point and obj.end_point.district else None,
-            'street': obj.end_point.street.name if obj.end_point and obj.end_point.street else None,
-            'house_number': obj.end_point.house.house_number if obj.end_point and obj.end_point.house else None
-        } if obj.end_point else None
+            'latitude': end_point.latitude,
+            'longitude': end_point.longitude,
+            'city': end_point.city.name if end_point.city else None,
+            'region': end_point.region.name if end_point.region else None,
+            'district': end_point.district.name if end_point.district else None,
+            'street': end_point.street.name if end_point.street else None,
+            'house_number': end_point.house.house_number if end_point.house else None
+        }
 
 class CoordinatePointSerializer(serializers.ModelSerializer):
     country = serializers.CharField(required=False)  # Залишаємо як `CharField`
