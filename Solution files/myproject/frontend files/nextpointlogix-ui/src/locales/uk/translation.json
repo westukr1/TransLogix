@@ -564,6 +564,8 @@
   "ordered_passenger_list": "Впорядковані списки пасажирів",
   "ordered_passenger_list_vehicles": "Транспортні засоби",
   "ordered_passenger_list_drivers": "Водії",
+  "ordered_passenger_list_assigned_vehicle": "Транспортний засіб",
+  "ordered_passenger_list_assigned_driver": "Водій",
   "ordered_passenger_list_driver_filter_label": "Показати",
   "ordered_passenger_list_driver_filter_available": "Доступні на момент поїздки",
   "ordered_passenger_list_driver_filter_all": "Всі водії",

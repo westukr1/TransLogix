@@ -13,6 +13,50 @@ const defaultArrayPropertyKeys = [
   "drivers",
 ];
 
+const candidateRouteEntityKeys = [
+  "assigned_route",
+  "assignedRoute",
+  "route",
+  "route_details",
+  "routeDetails",
+];
+
+const candidateRouteIdKeys = [
+  "assigned_route_id",
+  "assigned_route_id_id",
+  "assigned_route",
+  "assignedRouteId",
+  "assignedRoute",
+  "route_id",
+  "routeId",
+  "route",
+];
+
+const normalizeRouteIdValue = (value) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (isPlainObject(value)) {
+    if (value.id !== undefined && value.id !== null) {
+      return String(value.id);
+    }
+
+    if (value.route_id !== undefined && value.route_id !== null) {
+      return String(value.route_id);
+    }
+
+    if (value.routeId !== undefined && value.routeId !== null) {
+      return String(value.routeId);
+    }
+
+    return null;
+  }
+
+  const normalized = String(value).trim();
+  return normalized.length ? normalized : null;
+};
+
 const ensureCandidateArray = (candidate, predicate, arrayPropertyKeys = defaultArrayPropertyKeys) => {
   if (!candidate) {
     return [];
@@ -142,6 +186,168 @@ const collectEntities = (
   }
 
   return Array.from(uniqueMap.values());
+};
+
+const getRouteIdFromRouteObject = (route) => {
+  if (!route) {
+    return null;
+  }
+
+  if (isPlainObject(route)) {
+    return (
+      normalizeRouteIdValue(route.id) ??
+      normalizeRouteIdValue(route.route_id) ??
+      normalizeRouteIdValue(route.routeId)
+    );
+  }
+
+  return normalizeRouteIdValue(route);
+};
+
+export const extractAssignedRouteFromDetails = (details) => {
+  if (!isPlainObject(details)) {
+    return null;
+  }
+
+  for (const key of candidateRouteEntityKeys) {
+    const candidate = details[key];
+    if (isPlainObject(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
+};
+
+export const extractAssignedRouteIdFromDetails = (details) => {
+  if (!details) {
+    return null;
+  }
+
+  const explicitRoute = extractAssignedRouteFromDetails(details);
+  const explicitRouteId = getRouteIdFromRouteObject(explicitRoute);
+  if (explicitRouteId) {
+    return explicitRouteId;
+  }
+
+  for (const key of candidateRouteIdKeys) {
+    const candidate = details[key];
+    const normalized = normalizeRouteIdValue(candidate);
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return null;
+};
+
+export const extractRouteIdentifier = (route) => getRouteIdFromRouteObject(route);
+
+export const getRouteDriverName = (route) => {
+  if (!isPlainObject(route)) {
+    return null;
+  }
+
+  const directName =
+    typeof route.driver_name === "string" && route.driver_name.trim().length
+      ? route.driver_name
+      : typeof route.driverName === "string" && route.driverName.trim().length
+      ? route.driverName
+      : null;
+
+  if (directName) {
+    return directName;
+  }
+
+  const driverCandidate =
+    route.driver ?? route.driver_details ?? route.driverDetails ?? null;
+
+  if (!driverCandidate) {
+    return null;
+  }
+
+  if (typeof driverCandidate === "string") {
+    const normalized = driverCandidate.trim();
+    return normalized.length ? normalized : null;
+  }
+
+  if (!isPlainObject(driverCandidate)) {
+    return null;
+  }
+
+  if (
+    typeof driverCandidate.full_name === "string" &&
+    driverCandidate.full_name.trim().length
+  ) {
+    return driverCandidate.full_name;
+  }
+
+  const nameParts = [
+    driverCandidate.first_name ?? driverCandidate.firstName ?? "",
+    driverCandidate.last_name ?? driverCandidate.lastName ?? "",
+  ]
+    .map((part) => (typeof part === "string" ? part.trim() : ""))
+    .filter((part) => part.length);
+
+  if (nameParts.length) {
+    return nameParts.join(" ");
+  }
+
+  return null;
+};
+
+export const getRouteVehicleName = (route) => {
+  if (!isPlainObject(route)) {
+    return null;
+  }
+
+  const directName =
+    typeof route.vehicle_name === "string" && route.vehicle_name.trim().length
+      ? route.vehicle_name
+      : typeof route.vehicleName === "string" && route.vehicleName.trim().length
+      ? route.vehicleName
+      : null;
+
+  if (directName) {
+    return directName;
+  }
+
+  const vehicleCandidate =
+    route.vehicle ?? route.vehicle_details ?? route.vehicleDetails ?? null;
+
+  if (!vehicleCandidate) {
+    return null;
+  }
+
+  if (typeof vehicleCandidate === "string") {
+    const normalized = vehicleCandidate.trim();
+    return normalized.length ? normalized : null;
+  }
+
+  if (!isPlainObject(vehicleCandidate)) {
+    return null;
+  }
+
+  const parts = [
+    vehicleCandidate.make ?? vehicleCandidate.brand ?? "",
+    vehicleCandidate.model ?? "",
+    vehicleCandidate.license_plate ?? vehicleCandidate.licensePlate ?? "",
+  ]
+    .map((part) => (typeof part === "string" ? part.trim() : ""))
+    .filter((part) => part.length);
+
+  if (parts.length) {
+    return parts.join(" ");
+  }
+
+  if (
+    typeof vehicleCandidate.name === "string" &&
+    vehicleCandidate.name.trim().length
+  ) {
+    return vehicleCandidate.name;
+  }
+
+  return null;
 };
 
 const isVehicleLike = (value) => {

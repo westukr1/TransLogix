@@ -583,6 +583,8 @@
   "ordered_passenger_list": "Ordered passenger lists",
   "ordered_passenger_list_vehicles": "Transport vehicles",
   "ordered_passenger_list_drivers": "Drivers",
+  "ordered_passenger_list_assigned_vehicle": "Vehicle",
+  "ordered_passenger_list_assigned_driver": "Driver",
   "ordered_passenger_list_driver_filter_label": "Show",
   "ordered_passenger_list_driver_filter_available": "Available for the trip",
   "ordered_passenger_list_driver_filter_all": "All drivers",
