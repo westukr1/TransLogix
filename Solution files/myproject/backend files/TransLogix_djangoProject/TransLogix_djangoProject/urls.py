@@ -38,7 +38,13 @@ from django.contrib.auth.models import User
 from django.urls import path
 from . import views
 from .views import get_allowed_apps
-from .views import RouteListView, PassengerTripRequestListView, PassengerTripRequestCreateView
+from .views import (
+    RouteListView,
+    RouteDetailView,
+    RouteByOrderedPassengerListView,
+    PassengerTripRequestListView,
+    PassengerTripRequestCreateView,
+)
 from .views import PassengerListView  # Додайте цей імпорт
 from .views import CoordinatePointListView
 from .views import verify_address
@@ -108,6 +114,12 @@ urlpatterns = [
     path('api/getUserRoles/', views.get_user_roles, name='get_user_roles'),
     path('api/allowed-apps/', get_allowed_apps, name='allowed_apps'),
     path('api/routes/', RouteListView.as_view(), name='route-list'),  # Ендпоінт для отримання маршрутів
+    path('api/routes/<int:route_id>/', RouteDetailView.as_view(), name='route-detail'),
+    path(
+        'api/routes/by-ordered-list/<int:list_id>/',
+        RouteByOrderedPassengerListView.as_view(),
+        name='route-by-ordered-list',
+    ),
     path('api/passengers/', PassengerListView.as_view(), name='passenger-list'),  # Для списку пасажирів
     path('api/coordinate-points/', CoordinatePointListView.as_view(), name='coordinate-point-list'),
     path('verify-address/', verify_address, name='verify-address'),

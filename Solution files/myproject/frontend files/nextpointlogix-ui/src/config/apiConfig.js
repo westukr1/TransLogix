@@ -165,6 +165,8 @@ export const API_ENDPOINTS = {
   
     // ===== Routes =====
     getRoutes: `${BASE_URL}/api/routes/`,
+    getRouteDetails: (id) => `${BASE_URL}/api/routes/${id}/`,
+    getRouteByOrderedList: (listId) => `${BASE_URL}/api/routes/by-ordered-list/${listId}/`,
     getFilteredRoutes: `${BASE_URL}/api/filtered-routes/`,
     calculateRoute: `${BASE_URL}/api/optimize/`,  // ✅ новий правильний endpoint
 
