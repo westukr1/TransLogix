@@ -225,6 +225,11 @@ const OrderedPassengerListDetails = () => {
     });
   }, []);
 
+  const handleClearSelections = useCallback(() => {
+    setSelectedVehicle(null);
+    setSelectedDriver(null);
+  }, []);
+
   const selectedListId = useMemo(() => {
     if (listDetails?.id !== undefined && listDetails?.id !== null) {
       return listDetails.id;
@@ -825,47 +830,59 @@ const OrderedPassengerListDetails = () => {
           {listSummary && (
             <div className="ordered-passenger-list-details__summary">
               <div className="ordered-passenger-list-details__summary-top">
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item ordered-passenger-list-details__summary-top-item--id">
                   <span className="ordered-passenger-list-details__label">
                     {t("ID", { defaultValue: "ID" })}:
                   </span>
-                  <span>{listSummary.id ?? "-"}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.id ?? "-"}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item ordered-passenger-list-details__summary-top-item--direction">
                   <span className="ordered-passenger-list-details__label">
                     {t("direction", { defaultValue: "Direction" })}:
                   </span>
-                  <span>{listSummary.direction || "-"}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.direction || "-"}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("estimated_start_time", { defaultValue: "Start" })}:
                   </span>
-                  <span>{listSummary.startTime}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.startTime}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("estimated_end_time", { defaultValue: "End" })}:
                   </span>
-                  <span>{listSummary.endTime}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.endTime}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("start_city", { defaultValue: "Start city" })}:
                   </span>
-                  <span>{listSummary.startCity || "-"}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.startCity || "-"}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("end_city", { defaultValue: "End city" })}:
                   </span>
-                  <span>{listSummary.endCity || "-"}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.endCity || "-"}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("status", { defaultValue: "Status" })}:
                   </span>
-                  <span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
                     {listSummary.isActive === true
                       ? t("active", { defaultValue: "Active" })
                       : listSummary.isActive === false
@@ -876,7 +893,6 @@ const OrderedPassengerListDetails = () => {
               </div>
               <div className="ordered-passenger-list-details__section ordered-passenger-list-details__table-section">
               <div className="ordered-passenger-list-details__summary-bottom">
-                
                 <div className="ordered-passenger-list-details__summary-bottom-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("ordered_passenger_list_selected_vehicle_label", {
@@ -899,21 +915,21 @@ const OrderedPassengerListDetails = () => {
                     {selectedDriverName}
                   </span>
                 </div>
+                <div className="ordered-passenger-list-details__summary-bottom-actions">
+                  <button
+                    type="button"
+                    className="ordered-passenger-list-details__clear-selection"
+                    onClick={handleClearSelections}
+                    disabled={!selectedVehicle && !selectedDriver}
+                  >
+                    {t("ordered_passenger_list_clear_selection", {
+                      defaultValue: "Очистити",
+                    })}
+                  </button>
+                </div>
               </div>
               </div>
               <div className="ordered-passenger-list-details__actions">
-                <button
-                  type="button"
-                  className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
-                >
-                  {t("ordered_passenger_list_disband", { defaultValue: "Розформувати" })}
-                </button>
-                <button
-                  type="button"
-                  className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
-                >
-                  {t("ordered_passenger_list_edit", { defaultValue: "Редагувати" })}
-                </button>
                 <button
                   type="button"
                   className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--primary"
@@ -941,24 +957,37 @@ const OrderedPassengerListDetails = () => {
           )}
 
           <div className="ordered-passenger-list-details__section ordered-passenger-list-details__table-section">
-          <h2 className="ordered-passenger-list-details__section-title">
-            {t("passenger_list", { defaultValue: "Passenger list" })}
-          </h2>
-          <div className="ordered-passenger-list-details__grid-wrapper">
-            <div className="ag-theme-alpine">
-              <AgGridReact
-              
-                rowData={passengers}
-                columnDefs={passengerColumnDefs}
-                defaultColDef={defaultColDef}
-                suppressCellFocus
-                suppressBrowserResizeObserver
-                overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
-              pagination={true}
-              paginationPageSize={10}
-              />
+            <h2 className="ordered-passenger-list-details__section-title">
+              {t("passenger_list", { defaultValue: "Passenger list" })}
+            </h2>
+            <div className="ordered-passenger-list-details__grid-wrapper">
+              <div className="ag-theme-alpine">
+                <AgGridReact
+                  rowData={passengers}
+                  columnDefs={passengerColumnDefs}
+                  defaultColDef={defaultColDef}
+                  suppressCellFocus
+                  suppressBrowserResizeObserver
+                  overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
+                  pagination={true}
+                  paginationPageSize={10}
+                />
+              </div>
             </div>
-          </div>
+            <div className="ordered-passenger-list-details__actions ordered-passenger-list-details__actions--table">
+              <button
+                type="button"
+                className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
+              >
+                {t("ordered_passenger_list_disband", { defaultValue: "Розформувати" })}
+              </button>
+              <button
+                type="button"
+                className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
+              >
+                {t("ordered_passenger_list_edit", { defaultValue: "Редагувати" })}
+              </button>
+            </div>
           <div className="ordered-passenger-list-details__vehicles">
             <h3 className="ordered-passenger-list-details__vehicles-title">
               {t("ordered_passenger_list_vehicles", {
