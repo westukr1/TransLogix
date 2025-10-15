@@ -830,47 +830,59 @@ const OrderedPassengerListDetails = () => {
           {listSummary && (
             <div className="ordered-passenger-list-details__summary">
               <div className="ordered-passenger-list-details__summary-top">
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item ordered-passenger-list-details__summary-top-item--id">
                   <span className="ordered-passenger-list-details__label">
                     {t("ID", { defaultValue: "ID" })}:
                   </span>
-                  <span>{listSummary.id ?? "-"}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.id ?? "-"}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item ordered-passenger-list-details__summary-top-item--direction">
                   <span className="ordered-passenger-list-details__label">
                     {t("direction", { defaultValue: "Direction" })}:
                   </span>
-                  <span>{listSummary.direction || "-"}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.direction || "-"}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("estimated_start_time", { defaultValue: "Start" })}:
                   </span>
-                  <span>{listSummary.startTime}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.startTime}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("estimated_end_time", { defaultValue: "End" })}:
                   </span>
-                  <span>{listSummary.endTime}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.endTime}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("start_city", { defaultValue: "Start city" })}:
                   </span>
-                  <span>{listSummary.startCity || "-"}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.startCity || "-"}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("end_city", { defaultValue: "End city" })}:
                   </span>
-                  <span>{listSummary.endCity || "-"}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.endCity || "-"}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("status", { defaultValue: "Status" })}:
                   </span>
-                  <span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
                     {listSummary.isActive === true
                       ? t("active", { defaultValue: "Active" })
                       : listSummary.isActive === false

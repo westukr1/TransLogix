@@ -60,9 +60,28 @@
 }
 
 .ordered-passenger-list-details__summary-top {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
+}
+
+.ordered-passenger-list-details__summary-top-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex: 1 1 180px;
+}
+
+.ordered-passenger-list-details__summary-top-item--id {
+  flex: 0 0 15%;
+  max-width: 15%;
+  min-width: 120px;
+}
+
+.ordered-passenger-list-details__summary-top-item--direction {
+  flex: 0 0 30%;
+  max-width: 30%;
+  min-width: 160px;
 }
 
 .ordered-passenger-list-details__summary-bottom {
@@ -109,6 +128,12 @@
 .ordered-passenger-list-details__label {
   font-weight: 600;
   margin-right: 0.5rem;
+  color: #fff;
+}
+
+.ordered-passenger-list-details__summary-top-value {
+  color: #ffd700;
+  font-weight: 600;
 }
 
 .ordered-passenger-list-details__value--highlight {
