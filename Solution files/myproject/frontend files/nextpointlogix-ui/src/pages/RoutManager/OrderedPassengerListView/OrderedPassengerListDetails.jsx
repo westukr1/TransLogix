@@ -404,9 +404,20 @@ const OrderedPassengerListDetails = () => {
         },
       },
       {
+        headerName: t("ordered_passenger_list_vehicle_assigned", {
+          defaultValue: "Призначений",
+        }),
+        field: "assigned_route",
+        width: 150,
+        filter: false,
+        sortable: false,
+        valueGetter: ({ data }) => data?.assigned_route ?? "",
+      },
+      {
         headerName: t("vehicle_id", { defaultValue: "ID" }),
         field: "vehicle_id",
-        maxWidth: 140,
+        width: 70,
+        maxWidth: 70,
         filter: "agNumberColumnFilter",
       },
       {
@@ -457,17 +468,6 @@ const OrderedPassengerListDetails = () => {
           return "-";
         },
       },
-      {
-        headerName: t("ordered_passenger_list_vehicle_assigned", {
-          defaultValue: "Призначений",
-        }),
-        field: "assigned_route",
-        width: 150,
-        filter: false,
-        sortable: false,
-        valueGetter: ({ data }) => data?.assigned_route ?? "",
-      },
-
     ],
     [t, selectedVehicle, handleSelectVehicle]
   );
@@ -530,7 +530,8 @@ const OrderedPassengerListDetails = () => {
       {
         headerName: t("driver_id", { defaultValue: "Driver ID" }),
         field: "driver_id",
-        maxWidth: 140,
+        width: 70,
+        maxWidth: 70,
         filter: "agNumberColumnFilter",
       },
       {
