@@ -225,6 +225,11 @@ const OrderedPassengerListDetails = () => {
     });
   }, []);
 
+  const handleClearSelections = useCallback(() => {
+    setSelectedVehicle(null);
+    setSelectedDriver(null);
+  }, []);
+
   const selectedListId = useMemo(() => {
     if (listDetails?.id !== undefined && listDetails?.id !== null) {
       return listDetails.id;
@@ -876,7 +881,6 @@ const OrderedPassengerListDetails = () => {
               </div>
               <div className="ordered-passenger-list-details__section ordered-passenger-list-details__table-section">
               <div className="ordered-passenger-list-details__summary-bottom">
-                
                 <div className="ordered-passenger-list-details__summary-bottom-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("ordered_passenger_list_selected_vehicle_label", {
@@ -898,6 +902,18 @@ const OrderedPassengerListDetails = () => {
                   <span className="ordered-passenger-list-details__value--highlight">
                     {selectedDriverName}
                   </span>
+                </div>
+                <div className="ordered-passenger-list-details__summary-bottom-actions">
+                  <button
+                    type="button"
+                    className="ordered-passenger-list-details__clear-selection"
+                    onClick={handleClearSelections}
+                    disabled={!selectedVehicle && !selectedDriver}
+                  >
+                    {t("ordered_passenger_list_clear_selection", {
+                      defaultValue: "Очистити",
+                    })}
+                  </button>
                 </div>
               </div>
               </div>

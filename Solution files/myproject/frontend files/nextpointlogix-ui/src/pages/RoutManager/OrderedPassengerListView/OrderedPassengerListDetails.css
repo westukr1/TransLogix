@@ -71,6 +71,34 @@
   gap: 1rem;
 }
 
+.ordered-passenger-list-details__summary-bottom-actions {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.ordered-passenger-list-details__clear-selection {
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: #f8fafc;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out,
+    border-color 0.2s ease-in-out;
+}
+
+.ordered-passenger-list-details__clear-selection:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ordered-passenger-list-details__clear-selection:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .ordered-passenger-list-details__summary-bottom-item {
   display: flex;
   align-items: baseline;
