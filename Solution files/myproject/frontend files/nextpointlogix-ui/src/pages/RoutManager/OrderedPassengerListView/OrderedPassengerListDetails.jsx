@@ -353,6 +353,51 @@ const OrderedPassengerListDetails = () => {
   const vehicleColumnDefs = useMemo(
     () => [
       {
+        headerName: t("ordered_passenger_list_vehicle_action", {
+          defaultValue: "Action",
+        }),
+        field: "action",
+        maxWidth: 160,
+        sortable: false,
+        filter: false,
+        cellRenderer: (params) => {
+          const vehicleId =
+            params?.data?.vehicle_id ?? params?.data?.id ?? params?.data?.vehicleId;
+
+          if (vehicleId === undefined || vehicleId === null) {
+            return "";
+          }
+
+          const normalizedVehicleId = String(vehicleId);
+          const isSelected =
+            selectedVehicle && String(selectedVehicle.id) === normalizedVehicleId;
+
+          const buttonText = isSelected
+            ? t("ordered_passenger_list_vehicle_selected", {
+                defaultValue: "Selected",
+              })
+            : t("ordered_passenger_list_vehicle_choose", {
+                defaultValue: "Select",
+              });
+
+          return (
+            <button
+              type="button"
+              className={
+                "ordered-passenger-list-details__vehicle-select" +
+                (isSelected
+                  ? " ordered-passenger-list-details__vehicle-select--selected"
+                  : "")
+              }
+              disabled={isSelected}
+              onClick={() => handleSelectVehicle(params.data)}
+            >
+              {buttonText}
+            </button>
+          );
+        },
+      },
+      {
         headerName: t("vehicle_id", { defaultValue: "ID" }),
         field: "vehicle_id",
         maxWidth: 140,
@@ -406,8 +451,15 @@ const OrderedPassengerListDetails = () => {
           return "-";
         },
       },
+      
+    ],
+    [t, selectedVehicle, handleSelectVehicle]
+  );
+
+  const driverColumnDefs = useMemo(
+    () => [
       {
-        headerName: t("ordered_passenger_list_vehicle_action", {
+        headerName: t("ordered_passenger_list_driver_action", {
           defaultValue: "Action",
         }),
         field: "action",
@@ -415,22 +467,22 @@ const OrderedPassengerListDetails = () => {
         sortable: false,
         filter: false,
         cellRenderer: (params) => {
-          const vehicleId =
-            params?.data?.vehicle_id ?? params?.data?.id ?? params?.data?.vehicleId;
+          const driverId =
+            params?.data?.driver_id ?? params?.data?.id ?? params?.data?.driverId;
 
-          if (vehicleId === undefined || vehicleId === null) {
+          if (!driverId) {
             return "";
           }
 
-          const normalizedVehicleId = String(vehicleId);
+          const normalizedDriverId = String(driverId);
           const isSelected =
-            selectedVehicle && String(selectedVehicle.id) === normalizedVehicleId;
+            selectedDriver && String(selectedDriver.id) === normalizedDriverId;
 
           const buttonText = isSelected
-            ? t("ordered_passenger_list_vehicle_selected", {
+            ? t("ordered_passenger_list_driver_selected", {
                 defaultValue: "Selected",
               })
-            : t("ordered_passenger_list_vehicle_choose", {
+            : t("ordered_passenger_list_driver_choose", {
                 defaultValue: "Select",
               });
 
@@ -438,25 +490,19 @@ const OrderedPassengerListDetails = () => {
             <button
               type="button"
               className={
-                "ordered-passenger-list-details__vehicle-select" +
+                "ordered-passenger-list-details__driver-select" +
                 (isSelected
-                  ? " ordered-passenger-list-details__vehicle-select--selected"
+                  ? " ordered-passenger-list-details__driver-select--selected"
                   : "")
               }
               disabled={isSelected}
-              onClick={() => handleSelectVehicle(params.data)}
+              onClick={() => handleSelectDriver(params.data)}
             >
               {buttonText}
             </button>
           );
         },
       },
-    ],
-    [t, selectedVehicle, handleSelectVehicle]
-  );
-
-  const driverColumnDefs = useMemo(
-    () => [
       {
         headerName: t("driver_id", { defaultValue: "Driver ID" }),
         field: "driver_id",
@@ -507,51 +553,7 @@ const OrderedPassengerListDetails = () => {
           return "-";
         },
       },
-      {
-        headerName: t("ordered_passenger_list_driver_action", {
-          defaultValue: "Action",
-        }),
-        field: "action",
-        maxWidth: 160,
-        sortable: false,
-        filter: false,
-        cellRenderer: (params) => {
-          const driverId =
-            params?.data?.driver_id ?? params?.data?.id ?? params?.data?.driverId;
-
-          if (!driverId) {
-            return "";
-          }
-
-          const normalizedDriverId = String(driverId);
-          const isSelected =
-            selectedDriver && String(selectedDriver.id) === normalizedDriverId;
-
-          const buttonText = isSelected
-            ? t("ordered_passenger_list_driver_selected", {
-                defaultValue: "Selected",
-              })
-            : t("ordered_passenger_list_driver_choose", {
-                defaultValue: "Select",
-              });
-
-          return (
-            <button
-              type="button"
-              className={
-                "ordered-passenger-list-details__driver-select" +
-                (isSelected
-                  ? " ordered-passenger-list-details__driver-select--selected"
-                  : "")
-              }
-              disabled={isSelected}
-              onClick={() => handleSelectDriver(params.data)}
-            >
-              {buttonText}
-            </button>
-          );
-        },
-      },
+      
     ],
     [t, selectedDriver, handleSelectDriver]
   );
