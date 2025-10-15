@@ -336,6 +336,10 @@
   margin-top: 1rem;
 }
 
+.ordered-passenger-list-details__actions--table {
+  justify-content: flex-start;
+}
+
 .ordered-passenger-list-details__action-button {
   padding: 0.6rem 1.25rem;
   border-radius: 6px;

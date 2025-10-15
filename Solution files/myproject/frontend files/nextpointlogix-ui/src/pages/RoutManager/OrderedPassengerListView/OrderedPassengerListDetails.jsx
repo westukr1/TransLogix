@@ -932,18 +932,6 @@ const OrderedPassengerListDetails = () => {
               <div className="ordered-passenger-list-details__actions">
                 <button
                   type="button"
-                  className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
-                >
-                  {t("ordered_passenger_list_disband", { defaultValue: "Розформувати" })}
-                </button>
-                <button
-                  type="button"
-                  className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
-                >
-                  {t("ordered_passenger_list_edit", { defaultValue: "Редагувати" })}
-                </button>
-                <button
-                  type="button"
                   className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--primary"
                   disabled={!canCreateRoute || isCreatingRoute}
                   onClick={handleCreateRoute}
@@ -969,24 +957,37 @@ const OrderedPassengerListDetails = () => {
           )}
 
           <div className="ordered-passenger-list-details__section ordered-passenger-list-details__table-section">
-          <h2 className="ordered-passenger-list-details__section-title">
-            {t("passenger_list", { defaultValue: "Passenger list" })}
-          </h2>
-          <div className="ordered-passenger-list-details__grid-wrapper">
-            <div className="ag-theme-alpine">
-              <AgGridReact
-              
-                rowData={passengers}
-                columnDefs={passengerColumnDefs}
-                defaultColDef={defaultColDef}
-                suppressCellFocus
-                suppressBrowserResizeObserver
-                overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
-              pagination={true}
-              paginationPageSize={10}
-              />
+            <h2 className="ordered-passenger-list-details__section-title">
+              {t("passenger_list", { defaultValue: "Passenger list" })}
+            </h2>
+            <div className="ordered-passenger-list-details__grid-wrapper">
+              <div className="ag-theme-alpine">
+                <AgGridReact
+                  rowData={passengers}
+                  columnDefs={passengerColumnDefs}
+                  defaultColDef={defaultColDef}
+                  suppressCellFocus
+                  suppressBrowserResizeObserver
+                  overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
+                  pagination={true}
+                  paginationPageSize={10}
+                />
+              </div>
             </div>
-          </div>
+            <div className="ordered-passenger-list-details__actions ordered-passenger-list-details__actions--table">
+              <button
+                type="button"
+                className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
+              >
+                {t("ordered_passenger_list_disband", { defaultValue: "Розформувати" })}
+              </button>
+              <button
+                type="button"
+                className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
+              >
+                {t("ordered_passenger_list_edit", { defaultValue: "Редагувати" })}
+              </button>
+            </div>
           <div className="ordered-passenger-list-details__vehicles">
             <h3 className="ordered-passenger-list-details__vehicles-title">
               {t("ordered_passenger_list_vehicles", {
