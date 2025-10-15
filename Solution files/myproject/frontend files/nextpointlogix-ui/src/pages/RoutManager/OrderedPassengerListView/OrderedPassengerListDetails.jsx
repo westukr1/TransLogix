@@ -73,6 +73,7 @@ const OrderedPassengerListDetails = () => {
   const [assignmentError, setAssignmentError] = useState(null);
   const [isCreatingRoute, setIsCreatingRoute] = useState(false);
   const routeResolutionAttemptRef = useRef(false);
+  const vehicleAssignmentFetchKeyRef = useRef(null);
 
   const defaultColDef = useMemo(
     () => ({
@@ -456,10 +457,28 @@ const OrderedPassengerListDetails = () => {
           return "-";
         },
       },
-      
+      {
+        headerName: t("ordered_passenger_list_vehicle_assigned", {
+          defaultValue: "Призначений",
+        }),
+        field: "assigned_route",
+        width: 150,
+        filter: false,
+        sortable: false,
+        valueGetter: ({ data }) => data?.assigned_route ?? "",
+      },
+
     ],
     [t, selectedVehicle, handleSelectVehicle]
   );
+
+  const getVehicleRowStyle = useCallback((params) => {
+    if (params?.data?.assigned_route) {
+      return { backgroundColor: "#ffebee" };
+    }
+
+    return undefined;
+  }, []);
 
   const driverColumnDefs = useMemo(
     () => [
@@ -783,6 +802,11 @@ const OrderedPassengerListDetails = () => {
   }, [listId]);
 
   useEffect(() => {
+    vehicleAssignmentFetchKeyRef.current = null;
+    setAssignmentError(null);
+  }, [listId]);
+
+  useEffect(() => {
     setCanCreateRoute(Boolean(selectedVehicle) && Boolean(selectedDriver) && Boolean(listDetails));
   }, [selectedVehicle, selectedDriver, listDetails]);
 
@@ -807,6 +831,123 @@ const OrderedPassengerListDetails = () => {
     const combined = [licensePlate, make].filter(Boolean).join(" ");
     return combined.length ? combined : "-";
   }, [selectedVehicle]);
+
+  useEffect(() => {
+    const tripStart = listDetails?.estimated_start_time;
+    const tripEnd = listDetails?.estimated_end_time;
+
+    if (!vehicles.length || !tripStart || !tripEnd) {
+      return;
+    }
+
+    const vehicleIds = vehicles
+      .map((vehicle) =>
+        vehicle.vehicle_id ?? vehicle.id ?? vehicle.vehicleId ?? vehicle?.vehicle?.id
+      )
+      .filter((value) => value !== null && value !== undefined)
+      .map(String)
+      .sort();
+
+    if (!vehicleIds.length) {
+      return;
+    }
+
+    const allHaveAssignments = vehicles.every((vehicle) =>
+      Object.prototype.hasOwnProperty.call(vehicle, "assigned_route")
+    );
+
+    const fetchKey = `${tripStart}|${tripEnd}|${vehicleIds.join(",")}`;
+
+    if (
+      vehicleAssignmentFetchKeyRef.current === fetchKey &&
+      allHaveAssignments
+    ) {
+      return;
+    }
+
+    let isActive = true;
+    let encounteredError = false;
+
+    const fetchAssignments = async () => {
+      const updatedVehicles = await Promise.all(
+        vehicles.map(async (vehicle) => {
+          const vehicleId =
+            vehicle.vehicle_id ??
+            vehicle.id ??
+            vehicle.vehicleId ??
+            vehicle?.vehicle?.id;
+
+          if (vehicleId === null || vehicleId === undefined) {
+            if (Object.prototype.hasOwnProperty.call(vehicle, "assigned_route")) {
+              return vehicle;
+            }
+
+            return {
+              ...vehicle,
+              assigned_route: "",
+            };
+          }
+
+          try {
+            const response = await axios.get(
+              API_ENDPOINTS.vehicleAssignmentStatus,
+              {
+                params: {
+                  vehicle_id: vehicleId,
+                  start: tripStart,
+                  end: tripEnd,
+                },
+              }
+            );
+
+            const assignedRoute =
+              response?.data?.assigned && response?.data?.route_number
+                ? response.data.route_number
+                : "";
+
+            if (
+              Object.prototype.hasOwnProperty.call(vehicle, "assigned_route") &&
+              vehicle.assigned_route === assignedRoute
+            ) {
+              return vehicle;
+            }
+
+            return {
+              ...vehicle,
+              assigned_route: assignedRoute,
+            };
+          } catch (error) {
+            encounteredError = true;
+            console.error("Error fetching assignment:", error);
+
+            if (Object.prototype.hasOwnProperty.call(vehicle, "assigned_route")) {
+              return vehicle;
+            }
+
+            return {
+              ...vehicle,
+              assigned_route: "",
+            };
+          }
+        })
+      );
+
+      if (!isActive) {
+        return;
+      }
+
+      vehicleAssignmentFetchKeyRef.current = fetchKey;
+
+      setAssignmentError(encounteredError ? true : null);
+      setVehicles(updatedVehicles);
+    };
+
+    fetchAssignments();
+
+    return () => {
+      isActive = false;
+    };
+  }, [vehicles, listDetails?.estimated_start_time, listDetails?.estimated_end_time]);
 
   const createRouteButtonLabel = isCreatingRoute
     ? `${t("loading", { defaultValue: "Loading" })}...`
@@ -1001,6 +1142,7 @@ const OrderedPassengerListDetails = () => {
                 defaultColDef={defaultColDef}
                 suppressCellFocus
                 suppressBrowserResizeObserver
+                getRowStyle={getVehicleRowStyle}
                 overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
               />
             </div>

@@ -169,6 +169,7 @@ urlpatterns = [
     path('vehicles/', VehicleListCreateView.as_view(), name='vehicle-list-create'),
     path('vehicles/<int:pk>/', VehicleRetrieveUpdateDestroyView.as_view(), name='vehicle-detail'),
     path('api/vehicles/', VehicleListCreateView.as_view(), name='vehicle-list'),
+    path('api/vehicle-assignment-status/', views.vehicle_assignment_status, name='vehicle_assignment_status'),
     path('api/vehicles/bulk-update/', views.bulk_update_vehicles, name='bulk-update-vehicles'),
     path('api/vehicles/update-fuel-type/', update_fuel_type, name='update-fuel-type'),
     path('vehicles/<int:vehicle_id>/drivers/', get_assigned_drivers, name='assigned-drivers'),
