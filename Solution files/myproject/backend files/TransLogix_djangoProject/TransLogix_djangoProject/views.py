@@ -44,7 +44,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from decouple import config
-from django.utils.timezone import make_aware
+from django.utils.timezone import make_aware, is_naive
 import datetime
 from django.contrib.auth.decorators import login_required
 from .models import UserSettings
@@ -1137,6 +1137,52 @@ class VehicleRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
+
+
+@api_view(['GET'])
+def vehicle_assignment_status(request):
+    vehicle_id = request.query_params.get("vehicle_id")
+    start_param = request.query_params.get("start")
+    end_param = request.query_params.get("end")
+
+    start = parse_datetime(start_param) if start_param else None
+    end = parse_datetime(end_param) if end_param else None
+
+    if not vehicle_id or not start or not end:
+        return Response({"error": "Missing parameters"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if start and is_naive(start):
+        start = make_aware(start)
+
+    if end and is_naive(end):
+        end = make_aware(end)
+
+    route = (
+        Route.objects
+        .filter(
+            vehicle_id=vehicle_id,
+            estimated_start_time__lt=end,
+            estimated_end_time__gt=start,
+        )
+        .order_by("estimated_start_time")
+        .first()
+    )
+
+    if route:
+        return Response(
+            {
+                "assigned": True,
+                "route_number": route.route_number,
+            }
+        )
+
+    return Response(
+        {
+            "assigned": False,
+            "route_number": None,
+        }
+    )
+
 class DriverVehicleAssignmentViewSet(ModelViewSet):
     queryset = DriverVehicleAssignment.objects.all()
     serializer_class = DriverVehicleAssignmentSerializer

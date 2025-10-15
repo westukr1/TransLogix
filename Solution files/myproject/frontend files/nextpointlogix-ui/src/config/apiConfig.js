@@ -155,6 +155,7 @@ export const API_ENDPOINTS = {
   
     // ===== Vehicles =====
     getVehicles: `${BASE_URL}/api/vehicles/`,
+    vehicleAssignmentStatus: `${BASE_URL}/api/vehicle-assignment-status/`,
     
     updateVehicle: (id) => `${BASE_URL}/vehicles/${id}/`,
     updateVehicleFuelType: `${BASE_URL}/api/vehicles/update-fuel-type/`,

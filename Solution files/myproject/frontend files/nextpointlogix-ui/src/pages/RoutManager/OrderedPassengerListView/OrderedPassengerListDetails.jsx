@@ -73,6 +73,7 @@ const OrderedPassengerListDetails = () => {
   const [assignmentError, setAssignmentError] = useState(null);
   const [isCreatingRoute, setIsCreatingRoute] = useState(false);
   const routeResolutionAttemptRef = useRef(false);
+  const vehicleAssignmentFetchKeyRef = useRef(null);
 
   const defaultColDef = useMemo(
     () => ({
@@ -223,6 +224,11 @@ const OrderedPassengerListDetails = () => {
       first_name: driver.first_name ?? driver.firstName ?? "",
       last_name: driver.last_name ?? driver.lastName ?? "",
     });
+  }, []);
+
+  const handleClearSelections = useCallback(() => {
+    setSelectedVehicle(null);
+    setSelectedDriver(null);
   }, []);
 
   const selectedListId = useMemo(() => {
@@ -398,9 +404,20 @@ const OrderedPassengerListDetails = () => {
         },
       },
       {
+        headerName: t("ordered_passenger_list_vehicle_assigned", {
+          defaultValue: "Призначений",
+        }),
+        field: "assigned_route",
+        width: 150,
+        filter: false,
+        sortable: false,
+        valueGetter: ({ data }) => data?.assigned_route ?? "",
+      },
+      {
         headerName: t("vehicle_id", { defaultValue: "ID" }),
         field: "vehicle_id",
-        maxWidth: 140,
+        width: 70,
+        maxWidth: 70,
         filter: "agNumberColumnFilter",
       },
       {
@@ -451,10 +468,17 @@ const OrderedPassengerListDetails = () => {
           return "-";
         },
       },
-      
     ],
     [t, selectedVehicle, handleSelectVehicle]
   );
+
+  const getVehicleRowStyle = useCallback((params) => {
+    if (params?.data?.assigned_route) {
+      return { backgroundColor: "#ffebee" };
+    }
+
+    return undefined;
+  }, []);
 
   const driverColumnDefs = useMemo(
     () => [
@@ -506,7 +530,8 @@ const OrderedPassengerListDetails = () => {
       {
         headerName: t("driver_id", { defaultValue: "Driver ID" }),
         field: "driver_id",
-        maxWidth: 140,
+        width: 70,
+        maxWidth: 70,
         filter: "agNumberColumnFilter",
       },
       {
@@ -778,6 +803,11 @@ const OrderedPassengerListDetails = () => {
   }, [listId]);
 
   useEffect(() => {
+    vehicleAssignmentFetchKeyRef.current = null;
+    setAssignmentError(null);
+  }, [listId]);
+
+  useEffect(() => {
     setCanCreateRoute(Boolean(selectedVehicle) && Boolean(selectedDriver) && Boolean(listDetails));
   }, [selectedVehicle, selectedDriver, listDetails]);
 
@@ -803,6 +833,123 @@ const OrderedPassengerListDetails = () => {
     return combined.length ? combined : "-";
   }, [selectedVehicle]);
 
+  useEffect(() => {
+    const tripStart = listDetails?.estimated_start_time;
+    const tripEnd = listDetails?.estimated_end_time;
+
+    if (!vehicles.length || !tripStart || !tripEnd) {
+      return;
+    }
+
+    const vehicleIds = vehicles
+      .map((vehicle) =>
+        vehicle.vehicle_id ?? vehicle.id ?? vehicle.vehicleId ?? vehicle?.vehicle?.id
+      )
+      .filter((value) => value !== null && value !== undefined)
+      .map(String)
+      .sort();
+
+    if (!vehicleIds.length) {
+      return;
+    }
+
+    const allHaveAssignments = vehicles.every((vehicle) =>
+      Object.prototype.hasOwnProperty.call(vehicle, "assigned_route")
+    );
+
+    const fetchKey = `${tripStart}|${tripEnd}|${vehicleIds.join(",")}`;
+
+    if (
+      vehicleAssignmentFetchKeyRef.current === fetchKey &&
+      allHaveAssignments
+    ) {
+      return;
+    }
+
+    let isActive = true;
+    let encounteredError = false;
+
+    const fetchAssignments = async () => {
+      const updatedVehicles = await Promise.all(
+        vehicles.map(async (vehicle) => {
+          const vehicleId =
+            vehicle.vehicle_id ??
+            vehicle.id ??
+            vehicle.vehicleId ??
+            vehicle?.vehicle?.id;
+
+          if (vehicleId === null || vehicleId === undefined) {
+            if (Object.prototype.hasOwnProperty.call(vehicle, "assigned_route")) {
+              return vehicle;
+            }
+
+            return {
+              ...vehicle,
+              assigned_route: "",
+            };
+          }
+
+          try {
+            const response = await axios.get(
+              API_ENDPOINTS.vehicleAssignmentStatus,
+              {
+                params: {
+                  vehicle_id: vehicleId,
+                  start: tripStart,
+                  end: tripEnd,
+                },
+              }
+            );
+
+            const assignedRoute =
+              response?.data?.assigned && response?.data?.route_number
+                ? response.data.route_number
+                : "";
+
+            if (
+              Object.prototype.hasOwnProperty.call(vehicle, "assigned_route") &&
+              vehicle.assigned_route === assignedRoute
+            ) {
+              return vehicle;
+            }
+
+            return {
+              ...vehicle,
+              assigned_route: assignedRoute,
+            };
+          } catch (error) {
+            encounteredError = true;
+            console.error("Error fetching assignment:", error);
+
+            if (Object.prototype.hasOwnProperty.call(vehicle, "assigned_route")) {
+              return vehicle;
+            }
+
+            return {
+              ...vehicle,
+              assigned_route: "",
+            };
+          }
+        })
+      );
+
+      if (!isActive) {
+        return;
+      }
+
+      vehicleAssignmentFetchKeyRef.current = fetchKey;
+
+      setAssignmentError(encounteredError ? true : null);
+      setVehicles(updatedVehicles);
+    };
+
+    fetchAssignments();
+
+    return () => {
+      isActive = false;
+    };
+  }, [vehicles, listDetails?.estimated_start_time, listDetails?.estimated_end_time]);
+
   const createRouteButtonLabel = isCreatingRoute
     ? `${t("loading", { defaultValue: "Loading" })}...`
     : t("ordered_passenger_list_create_route", { defaultValue: "Створити Маршрут" });
@@ -825,47 +972,59 @@ const OrderedPassengerListDetails = () => {
           {listSummary && (
             <div className="ordered-passenger-list-details__summary">
               <div className="ordered-passenger-list-details__summary-top">
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item ordered-passenger-list-details__summary-top-item--id">
                   <span className="ordered-passenger-list-details__label">
                     {t("ID", { defaultValue: "ID" })}:
                   </span>
-                  <span>{listSummary.id ?? "-"}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.id ?? "-"}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item ordered-passenger-list-details__summary-top-item--direction">
                   <span className="ordered-passenger-list-details__label">
                     {t("direction", { defaultValue: "Direction" })}:
                   </span>
-                  <span>{listSummary.direction || "-"}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.direction || "-"}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("estimated_start_time", { defaultValue: "Start" })}:
                   </span>
-                  <span>{listSummary.startTime}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.startTime}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("estimated_end_time", { defaultValue: "End" })}:
                   </span>
-                  <span>{listSummary.endTime}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.endTime}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("start_city", { defaultValue: "Start city" })}:
                   </span>
-                  <span>{listSummary.startCity || "-"}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.startCity || "-"}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("end_city", { defaultValue: "End city" })}:
                   </span>
-                  <span>{listSummary.endCity || "-"}</span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
+                    {listSummary.endCity || "-"}
+                  </span>
                 </div>
-                <div>
+                <div className="ordered-passenger-list-details__summary-top-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("status", { defaultValue: "Status" })}:
                   </span>
-                  <span>
+                  <span className="ordered-passenger-list-details__summary-top-value">
                     {listSummary.isActive === true
                       ? t("active", { defaultValue: "Active" })
                       : listSummary.isActive === false
@@ -876,7 +1035,6 @@ const OrderedPassengerListDetails = () => {
               </div>
               <div className="ordered-passenger-list-details__section ordered-passenger-list-details__table-section">
               <div className="ordered-passenger-list-details__summary-bottom">
-                
                 <div className="ordered-passenger-list-details__summary-bottom-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("ordered_passenger_list_selected_vehicle_label", {
@@ -899,21 +1057,21 @@ const OrderedPassengerListDetails = () => {
                     {selectedDriverName}
                   </span>
                 </div>
+                <div className="ordered-passenger-list-details__summary-bottom-actions">
+                  <button
+                    type="button"
+                    className="ordered-passenger-list-details__clear-selection"
+                    onClick={handleClearSelections}
+                    disabled={!selectedVehicle && !selectedDriver}
+                  >
+                    {t("ordered_passenger_list_clear_selection", {
+                      defaultValue: "Очистити",
+                    })}
+                  </button>
+                </div>
               </div>
               </div>
               <div className="ordered-passenger-list-details__actions">
-                <button
-                  type="button"
-                  className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
-                >
-                  {t("ordered_passenger_list_disband", { defaultValue: "Розформувати" })}
-                </button>
-                <button
-                  type="button"
-                  className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
-                >
-                  {t("ordered_passenger_list_edit", { defaultValue: "Редагувати" })}
-                </button>
                 <button
                   type="button"
                   className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--primary"
@@ -941,24 +1099,37 @@ const OrderedPassengerListDetails = () => {
           )}
 
           <div className="ordered-passenger-list-details__section ordered-passenger-list-details__table-section">
-          <h2 className="ordered-passenger-list-details__section-title">
-            {t("passenger_list", { defaultValue: "Passenger list" })}
-          </h2>
-          <div className="ordered-passenger-list-details__grid-wrapper">
-            <div className="ag-theme-alpine">
-              <AgGridReact
-              
-                rowData={passengers}
-                columnDefs={passengerColumnDefs}
-                defaultColDef={defaultColDef}
-                suppressCellFocus
-                suppressBrowserResizeObserver
-                overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
-              pagination={true}
-              paginationPageSize={10}
-              />
+            <h2 className="ordered-passenger-list-details__section-title">
+              {t("passenger_list", { defaultValue: "Passenger list" })}
+            </h2>
+            <div className="ordered-passenger-list-details__grid-wrapper">
+              <div className="ag-theme-alpine">
+                <AgGridReact
+                  rowData={passengers}
+                  columnDefs={passengerColumnDefs}
+                  defaultColDef={defaultColDef}
+                  suppressCellFocus
+                  suppressBrowserResizeObserver
+                  overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
+                  pagination={true}
+                  paginationPageSize={10}
+                />
+              </div>
             </div>
-          </div>
+            <div className="ordered-passenger-list-details__actions ordered-passenger-list-details__actions--table">
+              <button
+                type="button"
+                className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
+              >
+                {t("ordered_passenger_list_disband", { defaultValue: "Розформувати" })}
+              </button>
+              <button
+                type="button"
+                className="ordered-passenger-list-details__action-button ordered-passenger-list-details__action-button--secondary"
+              >
+                {t("ordered_passenger_list_edit", { defaultValue: "Редагувати" })}
+              </button>
+            </div>
           <div className="ordered-passenger-list-details__vehicles">
             <h3 className="ordered-passenger-list-details__vehicles-title">
               {t("ordered_passenger_list_vehicles", {
@@ -972,6 +1143,7 @@ const OrderedPassengerListDetails = () => {
                 defaultColDef={defaultColDef}
                 suppressCellFocus
                 suppressBrowserResizeObserver
+                getRowStyle={getVehicleRowStyle}
                 overlayNoRowsTemplate={`<span class="ordered-passenger-list-details__empty">${t("no_data", { defaultValue: "No data available" })}</span>`}
               />
             </div>
