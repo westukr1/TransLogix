@@ -876,17 +876,7 @@ const OrderedPassengerListDetails = () => {
               </div>
               <div className="ordered-passenger-list-details__section ordered-passenger-list-details__table-section">
               <div className="ordered-passenger-list-details__summary-bottom">
-                <div className="ordered-passenger-list-details__summary-bottom-item">
-                  <span className="ordered-passenger-list-details__label">
-                    {t("ordered_passenger_list_selected_driver_label", {
-                      defaultValue: "Selected driver",
-                    })}
-                    :
-                  </span>
-                  <span className="ordered-passenger-list-details__value--highlight">
-                    {selectedDriverName}
-                  </span>
-                </div>
+                
                 <div className="ordered-passenger-list-details__summary-bottom-item">
                   <span className="ordered-passenger-list-details__label">
                     {t("ordered_passenger_list_selected_vehicle_label", {
@@ -896,6 +886,17 @@ const OrderedPassengerListDetails = () => {
                   </span>
                   <span className="ordered-passenger-list-details__value--highlight">
                     {selectedVehicleLabel}
+                  </span>
+                </div>
+                <div className="ordered-passenger-list-details__summary-bottom-item">
+                  <span className="ordered-passenger-list-details__label">
+                    {t("ordered_passenger_list_selected_driver_label", {
+                      defaultValue: "Selected driver",
+                    })}
+                    :
+                  </span>
+                  <span className="ordered-passenger-list-details__value--highlight">
+                    {selectedDriverName}
                   </span>
                 </div>
               </div>
