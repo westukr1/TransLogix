@@ -1,0 +1,68 @@
+@startuml
+' ITIL/ITSM-compliant Incident Management workflow for Jira Service Management
+skinparam activityStyle rectangle
+skinparam shadowing false
+skinparam defaultTextAlignment center
+
+title Jira Service Management - Incident Management (ITIL/ITSM)
+
+start
+
+fork
+:Service end user reports issue;
+  note right
+    External user submits request
+    via portal/chat/email.
+  end note
+fork again
+:Monitoring system generates alert;
+  note right
+    Automated detection of incidents
+    (e.g., availability/health checks).
+  end note
+fork again
+:Internal IT member reports incident;
+  note right
+    Issues found during routine work
+    or internal reviews.
+  end note
+end fork
+
+:Service project agent logs incident in service project;
+:Link related reports to the same incident;
+:Record timestamp, reporter, and unique incident ID;
+
+:Categorize incident with appropriate labels;
+  note right
+    Categories used for reporting
+    and post-incident review inputs.
+  end note
+
+:Prioritize based on impact and urgency;
+  note right
+    Priority drives SLA targets
+    and assignment order.
+  end note
+
+:Diagnose incident, affected services, and possible solutions;
+:Communicate with reporters during diagnosis;
+
+if (Escalation needed?
+Complex/major impact?) then (Yes)
+  :Escalate to 2nd-line support reps;
+  :2nd-line investigates and works on affected systems;
+endif
+
+:Restore service / implement resolution;
+:Verify fix is successful;
+if (Resolution successful?) then (Yes)
+  :Document resolution for future reference;
+else (No)
+  :Return to diagnosis for further investigation;
+  --> Diagnose incident, affected services, and possible solutions;
+endif
+
+:Service project automatically closes incident;
+
+stop
+@enduml
