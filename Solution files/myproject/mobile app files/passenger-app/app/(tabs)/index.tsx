@@ -37,29 +37,32 @@ export default function HomeScreen() {
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
+      <Link href="/modal">
+        <Link.Trigger>
+          <ThemedText type="subtitle">Step 2: Explore</ThemedText>
+        </Link.Trigger>
+        <Link.Preview />
+        <Link.Menu>
+          <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
+          <Link.MenuAction title="Перейти до заявок" onPress={() => alert('Go to requests pressed')}/>
+          <Link.MenuAction
+            title="Share"
+            icon="square.and.arrow.up"
+            onPress={() => alert('Share pressed')}
+          />
+          <Link.Menu title="More" icon="ellipsis">
             <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
+              title="Delete"
+              icon="trash"
+              destructive
+              onPress={() => alert('Delete pressed')}
             />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
           </Link.Menu>
-        </Link>
-
+        </Link.Menu>
+      </Link>
+<Link href="/(tabs)/requests" asChild>
+    <ThemedText type="link">Перейти до заявок</ThemedText>
+  </Link>
         <ThemedText>
           {`Tap the Explore tab to learn more about what's included in this starter app.`}
         </ThemedText>
