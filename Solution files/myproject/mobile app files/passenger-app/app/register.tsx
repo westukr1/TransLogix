@@ -13,7 +13,6 @@ import { Link, useRouter } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { API_BASE_URL } from '@/constants/api';
 
 // Validation helpers kept simple for now; they can be swapped for a dedicated form library later.
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -108,9 +107,7 @@ export default function RegisterScreen() {
     setIsSubmitting(true);
 
     try {
-      // Use the centralized API_BASE_URL so the app works on real devices and emulators.
-      // Ensure API_BASE_URL points to a network-reachable Django host (LAN IP or public URL).
-      const response = await fetch(`${API_BASE_URL}/api/mobile/register/`, {
+      const response = await fetch('http://127.0.0.1:8000/api/mobile/register/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
