@@ -37,6 +37,13 @@ export default function HomeScreen() {
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">New here?</ThemedText>
+        <ThemedText>Visit the registration screen to create your account.</ThemedText>
+        <Link href="/register" asChild>
+          <ThemedText type="link">Go to registration</ThemedText>
+        </Link>
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
       <Link href="/modal">
         <Link.Trigger>
           <ThemedText type="subtitle">Step 2: Explore</ThemedText>
