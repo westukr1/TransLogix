@@ -1,0 +1,161 @@
+@startuml
+' Standard ITSM processes in Jira Service Management
+skinparam activityStyle rectangle
+skinparam shadowing false
+skinparam defaultTextAlignment center
+skinparam partitionStyle swimlane
+
+title Jira Service Management - Service Desk Intake, Incident Management, and Request Fulfillment
+
+partition Customer {
+  start
+  :Create request via Portal or Email;
+}
+
+partition "Jira Service Desk (Portal / E-mail)" {
+  :Convert request into ticket;
+}
+
+partition "Jira System (automation, SLAs)" {
+  :Classify ticket as Incident or Service Request;
+}
+
+if (Is this an Incident?) then (Yes)
+  partition "Service Desk Agent" {
+    :Initial triage (impact, urgency, priority);
+    :Set status: Open;
+    :Assign to Support Team;
+  }
+
+  partition "Support Team" {
+    :Investigate and diagnose incident;
+    :Set status: In Progress;
+    waiting_customer: Awaiting customer details
+    if (Need escalation?) then (Yes)
+      :Escalate to higher support level (L2/L3);
+      --> Investigate and diagnose incident
+    endif
+    if (Need information from customer?) then (Yes)
+      --> waiting_customer
+    endif
+  }
+
+  waiting_customer --> partition "Service Desk Agent" {
+    :Set status: Waiting for Customer;
+  }
+  partition Customer {
+    :Provide additional information;
+  }
+  partition "Support Team" {
+    --> Investigate and diagnose incident;
+    :Restore service / implement workaround;
+  }
+
+  partition "Service Desk Agent" {
+    :Update incident, document resolution;
+    :Set status: Resolved;
+  }
+
+  partition Customer {
+    if (Is the incident resolved to customer satisfaction?) then (Yes)
+      --> incident_close
+    else (No)
+      --> incident_reopen
+    endif
+  }
+
+  incident_reopen --> partition "Service Desk Agent" {
+    :Reopen incident;
+  }
+  incident_reopen --> partition "Support Team" {
+    --> Investigate and diagnose incident;
+  }
+
+  incident_close --> partition "Service Desk Agent" {
+    :Close incident (status: Closed);
+  }
+
+  partition "Jira System (automation, SLAs)" {
+    :Record SLA metrics (time to first response, time to resolution);
+    :Optionally create Problem record for recurring incidents;
+  }
+
+  note right
+    Incident flow aims to restore service quickly
+  end note
+  --> flow_end
+else (No)
+  partition "Service Desk Agent" {
+    :Check completeness of request;
+    :Identify request type (access / hardware / software / general service);
+  }
+
+  partition "Jira System (automation, SLAs)" {
+    if (Is approval required?) then (Yes)
+      --> approval_needed
+    else (No)
+      --> fulfillment_start
+    endif
+  }
+
+  approval_needed --> partition Approver {
+    :Review request and business justification;
+    if (Approve request?) then (Yes)
+      --> approval_granted
+    else (No)
+      --> approval_rejected
+    endif
+  }
+
+  approval_rejected --> partition "Service Desk Agent" {
+    :Inform customer about rejection;
+    :Set status: Closed;
+  }
+  approval_rejected --> flow_end
+
+  approval_granted --> fulfillment_start
+
+  fulfillment_start --> partition "Support Team" {
+    :Fulfill request (grant access / configure system / deliver hardware or service);
+    :Update ticket with fulfillment details;
+  }
+
+  partition "Service Desk Agent" {
+    :Notify customer that request is fulfilled;
+    :Set status: Resolved;
+  }
+
+  partition Customer {
+    if (Is the result acceptable?) then (Yes)
+      --> request_close
+    else (No)
+      --> request_reopen
+    endif
+  }
+
+  request_reopen --> partition "Service Desk Agent" {
+    :Reopen request;
+  }
+  request_reopen --> partition "Support Team" {
+    :Perform additional actions to fulfill request;
+    --> Notify customer that request is fulfilled;
+  }
+
+  request_close --> partition "Service Desk Agent" {
+    :Set status: Closed;
+  }
+
+  partition "Jira System (automation, SLAs)" {
+    :Record SLA metrics for service request;
+    :Collect customer satisfaction rating (CSAT);
+  }
+
+  note right
+    Service Request flow aims to provide standard services
+  end note
+  --> flow_end
+endif
+
+flow_end: Ticket lifecycle completed
+flow_end --> stop
+@enduml
