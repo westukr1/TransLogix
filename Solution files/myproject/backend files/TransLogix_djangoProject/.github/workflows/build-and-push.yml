@@ -1,0 +1,54 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # BACKEND
+      - name: Build and push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Solution files/myproject/backend files/TransLogix_djangoProject
+          file: ./Solution files/myproject/backend files/TransLogix_djangoProject/Dockerfile
+          push: true
+          tags: ghcr.io/westukr1/translogix-backend:latest
+
+      # AUTH FRONTEND
+      - name: Build and push auth frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Solution files/myproject/frontend files/auth-app
+          file: ./Solution files/myproject/frontend files/auth-app/Dockerfile
+          push: true
+          tags: ghcr.io/westukr1/translogix-auth:latest
+
+      # OPERATOR FRONTEND
+      - name: Build and push operator frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Solution files/myproject/frontend files/nextpointlogix-ui
+          file: ./Solution files/myproject/frontend files/nextpointlogix-ui/Dockerfile
+          push: true
+          tags: ghcr.io/westukr1/translogix-operator:latest
+
