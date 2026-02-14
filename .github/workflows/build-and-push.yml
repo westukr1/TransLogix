@@ -1,0 +1,55 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # =========================
+      # BACKEND
+      # =========================
+      - name: Build and push backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Solution files/myproject/backend files
+          push: true
+          tags: ghcr.io/westukr1/translogix-backend:latest
+
+      # =========================
+      # AUTH FRONTEND
+      # =========================
+      - name: Build and push auth frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Solution files/myproject/frontend files/auth-app
+          push: true
+          tags: ghcr.io/westukr1/translogix-auth:latest
+
+      # =========================
+      # OPERATOR FRONTEND
+      # =========================
+      - name: Build and push operator frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Solution files/myproject/frontend files/nextpointlogix-ui
+          push: true
+          tags: ghcr.io/westukr1/translogix-operator:latest
