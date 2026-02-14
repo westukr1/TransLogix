@@ -1,0 +1,50 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: translogix-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: TransLogix_main_db
+      MYSQL_USER: translogix_user
+      MYSQL_PASSWORD: translogix_pass
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - translogix_db:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+
+  backend:
+    image: ghcr.io/westukr1/translogix-backend:latest
+    container_name: translogix-backend
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      # важливо: Django має брати ці значення з env (див. крок 2)
+      DB_NAME: TransLogix_main_db
+      DB_USER: translogix_user
+      DB_PASSWORD: translogix_pass
+      DB_HOST: db
+      DB_PORT: "3306"
+      DJANGO_SETTINGS_MODULE: TransLogix_djangoProject.settings
+      TZ: Europe/Kyiv
+    ports:
+      - "8000:8000"
+
+  auth:
+    image: ghcr.io/westukr1/translogix-auth:latest
+    container_name: translogix-auth
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+
+  operator:
+    image: ghcr.io/westukr1/translogix-operator:latest
+    container_name: translogix-operator
+    restart: unless-stopped
+    ports:
+      - "3003:80"
+
+volumes:
+  translogix_db:

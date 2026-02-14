@@ -15,6 +15,7 @@ import environ
 
 from TransLogix_djangoProject import apps
 from TransLogix_djangoProject.apps import TranslogixConfig
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -93,17 +94,23 @@ AUTH_USER_MODEL = 'TransLogix_djangoProject.User'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+DB_NAME = os.getenv("DB_NAME", "TransLogix_main_db")
+DB_USER = os.getenv("DB_USER", "root")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "Kitmarsik1")
+DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
+DB_PORT = os.getenv("DB_PORT", "3306")
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'TransLogix_main_db',
-        'USER': 'root',  # Замініть на вашого користувача MySQL
-        'PASSWORD': 'Kitmarsik1',  # Замініть на ваш пароль MySQL
-        'HOST': '127.0.0.1',  # Або адресу вашого сервера MySQL
-        'PORT': '3306',  # Або порт вашого сервера MySQL
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": DB_NAME,
+        "USER": DB_USER,
+        "PASSWORD": DB_PASSWORD,
+        "HOST": DB_HOST,
+        "PORT": DB_PORT,
+        "OPTIONS": {"charset": "utf8mb4"},
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
