@@ -30,8 +30,17 @@ SECRET_KEY = 'django-insecure-gblok*2stakrn!-fdd6z_wxp!^i0li$=%972@g&!-86=_ax&6t
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",") if h.strip()]
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "nextpointlogix.pp.ua",
+    "www.nextpointlogix.pp.ua",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://nextpointlogix.pp.ua",
+    "https://www.nextpointlogix.pp.ua",
+]
 
 
 
