@@ -28,19 +28,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-gblok*2stakrn!-fdd6z_wxp!^i0li$=%972@g&!-86=_ax&6t'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DJANGO_DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "nextpointlogix.pp.ua",
-    "www.nextpointlogix.pp.ua",
-]
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://nextpointlogix.pp.ua",
-    "https://www.nextpointlogix.pp.ua",
-]
+
+
+def csv_env(name: str, default: str = ""):
+    raw = os.getenv(name, default)
+    return [x.strip() for x in raw.split(",") if x.strip()]
+
+DEBUG = os.getenv("DJANGO_DEBUG", "0") in ("1", "true", "True", "yes", "YES")
+
+ALLOWED_HOSTS = csv_env("DJANGO_ALLOWED_HOSTS")
+CSRF_TRUSTED_ORIGINS = csv_env("DJANGO_CSRF_TRUSTED_ORIGINS")
+
 
 
 
