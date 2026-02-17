@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import "./i18n";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { BUILD_INFO } from "./buildInfo";
 
 function App() {
   const [username, setUsername] = useState("");
@@ -159,6 +160,10 @@ function App() {
             Українська мова
           </button>
         </div>
+        <div style={{ opacity: 0.6, fontSize: 12 }}>
+          Build: {BUILD_INFO.version} | {BUILD_INFO.commit} | {BUILD_INFO.builtAt}
+        </div>
+
       </div>
     </div>
   );
