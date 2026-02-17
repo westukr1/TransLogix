@@ -37,6 +37,10 @@ jobs:
           file: "Solution files/myproject/frontend files/auth-app/Dockerfile"
           push: true
           tags: ghcr.io/westukr1/translogix-auth:latest
+          build-args: |
+            REACT_APP_GIT_SHA=${{ github.sha }}
+            REACT_APP_VERSION=${{ github.run_number }}
+            REACT_APP_BUILD_TIME=${{ github.run_id }}
 
       # OPERATOR FRONTEND
       - name: Build and push operator frontend
@@ -46,3 +50,8 @@ jobs:
           file: "Solution files/myproject/frontend files/nextpointlogix-ui/Dockerfile"
           push: true
           tags: ghcr.io/westukr1/translogix-operator:latest
+          build-args: |
+            REACT_APP_GIT_SHA=${{ github.sha }}
+            REACT_APP_VERSION=${{ github.run_number }}
+            REACT_APP_BUILD_TIME=${{ github.run_id }}
+
