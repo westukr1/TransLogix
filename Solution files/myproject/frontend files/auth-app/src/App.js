@@ -27,6 +27,10 @@ function App() {
   // eslint-disable-next-line
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+  const fmt = (iso) => {
+    if (!iso || iso === "unknown") return "unknown";
+    return new Date(iso).toLocaleString("uk-UA", { hour12: false });
+  };
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem("language");
@@ -34,7 +38,7 @@ function App() {
       i18n.changeLanguage(savedLanguage);
     }
   }, [i18n]);
-  
+
   useEffect(() => {
     console.log(
       "BUILD:",
@@ -171,7 +175,7 @@ function App() {
           </button>
         </div>
         <div style={{ opacity: 0.6, fontSize: 12 }}>
-          Build: {BUILD_INFO.version} | {BUILD_INFO.commit} | {BUILD_INFO.builtAt}
+         {`Build: ${BUILD_INFO.version} | Built: ${fmt(BUILD_INFO.builtAt)} | Commit: ${BUILD_INFO.commit.slice(0,7)} (${fmt(BUILD_INFO.commitAt)})`}
         </div>
 
       </div>
