@@ -38,6 +38,7 @@ function App() {
   const handleGuestAccess = () => {
     navigate("/guest-access");
   };
+  console.log("BUILD", process.env.REACT_APP_VERSION, process.env.REACT_APP_GIT_SHA, process.env.REACT_APP_BUILD_TIME);
 
   const handleLogin = async () => {
     console.log("Відправляємо дані:", { username, password });
