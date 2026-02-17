@@ -34,6 +34,15 @@ function App() {
       i18n.changeLanguage(savedLanguage);
     }
   }, [i18n]);
+  
+  useEffect(() => {
+    console.log(
+      "BUILD:",
+      process.env.REACT_APP_VERSION,
+      process.env.REACT_APP_GIT_SHA,
+      process.env.REACT_APP_BUILD_TIME
+    );
+  }, []);
 
   const handleGuestAccess = () => {
     navigate("/guest-access");
