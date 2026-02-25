@@ -1,7 +1,7 @@
 // src/runtimeConfig.js
 
 let runtimeConfig = {
-  apiBaseUrl: "http://localhost:8000", // fallback для локальної розробки
+  apiBaseUrl: "/api"
 };
 
 export async function loadRuntimeConfig() {
