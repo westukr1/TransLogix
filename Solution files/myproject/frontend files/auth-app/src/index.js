@@ -1,14 +1,23 @@
-import React from 'react';
-import { createRoot } from 'react-dom/client'; // Імпортуємо createRoot
-import './index.css';
-import AppRouter from './App'; // Імпортуємо AppRouter
+import React from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import AppRouter from "./App";
+import { loadRuntimeConfig, getRuntimeConfig } from "./runtimeConfig";
 
-const container = document.getElementById('root');
-const root = createRoot(container); // Створюємо root тільки один раз
+async function bootstrap() {
+  await loadRuntimeConfig(); // підтягуємо config.json ДО старту React
 
-// Використовуємо root.render для рендерингу компоненту
-root.render(
-  <React.StrictMode>
-    <AppRouter />
-  </React.StrictMode>
-);
+  // необов’язково, але корисно для перевірки:
+  console.log("Runtime config:", getRuntimeConfig());
+
+  const container = document.getElementById("root");
+  const root = createRoot(container);
+
+  root.render(
+    <React.StrictMode>
+      <AppRouter />
+    </React.StrictMode>
+  );
+}
+
+bootstrap();

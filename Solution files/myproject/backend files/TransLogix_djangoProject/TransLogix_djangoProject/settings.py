@@ -21,6 +21,9 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -36,14 +39,15 @@ def csv_env(name: str, default: str = ""):
     raw = os.getenv(name, default)
     return [x.strip() for x in raw.split(",") if x.strip()]
 
-DEBUG = os.getenv("DJANGO_DEBUG", "0") in ("1", "true", "True", "yes", "YES")
+DEBUG = env.bool("DJANGO_DEBUG", default=False)
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
 
-ALLOWED_HOSTS = csv_env("DJANGO_ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = csv_env("DJANGO_CSRF_TRUSTED_ORIGINS")
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 
-
+print("DEBUG =", DEBUG)
+print("ALLOWED_HOSTS =", ALLOWED_HOSTS)
 
 
 
@@ -222,9 +226,6 @@ DEFAULT_FROM_EMAIL = 'nextpoint.new@gmail.com'
 
 LOGIN_URL = '/login/'
 
-# Ініціалізуємо налаштування
-env = environ.Env()
-environ.Env.read_env()  # Це завантажить змінні з файлу .env
 
 # Отримуємо ключ Google API
 GOOGLE_MAPS_API_KEY = env('GOOGLE_MAPS_API_KEY')
