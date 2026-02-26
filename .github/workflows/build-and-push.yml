@@ -71,6 +71,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            cd C:/TransLogix
+            cd C:\translogix-deploy
             docker compose pull
             docker compose up -d
