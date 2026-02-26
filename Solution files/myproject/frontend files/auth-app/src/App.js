@@ -67,7 +67,7 @@ function App() {
 
     try {
       // ✅ було: fetch("http://localhost:8000/api/custom-login/", ...)
-      const response = await apiFetch("/api/custom-login/", {
+      const response = await apiFetch("/custom-login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -81,7 +81,7 @@ function App() {
         const token = data.access;
 
         // ✅ було: fetch("http://localhost:8000/api/me/", ...)
-        const profileResponse = await apiFetch("/api/me/", {
+        const profileResponse = await apiFetch("/me/", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -98,7 +98,7 @@ function App() {
         localStorage.setItem("user_id", profileData.id);
 
         // ✅ було: fetch("http://localhost:8000/api/allowed-apps/", ...)
-        const rolesResponse = await apiFetch("/api/allowed-apps/", {
+        const rolesResponse = await apiFetch("/allowed-apps/", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
