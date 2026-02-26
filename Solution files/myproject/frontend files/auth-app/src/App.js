@@ -17,6 +17,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import { BUILD_INFO } from "./buildInfo";
+// перевіряємо автоматичний деплоймент через GitHub Actions - ці змінні підтягуються з .env файлу під час збірки, а ми їх виводимо в консоль і в UI для перевірки
 
 // ✅ API wrapper that uses runtime config (public/config.json)
 import { apiFetch } from "./apiFetch";
