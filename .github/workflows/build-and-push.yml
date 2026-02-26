@@ -34,7 +34,6 @@ jobs:
           echo "REACT_APP_BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_ENV
           echo "REACT_APP_COMMIT_TIME=$(git show -s --format=%cI ${{ github.sha }})" >> $GITHUB_ENV
 
-
       # AUTH FRONTEND
       - name: Build and push auth frontend
         uses: docker/build-push-action@v6
@@ -48,7 +47,6 @@ jobs:
             REACT_APP_VERSION=${{ github.run_number }}
             REACT_APP_BUILD_TIME=${{ env.REACT_APP_BUILD_TIME }}
             REACT_APP_COMMIT_TIME=${{ env.REACT_APP_COMMIT_TIME }}
-
 
       # OPERATOR FRONTEND
       - name: Build and push operator frontend
@@ -64,3 +62,15 @@ jobs:
             REACT_APP_BUILD_TIME=${{ env.REACT_APP_BUILD_TIME }}
             REACT_APP_COMMIT_TIME=${{ env.REACT_APP_COMMIT_TIME }}
 
+      # DEPLOY TO SERVER VIA SSH (Windows server)
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd C:/TransLogix
+            docker compose pull
+            docker compose up -d
