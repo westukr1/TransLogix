@@ -62,7 +62,7 @@ jobs:
             REACT_APP_BUILD_TIME=${{ env.REACT_APP_BUILD_TIME }}
             REACT_APP_COMMIT_TIME=${{ env.REACT_APP_COMMIT_TIME }}
 
-      # DEPLOY TO SERVER VIA SSH (Windows server)
+      # DEPLOY TO LINUX SERVER VIA SSH
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -71,6 +71,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            cd C:/translogix-deploy
-            docker compose pull
-            docker compose up -d
+            cd /opt/nextpointlogix
+            ./deploy.sh
