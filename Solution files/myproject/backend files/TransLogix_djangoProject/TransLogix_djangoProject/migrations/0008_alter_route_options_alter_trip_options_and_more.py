@@ -34,6 +34,9 @@ class Migration(migrations.Migration):
                 ('objects', django.contrib.auth.models.UserManager()),
             ],
         ),
+        migrations.RunSQL(
+            "ALTER TABLE translogix_djangoproject_passengerroute DROP FOREIGN KEY TransLogix_djangoPro_route_id_f12c13f0_fk_TransLogi;",
+        ),
         migrations.RemoveField(
             model_name='bookingrequest',
             name='route',
