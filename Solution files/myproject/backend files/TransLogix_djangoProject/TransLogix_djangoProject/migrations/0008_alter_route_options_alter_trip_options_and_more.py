@@ -44,6 +44,10 @@ class Migration(migrations.Migration):
             name='route',
         ), 
         migrations.RemoveField(
+            model_name='passengerroute',
+            name='route',
+        ),
+        migrations.RemoveField(
             model_name='route',
             name='route_id',
         ),
