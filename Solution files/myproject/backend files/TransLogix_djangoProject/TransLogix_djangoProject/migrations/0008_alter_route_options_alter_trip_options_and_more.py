@@ -38,13 +38,14 @@ class Migration(migrations.Migration):
             model_name='bookingrequest',
             name='route',
         ),
-        migrations.RemoveField(
-            model_name='route',
-            name='route_id',
-        ),
+      
         migrations.RemoveField(
             model_name='trip',
             name='route',
+        ), 
+        migrations.RemoveField(
+            model_name='route',
+            name='route_id',
         ),
         migrations.RemoveField(
             model_name='user',
