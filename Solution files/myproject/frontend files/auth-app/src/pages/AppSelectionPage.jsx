@@ -52,7 +52,9 @@ const AppSelectionPage = () => {
     if (path === "/operator-ui") {
       const selectedLanguage = localStorage.getItem("language"); // Отримуємо мову
       const accessToken = localStorage.getItem("access_token"); // Отримуємо токен
-      // Передаємо мову та токен через URL
+      const { operatorUiUrl = "https://operator.nextpointlogix.pp.ua/" } =
+        getRuntimeConfig();
+
        window.location.href =
       `${operatorUiUrl}?lang=${encodeURIComponent(selectedLanguage)}` +
       `&access_token=${encodeURIComponent(accessToken)}`;
