@@ -1,3 +1,4 @@
 {
-  "apiBaseUrl": "/api"
+  "apiBaseUrl": "/api",
+  "operatorUiUrl": "https://operator.nextpointlogix.pp.ua/"
 }

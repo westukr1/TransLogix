@@ -25,7 +25,7 @@ import { apiFetch } from "./apiFetch";
 function OperatorUiRedirect() {
   useEffect(() => {
     // TODO: потім винесемо в config.json як operatorUiUrl
-    window.location.href = "http://localhost:3003/";
+    window.location.href = "/operator/";
   }, []);
   return null;
 }

@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import "./AppSelectionPage.css";
 import { useTranslation } from "react-i18next";
 import i18n from "../i18n";
+import { apiFetch } from "../apiFetch";
+import { getRuntimeConfig } from "../runtimeConfig";
 
 const AppSelectionPage = () => {
   const [allowedApps, setAllowedApps] = useState({
@@ -18,7 +20,7 @@ const AppSelectionPage = () => {
 
     // Перевіряємо, чи є токен, і робимо запит на отримання дозволених додатків
     if (token) {
-      fetch("http://localhost:8000/api/allowed-apps/", {
+      apiFetch("/allowed-apps/", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`, // Додаємо токен до заголовка запиту
@@ -51,7 +53,9 @@ const AppSelectionPage = () => {
       const selectedLanguage = localStorage.getItem("language"); // Отримуємо мову
       const accessToken = localStorage.getItem("access_token"); // Отримуємо токен
       // Передаємо мову та токен через URL
-      window.location.href = `http://localhost:3003?lang=${selectedLanguage}&access_token=${accessToken}`;
+       window.location.href =
+      `${operatorUiUrl}?lang=${encodeURIComponent(selectedLanguage)}` +
+      `&access_token=${encodeURIComponent(accessToken)}`;
     } else {
       navigate(path);
     }
