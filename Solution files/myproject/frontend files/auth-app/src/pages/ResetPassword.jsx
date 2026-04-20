@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import "./AppSelectionPage.css"; // Підключаємо стиль
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../apiFetch";
 
 const ResetPassword = () => {
   const [username, setUsername] = useState(""); // Юзер тільки для читання
@@ -16,7 +17,7 @@ const ResetPassword = () => {
 
   useEffect(() => {
     let isMounted = true; // Додаємо прапорець, що компонент змонтований
-    fetch("http://localhost:8000/api/me/", {
+    apiFetch("/me/", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -40,21 +41,18 @@ const ResetPassword = () => {
     setMessage(""); // Очищення повідомлення перед відправкою
 
     try {
-      const response = await fetch(
-        "http://localhost:8000/api/change-password/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-          body: JSON.stringify({
-            old_password: oldPassword,
-            new_password: newPassword,
-            confirm_new_password: confirmNewPassword,
-          }),
-        }
-      );
+      const response = await apiFetch("/change-password/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        body: JSON.stringify({
+          old_password: oldPassword,
+          new_password: newPassword,
+          confirm_new_password: confirmNewPassword,
+        }),
+      });
 
       const data = await response.json();
       if (response.ok) {

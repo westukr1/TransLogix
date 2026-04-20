@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import "./AppSelectionPage.css"; // Використовуємо стиль з AppSelectionPage.css
 import { useTranslation } from "react-i18next";
+import { apiFetch } from "../apiFetch";
 
 const ForgotPassword = () => {
   const [emailOrUsername, setEmailOrUsername] = useState("");
@@ -11,7 +12,7 @@ const ForgotPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await fetch("http://localhost:8000/api/forgot-password/", {
+    const response = await apiFetch("/forgot-password/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

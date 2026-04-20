@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AppSelectionPage.css"; // Використовуємо стилі з AppSelectionPage
 import { useTranslation } from "react-i18next";
+import { apiFetch } from "../apiFetch";
 
 const NewUser = () => {
   const [username, setUsername] = useState("");
@@ -89,7 +90,7 @@ const NewUser = () => {
 
     // Логіка для відправки даних на сервер
     try {
-      const response = await fetch("http://localhost:8000/api/users/", {
+      const response = await apiFetch("/users/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

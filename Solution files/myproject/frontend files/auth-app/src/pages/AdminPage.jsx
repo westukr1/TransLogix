@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-// eslint-disable-next-line
-import axios from "axios";
 import "./AdminPage.css";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { FaFilter, FaUndo, FaSave, FaCheck } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { apiFetch } from "../apiFetch";
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -30,7 +29,7 @@ const AdminPage = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/user-list/", {
+        const response = await apiFetch("/user-list/", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -55,7 +54,7 @@ const AdminPage = () => {
 
   const handleAdminPanelRedirect = () => {
     window.location.href =
-      "http://localhost:8000/admin/TransLogix_djangoProject/user/";
+      "/admin/TransLogix_djangoProject/user/";
   };
 
   const handleCreateNewUser = () => {
@@ -131,7 +130,7 @@ const AdminPage = () => {
     // console.log('Users being sent to backend:', JSON.stringify(users)); // Логування даних перед відправкою
     // console.log(users); // Перевірка: виводимо в консоль усіх користувачів перед відправкою
     try {
-      const response = await fetch("http://localhost:8000/api/user-update/", {
+      const response = await apiFetch("/user-update/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -157,16 +156,13 @@ const AdminPage = () => {
         // console.log('Response data from server:', data);
 
         // Якщо запит успішний, отримуємо оновлений список користувачів
-        const updatedUsersResponse = await fetch(
-          "http://localhost:8000/api/user-list/",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            },
-          }
-        );
+        const updatedUsersResponse = await apiFetch("/user-list/", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        });
 
         const updatedUsersData = await updatedUsersResponse.json();
         // console.log('Updated users data:', updatedUsersData); // Логування для перевірки отриманих даних
