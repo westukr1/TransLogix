@@ -62,14 +62,15 @@ jobs:
             REACT_APP_BUILD_TIME=${{ env.REACT_APP_BUILD_TIME }}
             REACT_APP_COMMIT_TIME=${{ env.REACT_APP_COMMIT_TIME }}
 
-      # DEPLOY TO LINUX SERVER VIA SSH
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            cd /opt/nextpointlogix
-            ./deploy.sh
+      # TRIGGER DEPLOY WEBHOOK
+      - name: Trigger deploy webhook
+        if: success()
+        shell: bash
+        run: |
+          BODY='{"event":"deploy","ref":"${{ github.ref }}","sha":"${{ github.sha }}"}'
+          SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "${{ secrets.DEPLOY_WEBHOOK_SECRET }}" -binary | xxd -p -c 256)
+
+          curl -i -X POST "https://nextpointlogix.pp.ua/deploy-webhook" \
+            -H "Content-Type: application/json" \
+            -H "X-Hub-Signature-256: sha256=$SIG" \
+            --data "$BODY"
