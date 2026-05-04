@@ -7,7 +7,7 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import './ReferenceData.css';
 import axios from "../../utils/axiosInstance";
-import { API_ENDPOINTS } from "../../config/apiConfig";
+import { API_ENDPOINTS, apiFetch } from "../../config/apiConfig";
 
 const ReferenceData = () => {
   const { t } = useTranslation();
@@ -43,7 +43,7 @@ const ReferenceData = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/fuel-types/', {
+      const response = await apiFetch(API_ENDPOINTS.getFuelTypes, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,

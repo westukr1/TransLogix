@@ -1,13 +1,13 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config/apiConfig';
 
 const axiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL, // автоматично підтягне з .env
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json'
   }
 });
 
-// Додаємо токен і session ID до кожного запиту (якщо є)
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
@@ -29,4 +29,3 @@ axiosInstance.interceptors.request.use(
 );
 
 export default axiosInstance;
-

@@ -84,7 +84,7 @@ const RepeatTripView = () => {
         console.log("📦 Дані для збереження:", payload);
 
         await axios.post(
-          "http://localhost:8000/api/passenger-trip-requests/create/",
+          API_ENDPOINTS.createTripRequest,
           payload,
           {
             headers: { Authorization: `Bearer ${token}` },

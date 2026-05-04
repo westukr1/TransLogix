@@ -8,7 +8,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import axios from '../../../utils/axiosInstance'; // правильний шлях
 
 import { useSelector } from 'react-redux';
-import { API_ENDPOINTS } from '../../../config/apiConfig';
+import { API_ENDPOINTS, apiFetch } from '../../../config/apiConfig';
 
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
@@ -325,9 +325,8 @@ setRequests(sortedRequests);
         longitude: parseFloat(longitude.toFixed(6)),
       };
 
-      await fetch(
+      await apiFetch(
         API_ENDPOINTS.updateCoordinates(coordinatePointId),
-        updatedCoordinates,
         {
           method: "PUT",
           headers: {
