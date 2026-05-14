@@ -105,6 +105,48 @@ class CustomLoginView(APIView):
             return Response({"detail": "Невірні дані для входу"}, status=status.HTTP_401_UNAUTHORIZED)
 
 # Новий клас для створення користувача
+class Auth0LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = (request.data.get("email") or "").strip()
+
+        # Auth0 is an additional login method. For now we map the Auth0 email
+        # to an existing Django user, then issue the same Django JWT used by
+        # the current username/password flow.
+        # TODO: validate the Auth0 ID token signature before trusting this
+        # request in production.
+        if not email:
+            return Response({"detail": "Auth0 email is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "У вас немає прав на роботу в додатку, зверніться до адміністратора."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if user.is_blocked:
+            return Response(
+                {"detail": "У вас немає прав на роботу в додатку, зверніться до адміністратора."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        refresh = RefreshToken.for_user(user)
+        allowed_apps = {
+            "operator_ui": user.is_logistic_operator,
+            "finance_manager": user.is_financial_manager,
+            "admin": user.is_admin,
+        }
+
+        return Response({
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+            "user_id": user.id,
+            "allowed_apps": allowed_apps,
+        })
+
 class CreateUserView(APIView):
     permission_classes = [AllowAny]  # Доступно всім, щоб реєструвати нового користувача
 

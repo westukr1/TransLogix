@@ -94,7 +94,8 @@
   "fill_form_text": "Please fill in the form to create a new user account.",
   "create_users_account": "Create",
   "blocked_message": "Access is denied. Please contact an administrator.",
-  "unauthorized_message": "Invalid username or password"
+  "unauthorized_message": "Invalid username or password",
+  "other_login_methods": "Other login methods"
   
 
 

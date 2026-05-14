@@ -111,6 +111,7 @@ urlpatterns = [
     path('api/user-list/', UserListView.as_view(), name='user-list'),  # Додаємо маршрут для отримання списку користувачів
     path('api/user-update/', update_users, name='user-update'),
     path('api/custom-login/', CustomLoginView.as_view(), name='custom_login'),
+    path('api/auth0-login/', views.Auth0LoginView.as_view(), name='auth0_login'),
     path('api/getUserRoles/', views.get_user_roles, name='get_user_roles'),
     path('api/allowed-apps/', get_allowed_apps, name='allowed_apps'),
     path('api/routes/', RouteListView.as_view(), name='route-list'),  # Ендпоінт для отримання маршрутів

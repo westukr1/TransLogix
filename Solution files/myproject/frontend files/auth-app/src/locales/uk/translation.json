@@ -91,7 +91,8 @@
   "fill_form_text": "Будь ласка, заповніть форму, щоб створити новий обліковий запис.",
   "create_users_account": "Створити",
   "blocked_message": "Access is denied. Please contact an administrator.",
-  "unauthorized_message": "Недійсне ім'я користувача або пароль"
+  "unauthorized_message": "Недійсне ім'я користувача або пароль",
+  "other_login_methods": "Інші способи входу"
 
 }
  

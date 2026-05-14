@@ -1,3 +1,4 @@
+/* Desktop layout: keep the existing side-by-side login screen. */
 .container {
   display: flex;
   height: 100vh; /* Висота на весь екран */
@@ -47,6 +48,8 @@
 }
 
 .auth-input {
+  box-sizing: border-box;
+  width: 100%;
   padding: 10px;
   font-size: 16px;
   border: 3px solid #c0c0c0; /* Срібна рамка */
@@ -69,4 +72,67 @@
 
 .auth-button:hover {
   background-color: #3a3a3a;
+}
+
+.auth0-login-button-container {
+  width: 100%;
+}
+
+.auth0-login-button {
+  width: 100%;
+}
+
+/* Mobile breakpoint: stack the logo above the form so narrow screens do not scroll sideways. */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    width: 100%;
+    min-height: 100vh;
+    height: auto;
+    overflow-x: hidden;
+  }
+
+  /* The left/logo column becomes the top section on mobile. */
+  .container .app-left-column {
+    width: 100%;
+    height: 34vh;
+    min-height: 220px;
+    max-height: 320px;
+  }
+
+  .container .right-column {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 66vh;
+    padding: 16px;
+    gap: 20px;
+    justify-content: flex-start;
+  }
+
+  .container .logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .container .top-buttons,
+  .container .language-select {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .container .auth-fields {
+    width: 100%;
+  }
+
+  .container .auth-input,
+  .container .auth-button {
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .container .auth-button {
+    flex: none;
+    min-height: 44px;
+  }
 }

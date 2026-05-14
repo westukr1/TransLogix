@@ -17,6 +17,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import { BUILD_INFO } from "./buildInfo";
+import Auth0LoginButton from "./Auth0LoginButton";
 // перевіряємо автоматичний деплоймент через GitHub Actions - ці змінні підтягуються з .env файлу під час збірки, а ми їх виводимо в консоль і в UI для перевірки
 
 // ✅ API wrapper that uses runtime config (public/config.json)
@@ -175,6 +176,10 @@ function App() {
           <button className="auth-button" onClick={handleLogin}>
             {t("login")}
           </button>
+
+          {/* Additional Auth0 login entry point. It does not replace the existing Django JWT flow.
+              TODO: Later exchange the Auth0 token with Django for the existing app JWT. */}
+          <Auth0LoginButton />
         </div>
 
         <ToastContainer autoClose={5000} />

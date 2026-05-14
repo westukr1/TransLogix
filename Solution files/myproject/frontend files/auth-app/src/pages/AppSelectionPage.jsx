@@ -62,6 +62,16 @@ const AppSelectionPage = () => {
       navigate(path);
     }
   };
+
+  const handleBackToLogin = () => {
+    sessionStorage.removeItem("auth0_login_pending");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("allowed_apps");
+    navigate("/");
+  };
+
   // eslint-disable-next-line
   const handleLanguageChange = (language) => {
     i18n.changeLanguage(language); // Зміна мови у вашому додатку
@@ -126,7 +136,7 @@ const AppSelectionPage = () => {
           </button>
           <button
             className="asp-auth-button"
-            onClick={() => handleNavigation("/")}
+            onClick={handleBackToLogin}
           >
             {t("back_to_login")}
           </button>
