@@ -1,4 +1,4 @@
 {
-  "apiBaseUrl": "/api",
-  "operatorUiUrl": "https://operator.nextpointlogix.pp.ua/"
+  "apiBaseUrl": "http://127.0.0.1:8000/api",
+  "operatorUiUrl": "http://localhost:3003/"
 }
