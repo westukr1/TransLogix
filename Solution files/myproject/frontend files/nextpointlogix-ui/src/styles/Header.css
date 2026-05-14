@@ -54,3 +54,43 @@
 .nav-item:hover {
   background-color: #3a3a3a;
 }
+
+.header-header {
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .header-header {
+    height: auto;
+    min-height: 60px;
+    gap: 8px;
+    padding: 6px;
+  }
+
+  .header-logo {
+    flex: 0 0 auto;
+  }
+
+  .header-logo img {
+    height: 44px !important;
+  }
+
+  .header-nav {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .nav-item {
+    min-height: 40px;
+    padding: 6px 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 12px;
+    box-sizing: border-box;
+  }
+}

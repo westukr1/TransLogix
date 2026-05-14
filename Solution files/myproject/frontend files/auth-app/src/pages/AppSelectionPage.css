@@ -1,6 +1,7 @@
 .asp-app-selection-page {
   display: flex;
   height: 100vh;
+  background-color: #2c2c2c;
 }
 
 .asp-left-column {
@@ -162,6 +163,21 @@
   width: 95%;
   padding: 10px;
   margin: 5px 0;
+}
+
+/* Logo seam fix for shared auth pages: keep the surrounding panel dark and
+   hide any parent texture that would show around the logo image. */
+.asp-app-selection-page .app-left-column,
+.asp-app-selection-page .asp-left-column {
+  overflow: hidden;
+  background-color: #2c2c2c;
+}
+
+.asp-app-selection-page .logo {
+  display: block;
+  max-width: 100%;
+  object-fit: cover;
+  background-color: #2c2c2c;
 }
 
 /* Desktop layout stays side-by-side through the base rules above.

@@ -15,12 +15,16 @@
 .three-column-template {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #3a3a3a;
 }
 
 .template3-content {
   display: flex;
   flex: 1;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .template3-left-column {
@@ -49,6 +53,268 @@
   background-color: #3a3a3a;
   padding: 1px;
   box-sizing: border-box;
+}
+
+.three-column-template > .header-header,
+.three-column-template > .template3-content,
+.three-column-template > .footer {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.operator-mobile-tabs {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* Mobile uses tabs instead of three compressed columns. Desktop keeps the
+     side-by-side workspace above this breakpoint. */
+  .three-column-template {
+    width: 100%;
+    min-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .operator-mobile-tabs {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    padding: 8px;
+    background-color: #2c2c2c;
+    border-left: 3px solid #c0c0c0;
+    border-right: 3px solid #c0c0c0;
+    box-sizing: border-box;
+  }
+
+  .operator-mobile-tab {
+    flex: 1 1 0;
+    min-height: 44px;
+    padding: 8px 6px;
+    background-color: #2c2c2c;
+    color: #fff;
+    border: 2px solid #c0c0c0;
+    border-radius: 5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .operator-mobile-tab.active {
+    color: rgb(4, 150, 104);
+    border-color: rgb(4, 150, 104);
+  }
+
+  .template3-content {
+    display: block;
+    flex: 1 0 auto;
+    width: 100%;
+    min-width: 0;
+    background-color: #3a3a3a;
+  }
+
+  .template3-left-column,
+  .template3-center-column,
+  .template3-right-column {
+    display: none;
+    width: 100%;
+    min-width: 0;
+    flex: none;
+    border-right: 0;
+    box-sizing: border-box;
+  }
+
+  .operator-mobile-panel.mobile-active {
+    display: block;
+  }
+
+  .template3-left-column,
+  .template3-right-column {
+    padding: 10px;
+  }
+
+  .template3-center-column {
+    padding: 0;
+  }
+
+  .template3-left-column .sidebar {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .template3-left-column .sidebar-nav {
+    gap: 10px;
+  }
+
+  .template3-left-column .sidebar-item {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .template3-right-column h2 {
+    margin: 0 0 10px;
+  }
+
+  .template3-right-column .route-buttons,
+  .passenger-controls {
+    justify-content: stretch;
+  }
+
+  .template3-right-column .route-buttons > *,
+  .passenger-controls .search-input {
+    flex: 1 1 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .passenger-scroll {
+    max-height: calc(100vh - 260px);
+  }
+
+  .passenger-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 95%;
+  }
+
+  .passenger-item p {
+    margin: 0;
+  }
+
+  .btn-phone {
+    align-self: stretch;
+    min-height: 36px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    min-height: calc(100vh - 190px);
+    box-sizing: border-box;
+  }
+
+  .main-content .route-buttons {
+    flex-wrap: wrap;
+    justify-content: stretch;
+    gap: 8px;
+  }
+
+  .main-content .route-buttons > * {
+    flex: 1 1 calc(50% - 8px);
+    min-height: 40px;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .routes-list {
+    height: auto !important;
+    max-height: calc(100vh - 310px);
+  }
+
+  .content-area {
+    height: auto !important;
+  }
+
+  .route-item {
+    align-items: flex-start;
+    padding-right: 54px;
+  }
+}
+
+@media (max-width: 480px) {
+  .operator-mobile-tab {
+    font-size: 12px;
+  }
+
+  .main-content h3 {
+    font-size: 16px;
+  }
+
+  .date-time-container {
+    display: block;
+    width: fit-content;
+    margin: 6px 0 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .operator-mobile-panel.mobile-active {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .template3-left-column .sidebar,
+  .template3-left-column aside,
+  .template3-left-column nav,
+  .template3-left-column .sidebar-nav,
+  .template3-center-column .main-content,
+  .template3-right-column .passenger-controls,
+  .template3-right-column .passenger-scroll {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .template3-left-column .sidebar-item,
+  .template3-left-column a,
+  .template3-right-column .route-buttons > *,
+  .template3-right-column .search-input,
+  .passenger-item,
+  .btn-phone {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .template3-left-column .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .template3-left-column .sidebar-item,
+  .template3-left-column a {
+    min-height: 48px;
+    padding: 10px 12px;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+
+  .template3-right-column .route-buttons,
+  .template3-right-column .passenger-controls {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .template3-right-column .route-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .template3-right-column .route-buttons > * {
+    flex: 1 1 calc(50% - 8px) !important;
+    min-height: 40px;
+    text-align: center;
+  }
+
+  .passenger-controls .search-input {
+    min-height: 40px;
+  }
+
+  .passenger-item {
+    align-items: stretch;
+    padding: 8px;
+    overflow: hidden;
+  }
+
+  .passenger-item p {
+    width: 100%;
+    overflow-wrap: anywhere;
+    line-height: 1.35;
+  }
 }
 /* Стилі для заголовка списку пасажирів */
 .template3-right-column h2 {
@@ -110,4 +376,99 @@
 
 .nav-item:hover {
   background-color: #3a3a3a;
+}
+
+@media (max-width: 768px) {
+  /* Final mobile override must stay at the end of the file because older
+     desktop styles below the first media block can otherwise keep column
+     widths on the active tab panel. */
+  .three-column-template,
+  .template3-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  .template3-content {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .template3-left-column,
+  .template3-center-column,
+  .template3-right-column {
+    flex: 0 0 auto !important;
+    flex-basis: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    border-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .operator-mobile-panel:not(.mobile-active) {
+    display: none !important;
+  }
+
+  .operator-mobile-panel.mobile-active {
+    display: block !important;
+  }
+
+  .template3-left-column,
+  .template3-center-column,
+  .template3-right-column,
+  .template3-left-column *,
+  .template3-center-column *,
+  .template3-right-column * {
+    box-sizing: border-box;
+  }
+
+  .template3-left-column .sidebar-nav,
+  .template3-left-column nav,
+  .template3-center-column .main-content,
+  .template3-center-column .routes-list,
+  .template3-center-column .content-area,
+  .template3-right-column .route-buttons,
+  .template3-right-column .passenger-controls,
+  .template3-right-column .passenger-scroll {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .template3-left-column .sidebar-item,
+  .template3-left-column a,
+  .template3-center-column .route-item,
+  .template3-right-column .passenger-item,
+  .template3-right-column .search-input {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .template3-left-column .sidebar-item,
+  .template3-left-column a {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    text-align: center;
+  }
+
+  .template3-right-column .passenger-item {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .template3-right-column .passenger-item p,
+  .template3-center-column .route-item {
+    overflow-wrap: anywhere;
+  }
+
+  .template3-right-column .btn-phone {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 40px;
+  }
 }

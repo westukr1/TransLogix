@@ -18,6 +18,7 @@ const OperatorUI = () => {
   const { t } = useTranslation();
   const [passengers, setPassengers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeMobileTab, setActiveMobileTab] = useState('routes');
 
   useEffect(() => {
     // Отримуємо мову з URL-параметра
@@ -147,19 +148,44 @@ const OperatorUI = () => {
     );
   });
 
+  const mobileTabs = [
+    { id: 'menu', label: t('menu') },
+    { id: 'routes', label: t('todays_routes') },
+    { id: 'passengers', label: t('passengers') },
+  ];
+
   return (
     <div className="three-column-template">
       <Header />
+      {/* Mobile uses tabs so one full-width work area is visible at a time
+          instead of compressing the desktop three-column workspace. */}
+      <div className="operator-mobile-tabs" role="tablist" aria-label="Operator mobile sections">
+        {mobileTabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={activeMobileTab === tab.id}
+            className={`operator-mobile-tab ${activeMobileTab === tab.id ? 'active' : ''}`}
+            onClick={() => setActiveMobileTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Desktop remains the existing side-by-side layout. Mobile CSS turns
+          these same reused blocks into tab panels without changing routes/API logic. */}
       <div className="template3-content">
-        <div className="template3-left-column">
+        <div className={`template3-left-column operator-mobile-panel ${activeMobileTab === 'menu' ? 'mobile-active' : ''}`}>
           <Sidebar /> 
         </div>
 
-        <div className="template3-center-column">
+        <div className={`template3-center-column operator-mobile-panel ${activeMobileTab === 'routes' ? 'mobile-active' : ''}`}>
           <MainContent /> 
         </div>
 
-        <div className="template3-right-column">
+        <div className={`template3-right-column operator-mobile-panel ${activeMobileTab === 'passengers' ? 'mobile-active' : ''}`}>
           <h2>{t('passenger_list')}</h2>
           <div className="route-buttons">
           
