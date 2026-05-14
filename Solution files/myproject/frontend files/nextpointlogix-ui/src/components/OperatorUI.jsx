@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import MainContent from './MainContent';
-import Footer from './Footer';
 import '../styles/OperatorUI.css';
 import i18n from '../i18n';  
 import { useTranslation } from 'react-i18next';
@@ -18,7 +17,7 @@ const OperatorUI = () => {
   const { t } = useTranslation();
   const [passengers, setPassengers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeMobileTab, setActiveMobileTab] = useState('routes');
+  const [activeMobileTab, setActiveMobileTab] = useState('menu');
 
   useEffect(() => {
     // Отримуємо мову з URL-параметра
@@ -216,7 +215,6 @@ const OperatorUI = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

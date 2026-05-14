@@ -378,6 +378,47 @@
   background-color: #3a3a3a;
 }
 
+@media (min-width: 769px) {
+  /* Desktop columns keep the three-panel layout, but their main scrollable
+     work areas must fill the available column height at any browser zoom. */
+  .template3-content,
+  .template3-center-column,
+  .template3-right-column,
+  .template3-center-column .main-content {
+    min-height: 0;
+  }
+
+  .template3-center-column,
+  .template3-right-column,
+  .template3-center-column .main-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .template3-center-column .main-content {
+    flex: 1 1 auto;
+    height: auto;
+    width: 100%;
+    border: 0;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+
+  .template3-center-column .routes-list,
+  .template3-right-column .passenger-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .template3-center-column .content-area {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto !important;
+  }
+}
+
 @media (max-width: 768px) {
   /* Final mobile override must stay at the end of the file because older
      desktop styles below the first media block can otherwise keep column
