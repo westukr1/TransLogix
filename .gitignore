@@ -72,3 +72,5 @@ coverage.xml
 *.swp
 
 **/node_modules/
+# Local helper scripts
+start-local-app.bat
